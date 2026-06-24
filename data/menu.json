@@ -1,0 +1,609 @@
+{
+ "categories": [
+  {
+   "label": "First-Time Package",
+   "cat": {
+    "ja": "初回限定パッケージ",
+    "en": "First-Time Package",
+    "th": "แพ็กเกจครั้งแรก"
+   },
+   "items": [
+    {
+     "name": "Tokyo Combo — Cut + Full Color + 4Step TOKIO",
+     "price": "฿4,017~",
+     "off": "35% OFF",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "初回限定。カット＋フルカラー＋TOKIO 4ステッププレミアムを一度に。ダメージケア・美しい発色・似合わせカットをまとめて。シャンプー・ブロー込み。",
+      "en": "First-visit only. Cut + full colour + TOKIO 4-Step Premium in one visit — damage care, beautiful colour and a flattering cut together. Shampoo &amp; blow-dry included.",
+      "th": "เฉพาะครั้งแรก ตัดผม + ทำสีทั้งศีรษะ + TOKIO 4-Step พรีเมียม ในครั้งเดียว ดูแลผมเสีย สีสวย และตัดทรงให้เข้ากับคุณ รวมสระและเป่า"
+     }
+    },
+    {
+     "name": "Colour + 4Step TOKIO Treatment",
+     "price": "฿3,486~",
+     "off": "30% OFF",
+     "dur": {
+      "ja": "3時間",
+      "en": "3 hrs",
+      "th": "3 ชม."
+     },
+     "desc": {
+      "ja": "フルカラー＋TOKIO 4ステップトリートメントの特別割引。仕上がりは髪の長さにより変動。",
+      "en": "Special discount on full colour + TOKIO 4-Step treatment. Result varies with hair length.",
+      "th": "ส่วนลดพิเศษสำหรับทำสีทั้งศีรษะ + ทรีตเมนต์ TOKIO 4-Step ผลลัพธ์ขึ้นอยู่กับความยาวผม"
+     }
+    },
+    {
+     "name": "Cut + Full Colour",
+     "price": "฿3,142.50~",
+     "off": "25% OFF",
+     "dur": {
+      "ja": "3時間",
+      "en": "3 hrs",
+      "th": "3 ชม."
+     },
+     "desc": {
+      "ja": "カット＋フルカラーの初回パッケージ。",
+      "en": "First-visit package: cut + full colour.",
+      "th": "แพ็กเกจครั้งแรก: ตัดผม + ทำสีทั้งศีรษะ"
+     }
+    },
+    {
+     "name": "Hokkaido — Cut + 4Step TOKIO",
+     "price": "฿2,711.50~",
+     "off": "15% OFF",
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "カット＋TOKIO 4ステッププレミアム。イメチェンと集中補修を同時に。シャンプー・ブロー込み。",
+      "en": "Cut + TOKIO 4-Step Premium — a fresh look and intensive repair at once. Shampoo &amp; blow-dry included.",
+      "th": "ตัดผม + TOKIO 4-Step พรีเมียม เปลี่ยนลุคพร้อมฟื้นบำรุงเข้มข้นในคราวเดียว รวมสระและเป่า"
+     }
+    },
+    {
+     "name": "Full Bleach + 4Step TOKIO",
+     "price": "฿5,584~",
+     "off": "20% OFF",
+     "dur": {
+      "ja": "5時間",
+      "en": "5 hrs",
+      "th": "5 ชม."
+     },
+     "desc": {
+      "ja": "フルブリーチ＋TOKIO 4ステップ。明るいベースを作りながら補修。",
+      "en": "Full bleach + TOKIO 4-Step — repairs while creating a bright base.",
+      "th": "ฟอกผมทั้งศีรษะ + TOKIO 4-Step ฟื้นบำรุงพร้อมสร้างเบสสีสว่าง"
+     }
+    },
+    {
+     "name": "Japanese Straight Perm (Rebonding) + Cut",
+     "price": "฿4,671~",
+     "off": "10% OFF",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "縮毛矯正（リボンディング）＋カットの初回パッケージ。シャンプー・ブロー込み。",
+      "en": "First-visit package: Japanese straight perm (rebonding) + cut. Shampoo &amp; blow-dry included.",
+      "th": "แพ็กเกจครั้งแรก: ยืดผมญี่ปุ่น (รีบอนดิ้ง) + ตัดผม รวมสระและเป่า"
+     }
+    },
+    {
+     "name": "New York — half Foil & Toner + Olaplex + Cut",
+     "price": "฿5,760~",
+     "off": "25% OFF",
+     "dur": {
+      "ja": "4時間45分",
+      "en": "4 hr 45 min",
+      "th": "4 ชม. 45 นาที"
+     },
+     "desc": {
+      "ja": "ハーフフォイルハイライト＋トナー＋オラプレックス＋カット。立体感・色補正・補修・仕上げを一度に。",
+      "en": "Half-foil highlights + toner + Olaplex + cut. Dimension, colour correction, repair and finish in one visit.",
+      "th": "ไฮไลต์ฟอยล์ครึ่งศีรษะ + โทนเนอร์ + Olaplex + ตัดผม เพิ่มมิติ ปรับสี ฟื้นบำรุง และจัดแต่งในครั้งเดียว"
+     }
+    },
+    {
+     "name": "Osaka — Inner Bleach & Color + Cut",
+     "price": "฿4,411.50~",
+     "off": "15% OFF",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "インナーブリーチ＆カラー＋カット。大部分はナチュラルなまま、さりげない差し色を。",
+      "en": "Inner bleach &amp; colour + cut. Most of the hair stays natural with a subtle pop of colour.",
+      "th": "อินเนอร์ฟอก & ทำสี + ตัดผม คงผมส่วนใหญ่ให้เป็นธรรมชาติ พร้อมสีแซมอย่างมีสไตล์"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Head Spa Special Combo",
+   "cat": {
+    "ja": "ヘッドスパ スペシャルコンボ",
+    "en": "Head Spa Special Combo",
+    "th": "เฮดสปา คอมโบพิเศษ"
+   },
+   "items": [
+    {
+     "name": "90min Premium Head Spa (TOKIO) + Full Colour",
+     "price": "฿4,792~",
+     "off": "20% OFF",
+     "dur": {
+      "ja": "3時間30分",
+      "en": "3 hr 30 min",
+      "th": "3 ชม. 30 นาที"
+     },
+     "desc": {
+      "ja": "90分のプレミアムヘッドスパ（TOKIOトリートメント）＋フルカラー。",
+      "en": "90-min premium head spa (TOKIO treatment) + full colour.",
+      "th": "เฮดสปาพรีเมียม 90 นาที (ทรีตเมนต์ TOKIO) + ทำสีทั้งศีรษะ"
+     }
+    },
+    {
+     "name": "90min Premium Head Spa (TOKIO) + Hair Cut",
+     "price": "฿3,570~",
+     "off": "15% OFF",
+     "dur": {
+      "ja": "2時間30分",
+      "en": "2 hr 30 min",
+      "th": "2 ชม. 30 นาที"
+     },
+     "desc": {
+      "ja": "90分のプレミアムヘッドスパ（TOKIO）＋カット。",
+      "en": "90-min premium head spa (TOKIO) + cut.",
+      "th": "เฮดสปาพรีเมียม 90 นาที (TOKIO) + ตัดผม"
+     }
+    },
+    {
+     "name": "60min Head Spa + Full Colour",
+     "price": "฿3,992~",
+     "off": "20% OFF",
+     "dur": {
+      "ja": "3時間",
+      "en": "3 hrs",
+      "th": "3 ชม."
+     },
+     "desc": {
+      "ja": "60分のヘッドスパ＋フルカラー。",
+      "en": "60-min head spa + full colour.",
+      "th": "เฮดสปา 60 นาที + ทำสีทั้งศีรษะ"
+     }
+    },
+    {
+     "name": "60min Head Spa + Hair Cut",
+     "price": "฿2,560~",
+     "off": "20% OFF",
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "60分のヘッドスパ＋カット。",
+      "en": "60-min head spa + cut.",
+      "th": "เฮดสปา 60 นาที + ตัดผม"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Hair Cut",
+   "cat": {
+    "ja": "カット",
+    "en": "Hair Cut",
+    "th": "ตัดผม"
+   },
+   "items": [
+    {
+     "name": "Ladies' Cut",
+     "price": "฿1,200",
+     "off": "",
+     "dur": {
+      "ja": "1時間",
+      "en": "1 hr",
+      "th": "1 ชม."
+     },
+     "desc": {
+      "ja": "丁寧なカウンセリングで、骨格・髪質・ライフスタイルに合わせた似合わせカット。シャンプー・ブロー込み／エクステ（縫い付け・テープ等）は不可。",
+      "en": "A flattering cut tailored to your bone structure, hair type and lifestyle through careful counselling. Shampoo &amp; blow-dry included / extensions (sew-in, tape, etc.) not available.",
+      "th": "ตัดทรงให้เข้ากับโครงหน้า สภาพผม และไลฟ์สไตล์ ผ่านการปรึกษาอย่างละเอียด รวมสระและเป่า / ไม่รับต่อผม (เย็บ เทป ฯลฯ)"
+     }
+    },
+    {
+     "name": "Men's Cut",
+     "price": "฿1,000",
+     "off": "",
+     "dur": {
+      "ja": "45分",
+      "en": "45 min",
+      "th": "45 นาที"
+     },
+     "desc": {
+      "ja": "髪質・好みに合わせた、清潔感のあるナチュラルなメンズカット。シャンプー・ブロー込み／スキンフェード・シャープなバーバースタイルは不可。",
+      "en": "A clean, natural men's cut tailored to your hair type and preference. Shampoo &amp; blow-dry included / skin fades and sharp barber styles not available.",
+      "th": "ตัดผมชายทรงธรรมชาติดูสะอาดตา ปรับตามสภาพผมและความชอบ รวมสระและเป่า / ไม่รับสกินเฟดและทรงบาร์เบอร์คมชัด"
+     }
+    },
+    {
+     "name": "Fringe Cut",
+     "price": "฿400",
+     "off": "",
+     "dur": {
+      "ja": "15分",
+      "en": "15 min",
+      "th": "15 นาที"
+     },
+     "desc": {
+      "ja": "前髪のみのカット。",
+      "en": "Fringe (bangs) cut only.",
+      "th": "ตัดเฉพาะผมหน้าม้า"
+     }
+    },
+    {
+     "name": "Kid's Cut (boys under 10)",
+     "price": "฿500",
+     "off": "",
+     "dur": {
+      "ja": "45分",
+      "en": "45 min",
+      "th": "45 นาที"
+     },
+     "desc": {
+      "ja": "10歳以下の男児向けのスタイリッシュなカット。年齢確認のため身分証の提示をお願いする場合あり／シャンプーなし。",
+      "en": "A stylish cut for boys aged 10 and under. ID may be requested to confirm age / no shampoo.",
+      "th": "ตัดผมสไตลิชสำหรับเด็กชายอายุ 10 ปีหรือต่ำกว่า อาจขอดูบัตรเพื่อยืนยันอายุ / ไม่รวมสระ"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Hair Colour",
+   "cat": {
+    "ja": "カラー",
+    "en": "Hair Colour",
+    "th": "ทำสีผม"
+   },
+   "items": [
+    {
+     "name": "Touch up Color",
+     "price": "฿2,500~",
+     "off": "",
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "伸びた根元1〜3cmのリタッチ。来店間の色味キープに最適。シャンプー・ブロー込み／ブリーチなし。伸びが長い場合や色補正は追加料金の場合あり。",
+      "en": "Root retouch for 1–3 cm of regrowth. Ideal for keeping colour between visits. Shampoo &amp; blow-dry included / no bleach. Long regrowth or colour correction may incur extra charges.",
+      "th": "รีทัชโคนผมที่ยาวออกมา 1–3 ซม. เหมาะสำหรับคงสีระหว่างการมาแต่ละครั้ง รวมสระและเป่า / ไม่รวมฟอก หากโคนยาวมากหรือต้องปรับสีอาจมีค่าใช้จ่ายเพิ่ม"
+     }
+    },
+    {
+     "name": "Full Color",
+     "price": "฿2,990~",
+     "off": "",
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "日本製の高品質薬剤によるフルカラー。肌色・髪の状態・なりたい色に合わせて調整。シャンプー・ブロー込み／ブリーチ・カットは含みません。",
+      "en": "Full colour with high-quality Japanese formulas, tailored to your skin tone, hair condition and desired shade. Shampoo &amp; blow-dry included / bleach and cut not included.",
+      "th": "ทำสีทั้งศีรษะด้วยน้ำยาญี่ปุ่นคุณภาพสูง ปรับตามสีผิว สภาพผม และสีที่ต้องการ รวมสระและเป่า / ไม่รวมฟอกและตัดผม"
+     }
+    },
+    {
+     "name": "Full Bleach & Full Color",
+     "price": "฿4,990~",
+     "off": "",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "プロ用ブリーチで明るいベースを作るライトニング。ファッションカラーやハイトーンブロンドに。シャンプー・ブロー込み／トナー込み／カット含まず。ブリーチ回数で価格変動。",
+      "en": "Lightening with professional bleach for a bright base — for fashion colours and high-tone blonde. Shampoo &amp; blow-dry included / toner included / cut not included. Price varies with the number of bleach sessions.",
+      "th": "ฟอกด้วยน้ำยาระดับมืออาชีพเพื่อสร้างเบสสว่าง สำหรับสีแฟชั่นและบลอนด์โทนสว่าง รวมสระและเป่า / รวมโทนเนอร์ / ไม่รวมตัดผม ราคาขึ้นอยู่กับจำนวนครั้งที่ฟอก"
+     }
+    },
+    {
+     "name": "High Light Bleach & Full Color",
+     "price": "฿4,990~",
+     "off": "",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "アジア毛向けに自然な明るさと立体感を出すハイライト。やりすぎない柔らかな陰影。シャンプー・ブロー込み／トナー込み／カット含まず。",
+      "en": "Highlights that add natural brightness and dimension for Asian hair — soft, understated shadow. Shampoo &amp; blow-dry included / toner included / cut not included.",
+      "th": "ไฮไลต์เพิ่มความสว่างและมิติอย่างเป็นธรรมชาติสำหรับผมเอเชีย เงานุ่มไม่จัดจ้าน รวมสระและเป่า / รวมโทนเนอร์ / ไม่รวมตัดผม"
+     }
+    },
+    {
+     "name": "Half head foil & Toner",
+     "price": "฿4,490~",
+     "off": "",
+     "dur": {
+      "ja": "3時間30分",
+      "en": "3 hr 30 min",
+      "th": "3 ชม. 30 นาที"
+     },
+     "desc": {
+      "ja": "トップ・サイド中心のハーフヘッドフォイルハイライト＋トナー。メンテや柔らかなブロンドに。シャンプー・ブロー込み／バレイヤージュ含まず／カット含まず。",
+      "en": "Half-head foil highlights focused on the top and sides + toner. Great for maintenance or a soft blonde. Shampoo &amp; blow-dry included / balayage not included / cut not included.",
+      "th": "ไฮไลต์ฟอยล์ครึ่งศีรษะเน้นด้านบนและด้านข้าง + โทนเนอร์ เหมาะกับการดูแลรักษาหรือบลอนด์นุ่ม ๆ รวมสระและเป่า / ไม่รวมบาลายาจ / ไม่รวมตัดผม"
+     }
+    },
+    {
+     "name": "Inner Bleach & Design Color",
+     "price": "฿3,990~",
+     "off": "",
+     "dur": {
+      "ja": "3時間",
+      "en": "3 hrs",
+      "th": "3 ชม."
+     },
+     "desc": {
+      "ja": "襟足やサイドなど内側に入れるインナーカラー。動かした時に映えるコントラスト。シャンプー・ブロー込み／トナー込み／カット含まず。",
+      "en": "Inner colour placed underneath at the nape or sides. Contrast that shows when the hair moves. Shampoo &amp; blow-dry included / toner included / cut not included.",
+      "th": "อินเนอร์คัลเลอร์ด้านในบริเวณท้ายทอยหรือด้านข้าง คอนทราสต์ที่โดดเด่นเมื่อผมเคลื่อนไหว รวมสระและเป่า / รวมโทนเนอร์ / ไม่รวมตัดผม"
+     }
+    },
+    {
+     "name": "Balayage Design",
+     "price": "฿5,590~",
+     "off": "",
+     "dur": {
+      "ja": "4時間",
+      "en": "4 hrs",
+      "th": "4 ชม."
+     },
+     "desc": {
+      "ja": "ヨーロッパ風のハイコントラストなバレイヤージュ。伸びても自然な立体グラデーション。シャンプー・ブロー込み／トナー含まず／カット含まず。",
+      "en": "European-style high-contrast balayage. A natural, dimensional gradient that grows out beautifully. Shampoo &amp; blow-dry included / toner not included / cut not included.",
+      "th": "บาลายาจสไตล์ยุโรปคอนทราสต์สูง ไล่เฉดเป็นธรรมชาติมีมิติ ปล่อยยาวออกมาก็ยังสวย รวมสระและเป่า / ไม่รวมโทนเนอร์ / ไม่รวมตัดผม"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Perm",
+   "cat": {
+    "ja": "パーマ・縮毛矯正",
+    "en": "Perm & Straightening",
+    "th": "ดัด & ยืดผม"
+   },
+   "items": [
+    {
+     "name": "Japanese Hair-Repair Straight Perm",
+     "price": "฿3,990~",
+     "off": "",
+     "dur": {
+      "ja": "3時間",
+      "en": "3 hrs",
+      "th": "3 ชม."
+     },
+     "desc": {
+      "ja": "日本式の矯正液を使ったストレート（トリートメントではありません）。広がり・うねりを抑え、不自然に固くならない柔らかな仕上がり。ブリーチ毛・強ダメージ毛は不可／シャンプー・ブロー込み／カット含まず。",
+      "en": "A straightening using Japanese straightening solution (not a treatment). Tames frizz and waves for a soft finish that isn't unnaturally stiff. Not available on bleached or heavily damaged hair / shampoo &amp; blow-dry included / cut not included.",
+      "th": "ยืดผมด้วยน้ำยายืดสไตล์ญี่ปุ่น (ไม่ใช่ทรีตเมนต์) ช่วยจัดการผมชี้ฟูและหยักให้นุ่มเป็นธรรมชาติ ไม่แข็งกระด้าง ไม่รับผมฟอกหรือผมเสียหนัก / รวมสระและเป่า / ไม่รวมตัดผม"
+     }
+    },
+    {
+     "name": "Roots Straight Perm (returning guests only)",
+     "price": "฿2,990~",
+     "off": "",
+     "dur": {
+      "ja": "1時間30分",
+      "en": "1 hr 30 min",
+      "th": "1 ชม. 30 นาที"
+     },
+     "desc": {
+      "ja": "根元のみのストレート。再来店の方限定（新規のお客様は不可）。",
+      "en": "Roots-only straightening. For returning guests only (not available for new guests).",
+      "th": "ยืดเฉพาะโคนผม เฉพาะลูกค้าที่กลับมาใช้บริการซ้ำ (ไม่รับลูกค้าใหม่)"
+     }
+    },
+    {
+     "name": "Fringe Straight Perm (returning guests only)",
+     "price": "฿1,990~",
+     "off": "",
+     "dur": {
+      "ja": "1時間30分",
+      "en": "1 hr 30 min",
+      "th": "1 ชม. 30 นาที"
+     },
+     "desc": {
+      "ja": "前髪のみのストレート。再来店の方限定（新規のお客様は不可）。",
+      "en": "Fringe-only straightening. For returning guests only (not available for new guests).",
+      "th": "ยืดเฉพาะผมหน้าม้า เฉพาะลูกค้าที่กลับมาใช้บริการซ้ำ (ไม่รับลูกค้าใหม่)"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Japanese Head Spa",
+   "cat": {
+    "ja": "ジャパニーズヘッドスパ",
+    "en": "Japanese Head Spa",
+    "th": "เฮดสปาญี่ปุ่น"
+   },
+   "items": [
+    {
+     "name": "Head Spa & Warm Water Bath",
+     "price": "฿2,000~",
+     "off": "",
+     "dur": {
+      "ja": "60分",
+      "en": "60 min",
+      "th": "60 นาที"
+     },
+     "desc": {
+      "ja": "温スチーム・ほぐしマッサージ・滝のようなヘッドバスで頭皮の緊張を解く本格ヘッドスパ。①クレンジングシャンプー ②ヘッドスパマッサージ（スチーマー） ③ウォーターフォールヘッドバス ④アロマシャンプー。",
+      "en": "An authentic head spa that releases scalp tension with warm steam, a relaxing massage and a waterfall head bath. ① Cleansing shampoo ② Head spa massage (steamer) ③ Waterfall head bath ④ Aroma shampoo.",
+      "th": "เฮดสปาแท้ ๆ ที่ช่วยคลายความตึงของหนังศีรษะด้วยไอน้ำอุ่น การนวดผ่อนคลาย และการสระแบบสายน้ำตก ① สระทำความสะอาด ② นวดเฮดสปา (เครื่องอบไอน้ำ) ③ สระแบบสายน้ำตก ④ สระอโรมา"
+     }
+    },
+    {
+     "name": "Premium Head Spa & TOKIO 4Step & Warm Water Bath",
+     "price": "฿3,000~",
+     "off": "",
+     "dur": {
+      "ja": "90分",
+      "en": "90 min",
+      "th": "90 นาที"
+     },
+     "desc": {
+      "ja": "上記ヘッドスパに加え、超音波アイロンを用いたTOKIO 4ステップ補修まで行う贅沢な90分。最大限の浸透とツヤを。",
+      "en": "A luxurious 90 minutes that adds TOKIO 4-Step repair with an ultrasonic iron to the head spa above — for maximum penetration and shine.",
+      "th": "ความหรูหรา 90 นาที ที่เพิ่มการฟื้นบำรุง TOKIO 4-Step ด้วยเครื่องรีดอัลตราโซนิกต่อจากเฮดสปาด้านบน เพื่อการซึมซาบและความเงางามสูงสุด"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Treatment",
+   "cat": {
+    "ja": "トリートメント",
+    "en": "Treatment",
+    "th": "ทรีตเมนต์"
+   },
+   "items": [
+    {
+     "name": "Japanese 4Step TOKIO Premium Treatment",
+     "price": "฿1,990~",
+     "off": "",
+     "dur": {
+      "ja": "1時間",
+      "en": "1 hr",
+      "th": "1 ชม."
+     },
+     "desc": {
+      "ja": "カラー後の色持ち・手触りを高めるTOKIOの4ステップサロンケア。水分バランスを整え、キューティクルを滑らかに。シャンプー・ブロー込み。",
+      "en": "TOKIO's 4-step salon care that boosts colour longevity and softness after colouring. Balances moisture and smooths the cuticle. Shampoo &amp; blow-dry included.",
+      "th": "การดูแลแบบ 4 ขั้นตอนของ TOKIO ที่ช่วยให้สีติดทนและผมนุ่มหลังทำสี ปรับสมดุลความชุ่มชื้นและทำให้คิวติเคิลเรียบลื่น รวมสระและเป่า"
+     }
+    },
+    {
+     "name": "Olaplex Treatment",
+     "price": "฿1,990~",
+     "off": "",
+     "dur": {
+      "ja": "15分",
+      "en": "15 min",
+      "th": "15 นาที"
+     },
+     "desc": {
+      "ja": "内部の結合を補修するOLAPLEX集中トリートメント。ブリーチ・薬剤施術・ダメージ毛に。",
+      "en": "An OLAPLEX intensive treatment that repairs internal bonds. For bleached, chemically treated or damaged hair.",
+      "th": "ทรีตเมนต์เข้มข้น OLAPLEX ที่ซ่อมแซมพันธะภายในเส้นผม สำหรับผมฟอก ผมทำเคมี หรือผมเสีย"
+     }
+    },
+    {
+     "name": "Kerasilk Keratin Treatment",
+     "price": "฿3,990~",
+     "off": "",
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "うねり・広がりを抑え扱いやすく。自然な動きは残したまま、長持ちするツヤを（ブラジリアン縮毛とは異なります）。",
+      "en": "Tames waves and frizz for easy management. Keeps natural movement while adding lasting shine (different from Brazilian straightening).",
+      "th": "จัดการผมหยักและชี้ฟูให้ดูแลง่าย คงการเคลื่อนไหวที่เป็นธรรมชาติพร้อมความเงางามที่ยาวนาน (แตกต่างจากการยืดแบบบราซิเลียน)"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Others",
+   "cat": {
+    "ja": "その他",
+    "en": "Others",
+    "th": "อื่น ๆ"
+   },
+   "items": [
+    {
+     "name": "Consultations",
+     "price": "฿1",
+     "off": "",
+     "dur": {
+      "ja": "5分",
+      "en": "5 min",
+      "th": "5 นาที"
+     },
+     "desc": {
+      "ja": "ご相談・カウンセリングのみ。",
+      "en": "Consultation only.",
+      "th": "ปรึกษาเท่านั้น"
+     }
+    },
+    {
+     "name": "Shampoo & Blow",
+     "price": "฿500~",
+     "off": "",
+     "dur": {
+      "ja": "1時間",
+      "en": "1 hr",
+      "th": "1 ชม."
+     },
+     "desc": {
+      "ja": "シャンプー＆ブロー。アイロン仕上げは含まず（オプションで追加可）。",
+      "en": "Shampoo &amp; blow-dry. Iron finish not included (can be added as an option).",
+      "th": "สระและเป่า ไม่รวมการรีดจัดแต่ง (เพิ่มเป็นออปชันได้)"
+     }
+    },
+    {
+     "name": "Japanese Ultrasonic Treatment Iron",
+     "price": "฿500",
+     "off": "",
+     "dur": {
+      "ja": "10分",
+      "en": "10 min",
+      "th": "10 นาที"
+     },
+     "desc": {
+      "ja": "熱を使わず振動で成分を深く浸透させる超音波アイロン。他のサロンメニューの効果を高める追加メニュー。",
+      "en": "An ultrasonic iron that uses vibration, not heat, to drive ingredients deep into the hair. An add-on that enhances other salon services.",
+      "th": "เครื่องรีดอัลตราโซนิกที่ใช้การสั่นสะเทือนแทนความร้อน เพื่อผลักสารบำรุงเข้าสู่เส้นผมอย่างล้ำลึก บริการเสริมที่ช่วยเพิ่มประสิทธิภาพให้บริการอื่น"
+     }
+    },
+    {
+     "name": "Straight iron OR Curly iron",
+     "price": "฿200",
+     "off": "",
+     "dur": {
+      "ja": "5分",
+      "en": "5 min",
+      "th": "5 นาที"
+     },
+     "desc": {
+      "ja": "ブロー後の仕上げに使うアイロン。シャンプーまたはトリートメントとの併用が必要な追加メニュー。",
+      "en": "An iron used to finish after blow-drying. An add-on that requires a shampoo or treatment.",
+      "th": "เครื่องรีด/ม้วนสำหรับจัดแต่งหลังเป่าผม บริการเสริมที่ต้องใช้ร่วมกับการสระหรือทรีตเมนต์"
+     }
+    }
+   ]
+  }
+ ]
+}

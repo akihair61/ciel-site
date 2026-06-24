@@ -1,0 +1,43 @@
+media:
+  input: .
+  output: .
+
+content:
+  - name: menu
+    label: "メニュー・料金 (Menu)"
+    type: file
+    path: data/menu.json
+    fields:
+      - name: categories
+        label: "カテゴリー"
+        type: list
+        fields:
+          - name: cat
+            label: "カテゴリー名 (3言語)"
+            type: object
+            fields:
+              - { name: ja, label: "日本語", type: string }
+              - { name: en, label: "English", type: string }
+              - { name: th, label: "ไทย", type: string }
+          - { name: label, label: "英語ラベル(小見出し)", type: string }
+          - name: items
+            label: "メニュー項目"
+            type: list
+            fields:
+              - { name: name, label: "メニュー名", type: string }
+              - { name: price, label: "料金 (例: ฿1,200)", type: string }
+              - { name: off, label: "割引バッジ (任意・例: 35% OFF)", type: string }
+              - name: dur
+                label: "所要時間 (3言語)"
+                type: object
+                fields:
+                  - { name: ja, label: "日本語", type: string }
+                  - { name: en, label: "English", type: string }
+                  - { name: th, label: "ไทย", type: string }
+              - name: desc
+                label: "説明 (3言語)"
+                type: object
+                fields:
+                  - { name: ja, label: "日本語", type: text }
+                  - { name: en, label: "English", type: text }
+                  - { name: th, label: "ไทย", type: text }

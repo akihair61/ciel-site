@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C29T5SLWQH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-C29T5SLWQH');</script>
+<link rel="preconnect" href="https://static.wixstatic.com" crossorigin><link rel="dns-prefetch" href="https://static.wixstatic.com"><link rel="preconnect" href="https://video.wixstatic.com" crossorigin>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1d1e20">
+<title>Gallery | Ciel — Japanese Hair Studio by Aki</title>
+<meta name="description" content="Ciel Hair Studio の作品・サロンギャラリー。" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&family=Noto+Sans+JP:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ciel.css">
+</head>
+<body>
+<nav class="nav"><a class="brand" href="index.html">Ciel</a><div class="nav-links"><a href="index.html#story">Story</a><a href="menu.html">Menu</a><a href="headspa.html">Head Spa</a><a href="gallery.html">Gallery</a><a href="contact.html">Contact</a><a class="book" href="booking.html">Reservation</a></div></nav>
+<div id="rail"><div id="railFill"></div></div>
+
+<header class="phero" style="background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.55)),url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80')">
+  <div class="in"><div class="eb">Gallery</div><h1 data-fx="words">Works &amp; salon</h1><div class="sub">作品とサロンの様子</div></div>
+</header>
+
+<section class="panel light">
+  <div class="wrap">
+    <div class="masonry" id="grid"></div>
+    <p class="lead ctr" data-fx="fade" style="margin:60px auto 0">最新の作品は Instagram で更新中 — <a href="https://instagram.com/ciel_japanese_hair_bangkok" target="_blank" rel="noopener" style="border-bottom:1px solid currentColor">@ciel_japanese_hair_bangkok</a></p>
+    <div class="ctr" style="margin-top:30px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap"><a class="btn" href="https://instagram.com/ciel_japanese_hair_bangkok" target="_blank" rel="noopener">Instagramでフォロー</a><a class="btn" href="booking.html">ご予約はこちら</a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="fbrand">Ciel</div>
+  <div class="fnav"><a href="index.html">Home</a><a href="what-is-ciel.html">What is Ciel</a><a href="menu.html">Menu</a><a href="headspa.html">Head Spa</a><a href="gallery.html">Gallery</a><a href="contact.html">Contact</a><a href="booking.html">Booking</a><a href="booking-policy.html">Policy</a><a href="privacy.html">Privacy</a></div>
+  <div class="cp">© <span id="yr"></span> Ciel — Japanese Hair Studio by Aki, Bangkok</div>
+</footer>
+
+<script>
+var IG="https://instagram.com/ciel_japanese_hair_bangkok";
+var ids=[
+"https://static.wixstatic.com/media/25eaf5_11ae4851f8504738b5af45ffb67581c7~mv2.png",
+"https://static.wixstatic.com/media/25eaf5_33f880b9278b401094ad29804504069f~mv2.jpg",
+"https://static.wixstatic.com/media/25eaf5_00ae9cc323a04eb299b1f2cf8736a1e7~mv2.png",
+"https://static.wixstatic.com/media/25eaf5_f38fe17bf8484af68d09adc1893bfc1f~mv2.jpg",
+"https://static.wixstatic.com/media/25eaf5_b210d49477e24921b061f818493d257f~mv2.jpg",
+"https://static.wixstatic.com/media/25eaf5_c77bc29a69d04a1e9cdd9f1c6c17a3eb~mv2.jpeg",
+"https://static.wixstatic.com/media/25eaf5_7f07faef6f32439b8999c757dc0c8def~mv2.jpeg",
+"https://static.wixstatic.com/media/25eaf5_70b4748342a74c34b5967d012f98241c~mv2.jpg",
+"https://static.wixstatic.com/media/25eaf5_ac31ac5b82a34eaf8638b4421d26e548~mv2.jpg"];
+var html=ids.map(function(u,i){
+  return '<a class="gcell" data-fx="rise" data-i="'+(i%4)+'" href="'+IG+'" target="_blank" rel="noopener"><img class="cell" src="'+u+'" alt="Ciel Instagram" loading="lazy"></a>';
+}).join('');
+document.getElementById('grid').innerHTML=html;
+</script>
+<script src="ciel.js"></script>
+</body>
+</html>
