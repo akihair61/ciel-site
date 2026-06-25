@@ -59,7 +59,7 @@ footer .cp{font-size:10px;letter-spacing:.2em;opacity:.6}
 [data-fx="hingeR"]{transform-origin:right center}
 [data-fx="unfold"]{transform-origin:top center}
 .w{display:inline-block;transform-origin:50% 100%;backface-visibility:hidden}
-@media(prefers-reduced-motion:reduce){[data-fx],.w{opacity:1!important;transform:none!important}}
+
 
 /* service detail */
 .svc-hero-img{aspect-ratio:16/8;background:#cfcfd2 center/cover;filter:grayscale(.15);margin-top:60px}
