@@ -124,18 +124,20 @@
       background:rgba(10,10,13,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
       border:1px solid rgba(243,241,236,.08);border-radius:20px;padding:22px 18px 26px;}
     #bot1{left:8vw;}#bot2{left:60vw;}
-    #cap-hero{top:12vh;bottom:auto;width:auto;max-width:92vw;padding:0;border:none;
+    #cap-hero{top:10vh;bottom:auto;width:auto;max-width:92vw;padding:0;border:none;
       background:none;backdrop-filter:none;-webkit-backdrop-filter:none;}
-    #cap-hero h1{font-size:24px;}
-    #cap-hero .jp{font-size:12px;}
+    #cap-hero h1{font-size:21px;line-height:1.5;}
+    #cap-hero .jp{font-size:11px;margin-top:8px;}
     .cap .num{font-size:96px;top:-.3em;}
-    #cap-cta h2{font-size:28px;}
-    .cap .catch{font-size:14px;}
-    .cap .words{font-size:11px;letter-spacing:.3em;}
-    .cap .sizes{padding:10px 2px;}
-    .cap .sizes .row{gap:10px;font-size:10.5px;flex-wrap:wrap;}
-    .cap .sizes .row b{min-width:84px;font-size:11px;}
-    #cap-cta .btn{margin-top:16px;padding:12px 30px;font-size:13px;}
+    #cap-cta h2{font-size:25px;}
+    .cap .rule{margin:12px auto 0;}
+    .cap .catch{font-size:13px;margin-top:12px;}
+    .cap .words{font-size:10px;letter-spacing:.28em;margin-top:10px;}
+    #cap-cta .jp{font-size:13px;margin-top:12px;}
+    .cap .sizes{padding:8px 2px;margin-top:14px;}
+    .cap .sizes .row{gap:8px;font-size:10px;flex-wrap:wrap;padding:4px 0;}
+    .cap .sizes .row b{min-width:80px;font-size:10.5px;}
+    #cap-cta .btn{margin-top:14px;padding:11px 28px;font-size:12px;}
   }
   #driver{height:1300vh;}
 </style>
@@ -338,8 +340,9 @@ function render(){
   /* bottle: the rendered frame does the story; the page does the travel */
   const fi=Math.max(1,Math.min(NF,Math.round(kf(FRM,sp))));
   const hv=kf(BS,sp);
-  /* phones: keep footage compact; hero duo slightly smaller for the copy below */
-  const mcap=50-5*kf(TRB,sp);
+  /* phones: keep footage compact; hero/finale duo shrink hard so the copy
+     above and below never touches the bottles, even on short screens */
+  const mcap=50-19*kf(TRB,sp)-20*kf(CTA_OP,sp);
   const hvh=mobile?Math.min(hv,mcap):hv;
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
@@ -349,7 +352,7 @@ function render(){
   /* mobile hero: shampoo slides left so the treatment bottle fits beside it.
      phones: captions are bottom cards, so footage lives in the upper half.
      MBX compensates the gel/cream/arrangement sitting right-of-centre in frame */
-  const MBY=[[0,6],[0.06,6],[0.13,-16],[0.79,-16],[0.87,-18],[0.945,-21],[1,-21]];
+  const MBY=[[0,-2],[0.06,-2],[0.13,-16],[0.79,-16],[0.87,-18],[0.945,-26],[1,-26]];
   const MBX=[[0,50],[0.24,50],[0.30,50],[0.36,46],[0.43,46],[0.50,29],[0.575,29],[0.68,40],[0.72,42],[0.79,42],[0.87,46],[0.945,50],[1,50]];
   const x=mobile?(kf(MBX,sp)-11*kf(TRB,sp)):kf(BX,sp);
   const y=50+(mobile?kf(MBY,sp):kf(BY,sp));
