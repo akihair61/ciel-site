@@ -403,12 +403,12 @@ try{
   window.glideTo=function(p){
     const from=scrollY,to=p*smax();
     if(Math.abs(to-from)<2)return;
-    const dur=Math.min(3200,1100+Math.abs(p-from/smax())*7800);
+    const dur=Math.min(5200,1800+Math.abs(p-from/smax())*12500);
     const t0=performance.now();
     if(glideRAF)cancelAnimationFrame(glideRAF);
     (function stepG(){
       const u=Math.min(1,(performance.now()-t0)/dur);
-      const e=u<0.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;   /* easeInOutCubic */
+      const e=0.5-0.5*Math.cos(Math.PI*u);   /* easeInOutSine — calm, even glide */
       window.scrollTo(0,from+(to-from)*e);
       glideRAF=u<1?requestAnimationFrame(stepG):null;
     })();
