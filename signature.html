@@ -250,7 +250,7 @@ const bw=$('bw'),cgb=$('cgb'),cgx=cgb.getContext('2d'),trtb=$('trtb'),
 
 /* preload frames: 1-121 closed→open→pour→gel · 122-182 morph→treatment ·
    183-303 cream ribbon→bergamot & white-tea assembly · 304-424 botanicals→duo bottles */
-const NF=424,FV='?v=2',frames=[];
+const NF=424,FV='?v=3',frames=[];
 for(let i=1;i<=NF;i++){const im=new Image();
   im.src='seq_full/f_'+String(i).padStart(3,'0')+'.webp'+FV;frames[i-1]=im;}
 /* warm-up: pre-decode every frame once at idle so scrubbing never hits a decode stall.
@@ -427,7 +427,7 @@ try{
   window.glideTo=function(p){
     const from=scrollY,to=p*smax();
     if(Math.abs(to-from)<2)return;
-    const dur=Math.min(3800,1300+Math.abs(p-from/smax())*9000);
+    const dur=Math.min(5200,1800+Math.abs(p-from/smax())*12500);
     const t0=performance.now();
     if(glideRAF)cancelAnimationFrame(glideRAF);
     (function stepG(){
