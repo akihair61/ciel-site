@@ -95,7 +95,8 @@
     max-width:min(720px,90vw);text-align:center;font-family:var(--sj);
     font-size:11.5px;line-height:2;color:rgba(243,241,236,.5);
     opacity:0;pointer-events:none;will-change:opacity;}
-  @media (max-width:760px){#hero-lead{bottom:9vh;max-width:86vw;font-size:10.5px;line-height:1.9;}}
+  @media (max-width:760px){#hero-lead{bottom:8vh;max-width:84vw;font-size:12.5px;
+    line-height:1.95;color:rgba(243,241,236,.62);}}
   /* treatment bottle standing beside the shampoo in the hero */
   #trtb{position:fixed;left:50vw;top:50vh;height:44vh;z-index:5;opacity:0;
     pointer-events:none;will-change:transform,opacity;
@@ -333,7 +334,9 @@ function render(){
   /* bottle: the rendered frame does the story; the page does the travel */
   const fi=Math.max(1,Math.min(NF,Math.round(kf(FRM,sp))));
   const hv=kf(BS,sp);
-  const hvh=mobile?Math.min(hv,50):hv;   /* phones: keep footage compact */
+  /* phones: keep footage compact; hero duo slightly smaller for the copy below */
+  const mcap=50-5*kf(TRB,sp);
+  const hvh=mobile?Math.min(hv,mcap):hv;
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
      shrink footage as the window gets narrower than ~16:10 */
@@ -358,7 +361,7 @@ function render(){
   trtb.style.opacity=tro;
   if(tro>0){
     const tb=Math.sin(t*0.6+1.4)*0.5;
-    trtb.style.height=((mobile?Math.min(53,50):53)*af)+'vh';
+    trtb.style.height=((mobile?mcap*0.95:53)*af)+'vh';
     trtb.style.transform=`translate(-50%,-50%) translate(${(mobile?13:8)}vw,0) translate(0,${(mobile?kf(MBY,sp):kf(BY,sp))+tb+1}vh)`;
   }
   const fim=frames[fi-1];
