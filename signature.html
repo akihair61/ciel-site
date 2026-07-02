@@ -6,15 +6,17 @@
 <title>Ciel — Signature Shampoo</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&family=Noto+Serif+Thai:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0a0a0d;--ink:#f3f1ec;--muted:#8d8c88;--accent:#c9b48a;
+  :root{--bg:#081722;--ink:#f3f1ec;--muted:#93a3ab;--accent:#c9b48a;
     --se:'Cormorant Garamond',Georgia,serif;--sj:'Noto Serif JP','Noto Serif Thai',serif;--ss:'Jost',Arial,sans-serif;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--ink);font-family:var(--ss);font-weight:300;
     -webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  /* deep-ocean stage: light filtering down from the surface, abyss below */
   #stage{position:fixed;inset:0;z-index:1;background:
-    radial-gradient(55% 60% at 55% 38%,rgba(150,165,182,.10),rgba(10,10,13,0) 62%),
-    radial-gradient(80% 70% at 50% 125%,rgba(30,32,40,.5),rgba(10,10,13,0) 72%),
-    linear-gradient(180deg,#0e1013,#08090b);}
+    radial-gradient(62% 55% at 50% 26%,rgba(52,124,148,.30),rgba(8,23,34,0) 66%),
+    radial-gradient(45% 40% at 50% 8%,rgba(120,190,210,.14),rgba(8,23,34,0) 70%),
+    radial-gradient(90% 70% at 50% 120%,rgba(2,8,14,.85),rgba(8,23,34,0) 72%),
+    linear-gradient(180deg,#0c2635,#040d15);}
   #grain{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");}
   #bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--accent);z-index:9;}
@@ -47,17 +49,19 @@
   /* ---- golden spotlight behind the bottles (hero & finale) ---- */
   #glow{position:fixed;left:50vw;top:50vh;width:min(96vw,820px);height:min(96vw,820px);
     z-index:2;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
-    background:radial-gradient(closest-side,rgba(201,180,138,.17),rgba(201,180,138,.05) 46%,transparent 72%);
+    background:radial-gradient(closest-side,rgba(150,205,222,.20),rgba(150,205,222,.06) 46%,transparent 72%);
     will-change:opacity,transform;}
   #glow::after{content:'';position:absolute;left:50%;top:74%;width:72%;height:7%;
     transform:translateX(-50%);border-radius:50%;
-    background:radial-gradient(closest-side,rgba(243,241,236,.10),transparent 70%);}
+    background:radial-gradient(closest-side,rgba(210,235,242,.12),transparent 70%);}
 
   /* ---- bottle: Kling locked-camera sequence (1344x896, alpha) ---- */
   #bw{position:fixed;left:50vw;top:50vh;width:1344px;height:896px;z-index:5;
     transform-origin:50% 50%;will-change:transform,opacity;pointer-events:none;}
   #cgb{position:absolute;inset:0;width:100%;height:100%;
-    user-select:none;-webkit-user-drag:none;}
+    user-select:none;-webkit-user-drag:none;
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 4%,#000 93%,transparent 100%);
+    mask-image:linear-gradient(180deg,transparent 0,#000 4%,#000 93%,transparent 100%);}
 
   /* ---- chapter stops: gentle scroll snap ---- */
   html{scroll-snap-type:y proximity;}
@@ -133,7 +137,7 @@
   @media (max-width:760px){
     .cap.l,.cap.r{left:50%;right:auto;top:auto;bottom:6vh;transform:translateX(-50%);
       text-align:center;width:88vw;max-width:88vw;
-      background:rgba(10,10,13,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      background:rgba(6,18,28,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
       border:1px solid rgba(243,241,236,.08);border-radius:20px;padding:22px 18px 26px;}
     #bot1{left:8vw;}#bot2{left:60vw;}
     #cap-hero{top:10vh;bottom:auto;width:auto;max-width:92vw;padding:0;border:none;
