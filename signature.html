@@ -413,7 +413,7 @@ try{
       glideRAF=u<1?requestAnimationFrame(stepG):null;
     })();
   };
-  const dbg=/debug/.test(location.search+location.hash)?(m=>{
+  const dbg=(('ontouchstart' in window)||/debug/.test(location.search+location.hash))?(m=>{
     let d=document.getElementById('__dbg');
     if(!d){d=document.createElement('div');d.id='__dbg';
       d.style.cssText='position:fixed;left:8px;top:70px;z-index:99;max-width:80vw;font:11px monospace;color:#0f0;background:rgba(0,0,0,.7);padding:6px;pointer-events:none;white-space:pre-wrap;';
