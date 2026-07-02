@@ -145,11 +145,13 @@
     .cap .sizes .row b{min-width:84px;font-size:11px;}
     #cap-cta .btn{margin-top:16px;padding:12px 30px;font-size:13px;}
   }
+  #intro{position:fixed;inset:0;z-index:9999;background:#0a0a0d;opacity:1;transition:opacity 1s ease;pointer-events:none;}#intro.gone{opacity:0;}
   #driver{height:1300vh;}
 </style>
 </head>
 <body>
 <script>window.addEventListener('error',e=>{window.__err=(e.message||'')+' @'+(e.lineno||'?')+':'+(e.colno||'?');});</script>
+<div id="intro"></div>
 <div id="stage"></div>
 <div id="ghost">Ciel.</div>
 
@@ -390,6 +392,9 @@ function render(){
   bar.style.width=(prog*100)+'%';
 }
 animate();
+/* fade the page in once the first bottle frame is on the canvas (avoids a blank flash) */
+(function(){var iv=document.getElementById('intro');if(!iv)return;var t0=Date.now();
+ (function chk(){if(window.__curFi||Date.now()-t0>1500){iv.classList.add('gone');setTimeout(function(){iv.style.display='none';},1100);}else setTimeout(chk,40);})();})();
 </script>
 </body>
 </html>
