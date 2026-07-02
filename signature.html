@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ciel — Signature Shampoo</title>
+<meta name="description" content="Ciel Signature — サロン品質のプレミアム・シャンプー＆トリートメント。艶・まとまり・指通り・香りにこだわった一本。Coming soon｜Ciel Japanese Hair Studio by Aki, Bangkok。">
+<link rel="canonical" href="https://www.ciel-japanesehairstudio-bkk.com/signature.html">
+<meta name="theme-color" content="#0a0a0d">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Ciel — Japanese Hair Studio by Aki"><meta property="og:title" content="Ciel Signature — Shampoo & Treatment"><meta property="og:description" content="サロン品質のプレミアム・ヘアケア。艶・まとまり・指通り・香り。Coming soon."><meta property="og:url" content="https://www.ciel-japanesehairstudio-bkk.com/signature.html"><meta property="og:image" content="https://www.ciel-japanesehairstudio-bkk.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Ciel Signature — Shampoo & Treatment"><meta name="twitter:image" content="https://www.ciel-japanesehairstudio-bkk.com/og.jpg">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C29T5SLWQH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-C29T5SLWQH');</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&family=Noto+Serif+Thai:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0d;--ink:#f3f1ec;--muted:#8d8c88;--accent:#c9b48a;
+    --se:'Cormorant Garamond',Georgia,serif;--sj:'Noto Serif JP','Noto Serif Thai',serif;--ss:'Jost',Arial,sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--ss);font-weight:300;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  #stage{position:fixed;inset:0;z-index:1;background:
+    radial-gradient(55% 60% at 55% 38%,rgba(150,165,182,.10),rgba(10,10,13,0) 62%),
+    radial-gradient(80% 70% at 50% 125%,rgba(30,32,40,.5),rgba(10,10,13,0) 72%),
+    linear-gradient(180deg,#0e1013,#08090b);}
+  #grain{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");}
+  #bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--accent);z-index:9;}
+  #chrome{position:fixed;inset:0;z-index:8;pointer-events:none;}
+  .top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;
+    justify-content:space-between;padding:24px 40px;}
+  .logo{font-family:var(--se);font-weight:500;letter-spacing:.30em;font-size:23px;}
+  nav{display:flex;gap:26px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;}
+  nav a{color:inherit;text-decoration:none;opacity:.82;pointer-events:auto;}
+  nav a.bk{border:1px solid currentColor;border-radius:999px;padding:7px 16px;font-family:var(--se);}
+  nav a.lng{opacity:.45;cursor:pointer;}
+  nav a.lng.on{opacity:1;color:var(--accent);}
+  /* English headlines look best in the serif display face */
+  body[data-lang=en] .cap h1,body[data-lang=en] .cap h2{
+    font-family:var(--se);letter-spacing:.02em;line-height:1.1;}
+  body[data-lang=en] .cap .words{letter-spacing:.3em;}
+  @media (max-width:720px){nav a:not(.bk){display:none;}.top{padding:18px 22px;}}
+  .scrollcue{position:absolute;left:7vw;bottom:30px;font-size:10px;letter-spacing:.32em;
+    color:var(--muted);display:flex;align-items:center;gap:10px;text-transform:uppercase;}
+  .scrollcue .ring{width:7px;height:7px;border:1px solid var(--accent);border-radius:50%;
+    animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8);}50%{opacity:1;transform:scale(1.3);}}
+
+  /* ---- ghost brand text (finale backdrop) ---- */
+  #ghost{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);z-index:2;
+    font-family:var(--se);font-weight:300;font-size:clamp(120px,24vw,360px);
+    color:rgba(243,241,236,.07);opacity:0;pointer-events:none;letter-spacing:.02em;}
+
+  /* ---- bottle: Kling locked-camera sequence (1344x896, alpha) ---- */
+  #bw{position:fixed;left:50vw;top:50vh;width:1344px;height:896px;z-index:5;
+    transform-origin:50% 50%;will-change:transform,opacity;pointer-events:none;}
+  #cgb{position:absolute;inset:0;width:100%;height:100%;
+    user-select:none;-webkit-user-drag:none;}
+
+  /* ---- chapter stops: gentle scroll snap ---- */
+  html{scroll-snap-type:y proximity;}
+  #driver{position:relative;}
+  .snap{position:absolute;left:0;width:1px;height:1px;scroll-snap-align:start;}
+
+  /* ---- free-flowing liquid layer ---- */
+  #liq{position:fixed;left:0;top:0;z-index:4;opacity:0;pointer-events:none;
+    will-change:transform,opacity;}
+  #liq .lq{position:absolute;width:52vh;left:0;top:0;transform:translate(-50%,-50%);}
+  #liq .lq.t{filter:blur(9px);opacity:.5;transform:translate(-58%,-46%) scale(1.1);}
+
+  /* ---- botanicals ---- */
+  .sprig{position:fixed;z-index:4;opacity:0;pointer-events:none;will-change:transform,opacity;}
+  #bot1{left:10vw;top:18vh;width:190px;}
+  #bot2{left:24vw;top:30vh;width:150px;}
+
+  /* ---- captions ---- */
+  .cap{position:fixed;top:50%;z-index:5;max-width:min(470px,84vw);opacity:0;will-change:opacity;}
+  .cap.l{left:7vw;transform:translateY(-50%);} .cap.r{right:7vw;transform:translateY(-50%);text-align:right;}
+  .cap.c{left:50%;top:auto;bottom:6vh;transform:translateX(-50%);text-align:center;}
+  .cap .kk{font-family:var(--se);font-size:12px;letter-spacing:.42em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:18px;}
+  .cap .num{position:absolute;z-index:-1;font-family:var(--se);font-weight:300;line-height:.8;
+    font-size:clamp(120px,17vw,230px);color:rgba(201,180,138,.09);top:-0.42em;pointer-events:none;}
+  .cap.l .num{left:-.06em;} .cap.r .num{right:-.06em;}
+  /* JP headlines use Noto Serif JP — Cormorant has no JP glyphs (fallback looked cheap) */
+  .cap h1{font-family:var(--sj);font-weight:300;line-height:1.5;letter-spacing:.1em;
+    font-size:clamp(28px,3.4vw,44px);}
+  .cap h2{font-family:var(--sj);font-weight:300;line-height:1.45;letter-spacing:.08em;
+    font-size:clamp(24px,2.9vw,42px);}
+  .cap .jp{font-family:var(--sj);font-size:clamp(14px,1.6vw,17px);letter-spacing:.1em;
+    color:rgba(243,241,236,.82);margin-top:18px;}
+  .cap .lead{font-family:var(--sj);font-size:clamp(13px,1.4vw,15px);line-height:2;
+    color:rgba(243,241,236,.66);margin-top:16px;}
+  .cap .btn{display:inline-block;margin-top:26px;font-family:var(--se);letter-spacing:.2em;
+    font-size:14px;background:var(--accent);color:#16130d;border:none;border-radius:999px;
+    padding:15px 40px;pointer-events:auto;cursor:pointer;}
+  /* hero: big duo as the star — one-line headline up top, editorial copy bottom-right */
+  #cap-hero{left:50%;right:auto;top:8vh;transform:translateX(-50%);text-align:center;
+    max-width:min(900px,94vw);}
+  #cap-hero h1{font-size:clamp(28px,3.4vw,50px);line-height:1.4;}
+  #cap-hero .jp{margin-top:12px;font-size:clamp(12px,1.3vw,14px);}
+  #hero-lead{position:fixed;left:50%;transform:translateX(-50%);bottom:5vh;z-index:6;
+    max-width:min(720px,90vw);text-align:center;font-family:var(--sj);
+    font-size:11.5px;line-height:2;color:rgba(243,241,236,.5);
+    opacity:0;pointer-events:none;will-change:opacity;}
+  @media (max-width:760px){#hero-lead{display:none;}}
+  /* treatment bottle standing beside the shampoo in the hero */
+  #trtb{position:fixed;left:50vw;top:50vh;height:44vh;z-index:5;opacity:0;
+    pointer-events:none;will-change:transform,opacity;
+    filter:drop-shadow(0 24px 36px rgba(0,0,0,.55));}
+  /* finale */
+  .cap .rule{width:46px;height:1px;background:var(--accent);opacity:.65;margin:20px auto 0;}
+  .cap .catch{font-family:var(--sj);font-size:clamp(15px,1.6vw,18px);letter-spacing:.14em;
+    color:rgba(243,241,236,.92);margin-top:18px;}
+  .cap .words{font-family:var(--sj);font-size:12.5px;letter-spacing:.5em;color:var(--accent);
+    margin-top:14px;text-indent:.5em;}
+  .cap .sizes{margin:24px auto 0;max-width:560px;
+    border-top:1px solid rgba(243,241,236,.14);border-bottom:1px solid rgba(243,241,236,.14);
+    padding:12px 4px;}
+  .cap .sizes .row{display:flex;align-items:baseline;justify-content:center;gap:26px;
+    font-size:11.5px;letter-spacing:.1em;color:rgba(243,241,236,.78);padding:6px 0;}
+  .cap .sizes .row b{font-family:var(--se);font-weight:400;letter-spacing:.3em;font-size:12px;
+    color:var(--accent);min-width:110px;text-align:left;}
+  .cap .sizes .row i{font-style:normal;color:rgba(243,241,236,.42);font-size:9.5px;
+    letter-spacing:.18em;text-transform:uppercase;margin-left:5px;}
+  #cap-cta h2{font-family:var(--se);font-size:clamp(30px,4.4vw,58px);line-height:1;letter-spacing:.02em;}
+  #cap-cta .btn{margin-top:22px;padding:13px 36px;}
+  @media (max-width:760px){
+    .cap.l,.cap.r{left:50%;right:auto;top:auto;bottom:6vh;transform:translateX(-50%);
+      text-align:center;width:88vw;max-width:88vw;
+      background:rgba(10,10,13,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(243,241,236,.08);border-radius:20px;padding:22px 18px 26px;}
+    #bot1{left:8vw;}#bot2{left:60vw;}
+    #cap-hero{top:6vh;bottom:auto;width:auto;max-width:92vw;padding:0;border:none;
+      background:none;backdrop-filter:none;-webkit-backdrop-filter:none;}
+    #cap-hero h1{font-size:24px;}
+    .cap .num{font-size:96px;top:-.3em;}
+    #cap-cta h2{font-size:28px;}
+    .cap .catch{font-size:14px;}
+    .cap .words{font-size:11px;letter-spacing:.3em;}
+    .cap .sizes{padding:10px 2px;}
+    .cap .sizes .row{gap:10px;font-size:10.5px;flex-wrap:wrap;}
+    .cap .sizes .row b{min-width:84px;font-size:11px;}
+    #cap-cta .btn{margin-top:16px;padding:12px 30px;font-size:13px;}
+  }
+  #driver{height:1300vh;}
+</style>
+</head>
+<body>
+<script>window.addEventListener('error',e=>{window.__err=(e.message||'')+' @'+(e.lineno||'?')+':'+(e.colno||'?');});</script>
+<div id="stage"></div>
+<div id="ghost">Ciel.</div>
+
+<div id="bw">
+  <canvas id="cgb" width="1344" height="896"></canvas>
+</div>
+<img id="trtb" src="assets/trt_bottle.webp" alt="">
+
+
+<svg id="bot1" class="sprig" viewBox="0 0 200 220" fill="none" stroke="#c9b48a" stroke-width="2">
+  <path d="M30 200 C55 150 95 110 150 78" stroke-opacity=".9"/>
+  <circle cx="152" cy="64" r="26" stroke-opacity=".95"/>
+  <circle cx="152" cy="64" r="26" stroke-opacity=".35" transform="translate(4 3)"/>
+  <path d="M148 40 q6 -12 16 -14" stroke-opacity=".8"/>
+  <path d="M92 122 q-30 -12 -36 -40 q30 2 44 30 q-4 6 -8 10z" stroke-opacity=".85"/>
+  <path d="M118 100 q4 -32 30 -44 q6 30 -20 48 q-6 -1 -10 -4z" stroke-opacity=".85"/>
+  <path d="M60 160 q-22 -6 -30 -26 q22 0 34 18" stroke-opacity=".7"/>
+</svg>
+<svg id="bot2" class="sprig" viewBox="0 0 160 220" fill="none" stroke="#c9b48a" stroke-width="2">
+  <path d="M80 210 C78 160 76 110 84 60" stroke-opacity=".9"/>
+  <path d="M82 120 q-26 -8 -34 -32 q26 -2 40 22 q-2 6 -6 10z" stroke-opacity=".85"/>
+  <path d="M84 96 q22 -14 24 -40 q-26 4 -32 32 q4 5 8 8z" stroke-opacity=".85"/>
+  <path d="M80 156 q-20 -4 -28 -22 q20 -2 32 14" stroke-opacity=".7"/>
+  <circle cx="86" cy="46" r="9" stroke-opacity=".95"/>
+  <circle cx="74" cy="38" r="6" stroke-opacity=".8"/>
+  <circle cx="96" cy="34" r="6" stroke-opacity=".8"/>
+  <path d="M85 22 q1 -8 6 -12" stroke-opacity=".7"/>
+</svg>
+
+<div id="bar"></div>
+<div id="chrome">
+  <div class="top"><a class="logo" href="index.html" style="text-decoration:none;color:inherit;pointer-events:auto" aria-label="Ciel ホームへ">Ciel</a>
+    <nav><a class="lng on" data-l="ja">JA</a><a class="lng" data-l="en">EN</a><a class="lng" data-l="th">TH</a><a class="bk" href="https://instagram.com/ciel_japanese_hair_bangkok" target="_blank" rel="noopener">Notify me</a></nav></div>
+  <div class="scrollcue"><span class="ring"></span>Scroll</div>
+</div>
+
+<div class="cap l" id="cap-hero"><div class="kk">Ciel Signature</div><h1>答えは、髪が教えてくれた。</h1><div class="jp">数え切れないほどの髪と向き合う中で、私たちがたどり着いた答え。</div></div>
+<div id="hero-lead">本当に必要だと感じた美容成分だけを厳選し、仕上がり、使い心地、香り、そのすべてにこだわりました。毎日使うものだからこそ、どんな髪質にも心地よく寄り添えるように。サロンで培った経験を、一本に込めたプレミアムヘアケアです。</div>
+<div class="cap r" id="cap-formula"><div class="num">01</div><div class="kk">Shampoo</div><h2>洗うたび、素髪は<br>もっと美しく。</h2><div class="lead">毎日のシャンプーが、髪を洗う時間から、髪を整える時間へ。きめ細かな泡が髪と頭皮をやさしく包み込み、軽やかでなめらかな指通りへ導きます。</div></div>
+<div class="cap l" id="cap-essence"><div class="num">02</div><div class="kk">The Texture</div><h2>美しい髪は、<br>毎日の習慣から。</h2><div class="lead">心地よい洗い上がりと、毎日使いたくなる使用感。加水分解ケラチンと18-MEA類似成分を配合し、自然な艶とまとまりのある仕上がりを実現します。</div></div>
+<div class="cap l" id="cap-treatment"><div class="num">03</div><div class="kk">Treatment</div><h2>髪に、うるおい<br>という贅沢を。</h2><div class="lead">なめらかに溶け込む濃密なテクスチャーが、毛先までやさしく包み込みます。加水分解ケラチンとセラミドを配合し、ダメージを補修しながら、しなやかで艶のある髪へ。重さではなく、美しさを残すトリートメントです。</div></div>
+<div class="cap r" id="cap-scent"><div class="num">04</div><div class="kk">The Scent</div><h2>香りまで、<br>美しく。</h2><div class="lead">みずみずしいベルガモットから始まり、ホワイトティーの透明感へ。最後はホワイトムスクとサンダルウッドが重なり、上品で心地よい余韻を残します。香水のように、時間とともに表情を変える、CIELだけのシグネチャーフレグランス。</div></div>
+<div class="cap c" id="cap-cta"><h2>Coming soon.</h2><div class="rule"></div><div class="catch">毎日のヘアケアを、少し特別な時間へ。</div><div class="words">艶 · まとまり · 指通り · 香り</div><div class="jp">サロン品質を、あなたの日常へ。</div><div class="sizes">
+  <div class="row"><b>SHAMPOO</b><span>100mL<i>Travel</i></span><span>300mL<i>Home</i></span><span>1000mL<i>Refill</i></span></div>
+  <div class="row"><b>TREATMENT</b><span>100g<i>Travel</i></span><span>300g<i>Home</i></span><span>1000g<i>Refill</i></span></div>
+</div><a class="btn" href="https://instagram.com/ciel_japanese_hair_bangkok" target="_blank" rel="noopener" style="text-decoration:none">JOIN THE WAITLIST</a></div>
+
+<div id="driver">
+  <!-- snap points = chapter stop centres: p*1200vh (scrollable range) -->
+  <div class="snap" style="top:0"></div>
+  <div class="snap" style="top:198vh"></div>   <!-- formula   p=.165 -->
+  <div class="snap" style="top:474vh"></div>   <!-- essence   p=.395 -->
+  <div class="snap" style="top:648vh"></div>   <!-- treatment p=.54  -->
+  <div class="snap" style="top:906vh"></div>   <!-- scent     p=.755 -->
+  <div class="snap" style="top:1200vh"></div>  <!-- finale    p=1    -->
+</div>
+
+<script>
+function kf(t,p){let a=t[0],b=t[t.length-1];
+  for(let i=0;i<t.length-1;i++){if(p>=t[i][0]&&p<=t[i+1][0]){a=t[i];b=t[i+1];break;}}
+  const sp=(b[0]-a[0])||1,u=Math.min(1,Math.max(0,(p-a[0])/sp)),e=u*u*(3-2*u);
+  return a[1]+(b[1]-a[1])*e;}
+
+/* ---- choreography (progress 0..1) — ORYZO-style floating arcs ---- */
+/* chapters with dwell plateaus — every caption gets a full stop:
+   hero 0-.06 · formula .13-.20 · essence .36-.43 · treatment .53-.575 ·
+   scent .72-.79 · finale .945-1  (travel segments in between) */
+const BX =[[0,44],[0.06,44],[0.13,26],[0.20,26],[0.24,34],[0.30,72],[0.36,68],[0.575,67],[0.68,24],[0.72,22],[0.79,22],[0.87,44],[0.945,50],[1,50]];
+const BY =[[0,8],[0.06,8],[0.13,7],[0.20,7],[0.24,2],[0.30,12],[0.36,8],[0.43,8],[0.50,0],[0.575,0],[0.72,-2],[0.79,-2],[0.87,-8],[0.945,-20],[1,-20]];
+const BS =[[0,56],[0.06,56],[0.13,58],[0.20,58],[0.30,48],[0.36,52],[0.43,52],[0.50,56],[0.53,58],[0.575,58],[0.68,58],[0.72,57],[0.79,57],[0.87,54],[0.945,42],[1,42]];
+const TRB=[[0,1],[0.07,1],[0.11,0]];   /* hero treatment bottle (beside shampoo) */
+const BOP=[[0,1],[1,1]];
+const BR =[[0,0],[0.05,0],[0.10,-8],[0.13,-3],[0.20,-3],[0.26,9],[0.32,3],[0.36,0],[0.575,0],[0.65,-2],[0.72,0],[1,0]];
+const BOT=[[0,0],[1,0]];   /* gold SVG sprigs retired — scent is real footage now */
+const BOTY=[[0,0],[1,0]];
+const GHO=[[0,0],[1,0]];   /* ghost text retired — finale is the duo footage */
+const HERO_OP=[[0,1],[0.05,1],[0.10,0]];
+const FORM_OP=[[0.10,0],[0.14,1],[0.19,1],[0.24,0]];
+const ESS_OP =[[0.31,0],[0.37,1],[0.42,1],[0.47,0]];
+const TRT_OP =[[0.47,0],[0.51,1],[0.57,1],[0.62,0]];
+const SCN_OP =[[0.68,0],[0.73,1],[0.785,1],[0.83,0]];
+const CTA_OP =[[0.93,0],[0.965,1],[1,1]];
+
+const $=id=>document.getElementById(id);
+const bw=$('bw'),cgb=$('cgb'),cgx=cgb.getContext('2d'),trtb=$('trtb'),
+  ghost=$('ghost'),bot1=$('bot1'),bot2=$('bot2'),bar=$('bar');
+
+/* preload frames: 1-121 closed→open→pour→gel · 122-182 morph→treatment ·
+   183-303 cream ribbon→bergamot & white-tea assembly · 304-424 botanicals→duo bottles */
+const NF=424,frames=[];
+for(let i=1;i<=NF;i++){const im=new Image();
+  im.src='seq_full/f_'+String(i).padStart(3,'0')+'.webp';frames[i-1]=im;}
+/* warm-up: pre-decode every frame once at idle so scrubbing never hits a decode stall */
+addEventListener('load',()=>{
+  const oc=document.createElement('canvas');oc.width=64;oc.height=43;
+  const octx=oc.getContext('2d');let wi=0;
+  (function warm(){
+    const t0=performance.now();
+    while(wi<NF&&performance.now()-t0<8){
+      const im=frames[wi++];
+      if(im.complete&&im.naturalWidth)octx.drawImage(im,0,0,64,43);}
+    if(wi<NF)setTimeout(warm,60);
+  })();
+});
+/* frame map: 6=closed · 42-55=unscrew · 55-70=pour · 70-118=gel · 122-182=treatment · 183-303=scent */
+const FRM=[[0,6],[0.20,6],[0.24,42],[0.27,55],[0.30,70],[0.36,115],[0.43,115],[0.50,176],[0.53,181],[0.575,181],[0.72,303],[0.79,304],[0.945,424],[1,424]];
+/* measured on frame 6: bottle fills 80.5% of frame height, centre 53% down */
+const OCC=0.805, BCF=0.53;
+const caps={hero:$('cap-hero'),formula:$('cap-formula'),essence:$('cap-essence'),
+  treatment:$('cap-treatment'),scent:$('cap-scent'),cta:$('cap-cta')};
+
+let prog=0,sp=0,t=0;
+let __lock=false;
+function step(){
+  if(__lock){render();return;}
+  const max=document.documentElement.scrollHeight-innerHeight;
+  prog=max>0?Math.min(1,Math.max(0,scrollY/max)):0;
+  sp+=(prog-sp)*0.12;
+  render();
+}
+function animate(){requestAnimationFrame(animate);t+=0.016;step();}
+window.__set=p=>{__lock=true;sp=p;prog=p;render();};   /* debug: pin a progress value */
+window.__unlock=()=>{__lock=false;};
+
+/* ---- i18n: JA / EN / TH ---- */
+const I18N={
+ja:{heroH1:'答えは、髪が教えてくれた。',
+  heroJp:'数え切れないほどの髪と向き合う中で、私たちがたどり着いた答え。',
+  heroLead:'本当に必要だと感じた美容成分だけを厳選し、仕上がり、使い心地、香り、そのすべてにこだわりました。毎日使うものだからこそ、どんな髪質にも心地よく寄り添えるように。サロンで培った経験を、一本に込めたプレミアムヘアケアです。',
+  fH2:'洗うたび、素髪は<br>もっと美しく。',
+  fLead:'毎日のシャンプーが、髪を洗う時間から、髪を整える時間へ。きめ細かな泡が髪と頭皮をやさしく包み込み、軽やかでなめらかな指通りへ導きます。',
+  eH2:'美しい髪は、<br>毎日の習慣から。',
+  eLead:'心地よい洗い上がりと、毎日使いたくなる使用感。加水分解ケラチンと18-MEA類似成分を配合し、自然な艶とまとまりのある仕上がりを実現します。',
+  tH2:'髪に、うるおい<br>という贅沢を。',
+  tLead:'なめらかに溶け込む濃密なテクスチャーが、毛先までやさしく包み込みます。加水分解ケラチンとセラミドを配合し、ダメージを補修しながら、しなやかで艶のある髪へ。重さではなく、美しさを残すトリートメントです。',
+  sH2:'香りまで、<br>美しく。',
+  sLead:'みずみずしいベルガモットから始まり、ホワイトティーの透明感へ。最後はホワイトムスクとサンダルウッドが重なり、上品で心地よい余韻を残します。香水のように、時間とともに表情を変える、CIELだけのシグネチャーフレグランス。',
+  ctaCatch:'毎日のヘアケアを、少し特別な時間へ。',
+  ctaWords:'艶 · まとまり · 指通り · 香り',
+  ctaJp:'サロン品質を、あなたの日常へ。'},
+en:{heroH1:'Crafted in Japan.',
+  heroJp:'Inspired by years of salon experience.',
+  heroLead:'Great hair doesn\'t come from a single ingredient. It comes from experience, balance, and attention to every detail. Developed through years of working with different hair types and textures, CIEL Signature was created to deliver salon-quality results at home. Carefully selected ingredients, beautiful results — every single day.',
+  fH2:'A clean start for<br>beautiful hair.',
+  fLead:'This amino acid-based shampoo gently cleanses the hair and scalp while helping maintain essential moisture.',
+  eH2:'Smooth, naturally<br>shiny.',
+  eLead:'Formulated with Hydrolyzed Keratin and an 18-MEA complex, it leaves hair smooth, naturally shiny, and easy to manage. Lightweight, refreshing, and designed for everyday use.',
+  tH2:'Deep repair.<br>Weightless finish.',
+  tLead:'A rich treatment that melts into the hair, delivering moisture and softness without weighing it down. Infused with Hydrolyzed Keratin and Ceramide, it helps repair damaged hair while leaving it silky, smooth, and beautifully manageable. Healthy-looking hair starts here.',
+  sH2:'A fragrance<br>you\'ll remember.',
+  sLead:'Fresh Bergamot opens with a clean citrus note, followed by the elegant softness of White Tea. Finally, White Musk and Sandalwood leave a warm, refined finish that stays with you throughout the day. A fragrance designed to feel as luxurious as your hair looks.',
+  ctaCatch:'Japanese salon quality. Made for every day.',
+  ctaWords:'Shine · Smoothness · Softness · Fragrance',
+  ctaJp:'Experience beautiful hair, every day.'},
+th:{heroH1:'คุณภาพที่เกิดจากประสบการณ์',
+  heroJp:'เส้นผมแต่ละคนแตกต่างกัน และนั่นคือเหตุผลที่ CIEL Signature ถือกำเนิดขึ้น',
+  heroLead:'จากประสบการณ์ในการดูแลเส้นผมหลากหลายประเภท เราคัดสรรเฉพาะส่วนผสมที่จำเป็นอย่างพิถีพิถัน เพื่อสร้างผลิตภัณฑ์ที่ให้ทั้งผลลัพธ์ ความรู้สึกขณะใช้ และกลิ่นหอมในขวดเดียว ผลิตในประเทศญี่ปุ่น ด้วยมาตรฐานระดับซาลอนญี่ปุ่น เพื่อการดูแลเส้นผมในทุกวัน',
+  fH2:'เริ่มต้นความสวย<br>ตั้งแต่การสระ',
+  fLead:'แชมพูสูตรกรดอะมิโนที่ช่วยทำความสะอาดเส้นผมและหนังศีรษะอย่างอ่อนโยน พร้อมคงความชุ่มชื้นตามธรรมชาติของเส้นผม',
+  eH2:'นุ่มลื่น เงางาม<br>จัดทรงง่าย',
+  eLead:'ผสาน Hydrolyzed Keratin และ 18-MEA Complex เพื่อให้เส้นผมนุ่มลื่น เงางาม และจัดทรงง่าย อ่อนโยน เหมาะสำหรับการใช้ทุกวัน',
+  tH2:'การบำรุง<br>ที่สัมผัสได้',
+  tLead:'เนื้อทรีตเมนต์เข้มข้นที่ซึมสู่เส้นผมอย่างนุ่มนวล ช่วยเติมความชุ่มชื้นโดยไม่ทำให้ผมหนัก Hydrolyzed Keratin และ Ceramide ช่วยฟื้นบำรุงผมที่แห้งเสีย ให้เส้นผมนุ่ม สุขภาพดี และมีน้ำหนักอย่างเป็นธรรมชาติ',
+  sH2:'กลิ่นหอม...<br>ที่น่าจดจำ',
+  sLead:'เริ่มต้นด้วยความสดชื่นของ Bergamot ตามด้วยความละมุนของ White Tea ก่อนจบด้วย White Musk และ Sandalwood ที่มอบกลิ่นหอมอบอุ่นและหรูหรา ติดทนนานตลอดวัน กลิ่นหอมที่ออกแบบมาให้งดงามไม่ต่างจากเส้นผมของคุณ',
+  ctaCatch:'คุณภาพระดับซาลอนญี่ปุ่น สำหรับทุกวัน',
+  ctaWords:'ผมเงางาม · นุ่มลื่น · จัดทรงง่าย · หอมอย่างมีระดับ',
+  ctaJp:'ผลิตในประเทศญี่ปุ่น ด้วยส่วนผสมที่คัดสรรอย่างพิถีพิถัน เพื่อให้ทุกวันเป็นวันที่เส้นผมของคุณสวยที่สุด'}};
+const Q=s=>document.querySelector(s);
+function setLang(l){
+  const d=I18N[l];if(!d)return;
+  document.body.dataset.lang=l;
+  Q('#cap-hero h1').innerHTML=d.heroH1;
+  Q('#cap-hero .jp').innerHTML=d.heroJp;
+  Q('#hero-lead').innerHTML=d.heroLead;
+  Q('#cap-formula h2').innerHTML=d.fH2;   Q('#cap-formula .lead').innerHTML=d.fLead;
+  Q('#cap-essence h2').innerHTML=d.eH2;   Q('#cap-essence .lead').innerHTML=d.eLead;
+  Q('#cap-treatment h2').innerHTML=d.tH2; Q('#cap-treatment .lead').innerHTML=d.tLead;
+  Q('#cap-scent h2').innerHTML=d.sH2;     Q('#cap-scent .lead').innerHTML=d.sLead;
+  Q('#cap-cta .catch').innerHTML=d.ctaCatch;
+  Q('#cap-cta .words').innerHTML=d.ctaWords;
+  Q('#cap-cta .jp').innerHTML=d.ctaJp;
+  document.querySelectorAll('nav a.lng').forEach(a=>a.classList.toggle('on',a.dataset.l===l));
+}
+document.querySelectorAll('nav a.lng').forEach(a=>a.addEventListener('click',()=>setLang(a.dataset.l)));
+function render(){
+  const mobile=innerWidth<=760;
+  const VH=innerHeight;
+
+  /* bottle: the rendered frame does the story; the page does the travel */
+  const fi=Math.max(1,Math.min(NF,Math.round(kf(FRM,sp))));
+  const hv=kf(BS,sp);
+  const hvh=mobile?Math.min(hv,46):hv;   /* phones: keep footage compact */
+  const frameH=hvh/OCC;
+  /* narrow windows: footage height is vh-based but layout is vw-based —
+     shrink footage as the window gets narrower than ~16:10 */
+  const af=Math.min(1,Math.max(0.70,(innerWidth/VH)/1.6));
+  const s=(frameH/100*VH)/896*af;
+  /* mobile hero: shampoo slides left so the treatment bottle fits beside it */
+  const x=mobile?(50-11*kf(TRB,sp)):kf(BX,sp), y=50+kf(BY,sp);
+  const bob=Math.sin(t*0.6)*0.5;
+  const yAdj=(0.5-BCF)*frameH;               /* align bottle centre, not frame */
+  const rot=kf(BR,sp)+Math.sin(t*0.5)*1.2;   /* ORYZO drift: lean into the arc */
+  bw.style.transform=`translate(-50%,-50%) translate(${x}vw,0) translate(-50vw,0) translate(0,${(y-50)+bob+yAdj}vh) rotate(${rot}deg) scale(${s})`;
+  bw.style.left='50vw';
+  bw.style.opacity=kf(BOP,sp);
+
+  /* hero: treatment bottle standing to the right of the shampoo */
+  const tro=kf(TRB,sp);
+  trtb.style.opacity=tro;
+  if(tro>0){
+    const tb=Math.sin(t*0.6+1.4)*0.5;
+    trtb.style.height=((mobile?Math.min(53,46):53)*af)+'vh';
+    trtb.style.transform=`translate(-50%,-50%) translate(${(mobile?13:8)}vw,0) translate(0,${kf(BY,sp)+tb+1}vh)`;
+  }
+  const fim=frames[fi-1];
+  if(fim&&fim.complete&&fim.naturalWidth&&fi!==window.__curFi){
+    cgx.clearRect(0,0,1344,896);cgx.drawImage(fim,0,0,1344,896);window.__curFi=fi;}
+
+  /* botanicals flutter down */
+  const B=kf(BOT,sp), by=kf(BOTY,sp);
+  const sway1=Math.sin(t*0.8)*4, sway2=Math.cos(t*0.7)*5;
+  bot1.style.opacity=B;
+  bot1.style.transform=`translate(${sway1}px,${by}vh) rotate(${-8+Math.sin(t*0.5)*6}deg)`;
+  bot2.style.opacity=B*0.9;
+  bot2.style.transform=`translate(${sway2}px,${by*1.25+4}vh) rotate(${10+Math.cos(t*0.6)*7}deg)`;
+
+  /* finale ghost text */
+  ghost.style.opacity=kf(GHO,sp)*0.9;
+
+  caps.hero.style.opacity=kf(HERO_OP,sp);
+  $('hero-lead').style.opacity=kf(HERO_OP,sp);
+  caps.formula.style.opacity=kf(FORM_OP,sp);
+  caps.essence.style.opacity=kf(ESS_OP,sp);
+  caps.treatment.style.opacity=kf(TRT_OP,sp);
+  caps.scent.style.opacity=kf(SCN_OP,sp);
+  caps.cta.style.opacity=kf(CTA_OP,sp);
+  bar.style.width=(prog*100)+'%';
+}
+animate();
+</script>
+</body>
+</html>
