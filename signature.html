@@ -413,10 +413,21 @@ try{
       glideRAF=u<1?requestAnimationFrame(stepG):null;
     })();
   };
-  if(matchMedia('(pointer:coarse)').matches){
+  const dbg=/debug/.test(location.search+location.hash)?(m=>{
+    let d=document.getElementById('__dbg');
+    if(!d){d=document.createElement('div');d.id='__dbg';
+      d.style.cssText='position:fixed;left:8px;top:70px;z-index:99;max-width:80vw;font:11px monospace;color:#0f0;background:rgba(0,0,0,.7);padding:6px;pointer-events:none;white-space:pre-wrap;';
+      document.body.appendChild(d);}
+    d.textContent=(d.textContent+'\n'+m).split('\n').slice(-8).join('\n');
+  }):(()=>{});
+  dbg('dbg on · coarse:'+matchMedia('(pointer:coarse)').matches+' touch:'+('ontouchstart' in window)+' err:'+(window.__err||'-'));
+  if(('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches||location.hash==='#touch'){
+    /* swipe-glide replaces CSS snap on touch devices — iOS snap fights scripted scrolls */
+    document.documentElement.style.scrollSnapType='none';
     addEventListener('touchstart',function(e){
       if(glideRAF){cancelAnimationFrame(glideRAF);glideRAF=null;}
       touchY=e.touches[0].clientY;touchX=e.touches[0].clientX;
+      dbg('start '+Math.round(touchY));
     },{passive:true});
     addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
     addEventListener('touchend',function(e){
@@ -424,15 +435,18 @@ try{
       const dy=touchY-e.changedTouches[0].clientY;
       const dx=touchX-e.changedTouches[0].clientX;
       touchY=null;
+      dbg('end dy='+Math.round(dy));
       if(Math.abs(dy)<24||Math.abs(dy)<Math.abs(dx)||glideRAF)return;
       const cur=scrollY/smax();
       let target;
       if(dy>0){target=STOPS.find(s=>s>cur+0.02);if(target===undefined)target=1;}
       else{const prev=STOPS.filter(s=>s<cur-0.02);target=prev.length?prev[prev.length-1]:0;}
+      dbg('glide '+cur.toFixed(2)+' -> '+target);
       window.glideTo(target);
     },{passive:true});
+    dbg('listeners ready');
   }
-}catch(e){/* swipe glide is optional — never block the film */}
+}catch(e){try{window.__err=(window.__err||'')+' swipe:'+e.message;}catch(_){}}
 </script>
 </body>
 </html>
