@@ -403,7 +403,7 @@ try{
   window.glideTo=function(p){
     const from=scrollY,to=p*smax();
     if(Math.abs(to-from)<2)return;
-    const dur=Math.min(2200,700+Math.abs(p-from/smax())*5200);
+    const dur=Math.min(3200,1100+Math.abs(p-from/smax())*7800);
     const t0=performance.now();
     if(glideRAF)cancelAnimationFrame(glideRAF);
     (function stepG(){
