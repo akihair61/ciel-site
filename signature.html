@@ -105,12 +105,15 @@
     max-width:min(900px,94vw);}
   #cap-hero h1{font-size:clamp(28px,3.4vw,50px);line-height:1.4;}
   #cap-hero .jp{margin-top:12px;font-size:clamp(12px,1.3vw,14px);}
-  #hero-lead{position:fixed;left:50%;transform:translateX(-50%);bottom:5vh;z-index:6;
-    max-width:min(720px,90vw);text-align:center;font-family:var(--sj);
-    font-size:11.5px;line-height:2;color:rgba(243,241,236,.5);
+  #hero-lead{position:fixed;left:50%;transform:translateX(-50%);bottom:4vh;z-index:6;
+    max-width:min(760px,90vw);text-align:center;font-family:var(--sj);
+    font-size:13.5px;line-height:1.95;letter-spacing:.05em;color:rgba(243,241,236,.78);
     opacity:0;pointer-events:none;will-change:opacity;}
-  @media (max-width:760px){#hero-lead{bottom:8vh;max-width:84vw;font-size:12.5px;
-    line-height:1.95;color:rgba(243,241,236,.62);}}
+  #hero-lead::before{content:'';display:block;width:44px;height:1px;margin:0 auto 16px;
+    background:var(--accent);opacity:.75;}
+  @media (max-width:760px){#hero-lead{bottom:6vh;max-width:86vw;font-size:13px;
+    line-height:2;}
+    #hero-lead br{display:none;}}
   /* treatment bottle standing beside the shampoo in the hero */
   #trtb{position:fixed;left:50vw;top:50vh;height:44vh;z-index:5;opacity:0;
     pointer-events:none;will-change:transform,opacity;
@@ -198,7 +201,7 @@
 </div>
 
 <div class="cap l" id="cap-hero"><div class="kk">Ciel Signature</div><h1>答えは、髪が教えてくれた。</h1><div class="jp">数え切れないほどの髪と向き合う中で、私たちがたどり着いた答え。</div></div>
-<div id="hero-lead">本当に必要だと感じた美容成分だけを厳選し、仕上がり、使い心地、香り、そのすべてにこだわりました。毎日使うものだからこそ、どんな髪質にも心地よく寄り添えるように。サロンで培った経験を、一本に込めたプレミアムヘアケアです。</div>
+<div id="hero-lead"><span class="hl-body">本当に必要だと感じた美容成分だけを厳選し、<br>仕上がり、使い心地、香り、そのすべてにこだわりました。<br class="pcbr">毎日使うものだからこそ、どんな髪質にも心地よく寄り添えるように。<br>サロンで培った経験を、一本に込めたプレミアムヘアケアです。</span></div>
 <div class="cap r" id="cap-formula"><div class="num">01</div><div class="kk">Shampoo</div><h2>洗うたび、素髪は<br>もっと美しく。</h2><div class="lead">毎日のシャンプーが、髪を洗う時間から、髪を整える時間へ。きめ細かな泡が髪と頭皮をやさしく包み込み、軽やかでなめらかな指通りへ導きます。</div></div>
 <div class="cap l" id="cap-essence"><div class="num">02</div><div class="kk">The Texture</div><h2>美しい髪は、<br>毎日の習慣から。</h2><div class="lead">心地よい洗い上がりと、毎日使いたくなる使用感。加水分解ケラチンと18-MEA類似成分を配合し、自然な艶とまとまりのある仕上がりを実現します。</div></div>
 <div class="cap l" id="cap-treatment"><div class="num">03</div><div class="kk">Treatment</div><h2>髪に、うるおい<br>という贅沢を。</h2><div class="lead">なめらかに溶け込む濃密なテクスチャーが、毛先までやさしく包み込みます。加水分解ケラチンとセラミドを配合し、ダメージを補修しながら、しなやかで艶のある髪へ。重さではなく、美しさを残すトリートメントです。</div></div>
@@ -229,8 +232,8 @@ function kf(t,p){let a=t[0],b=t[t.length-1];
    hero 0-.06 · formula .13-.20 · essence .36-.43 · treatment .53-.575 ·
    scent .72-.79 · finale .945-1  (travel segments in between) */
 const BX =[[0,44],[0.06,44],[0.13,26],[0.20,26],[0.24,34],[0.30,72],[0.36,68],[0.575,67],[0.68,24],[0.72,22],[0.79,22],[0.87,44],[0.945,50],[1,50]];
-const BY =[[0,8],[0.06,8],[0.13,7],[0.20,7],[0.24,2],[0.30,12],[0.36,8],[0.43,8],[0.50,0],[0.575,0],[0.72,-2],[0.79,-2],[0.87,-8],[0.945,-20],[1,-20]];
-const BS =[[0,56],[0.06,56],[0.13,58],[0.20,58],[0.30,48],[0.36,52],[0.43,52],[0.50,56],[0.53,58],[0.575,58],[0.68,58],[0.72,57],[0.79,57],[0.87,54],[0.945,42],[1,42]];
+const BY =[[0,4],[0.06,4],[0.13,7],[0.20,7],[0.24,2],[0.30,12],[0.36,8],[0.43,8],[0.50,0],[0.575,0],[0.72,-2],[0.79,-2],[0.87,-8],[0.945,-20],[1,-20]];
+const BS =[[0,48],[0.06,48],[0.13,58],[0.20,58],[0.30,48],[0.36,52],[0.43,52],[0.50,56],[0.53,58],[0.575,58],[0.68,58],[0.72,57],[0.79,57],[0.87,54],[0.945,42],[1,42]];
 const TRB=[[0,1],[0.07,1],[0.11,0]];   /* hero treatment bottle (beside shampoo) */
 const BOP=[[0,1],[1,1]];
 const BR =[[0,0],[0.05,0],[0.10,-8],[0.13,-3],[0.20,-3],[0.26,9],[0.32,3],[0.36,0],[0.575,0],[0.65,-2],[0.72,0],[1,0]];
@@ -359,7 +362,7 @@ function render(){
   const hv=kf(BS,sp);
   /* phones: keep footage compact; hero/finale duo shrink hard so the copy
      above and below never touches the bottles, even on short screens */
-  const mcap=50-7*kf(TRB,sp)-13*kf(CTA_OP,sp);
+  const mcap=50-9*kf(TRB,sp)-13*kf(CTA_OP,sp);
   const hvh=mobile?Math.min(hv,mcap):hv;
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
@@ -380,13 +383,15 @@ function render(){
   bw.style.left='50vw';
   bw.style.opacity=kf(BOP,sp);
 
-  /* hero: treatment bottle standing to the right of the shampoo */
+  /* hero: treatment bottle standing to the right of the shampoo —
+     exactly the same height, centre and float as the film bottle */
   const tro=kf(TRB,sp);
   trtb.style.opacity=tro;
   if(tro>0){
-    const tb=Math.sin(t*0.6+1.4)*0.5;
-    trtb.style.height=((mobile?mcap*0.95:53)*af)+'vh';
-    trtb.style.transform=`translate(-50%,-50%) translate(${(mobile?13:8)}vw,0) translate(0,${(mobile?kf(MBY,sp):kf(BY,sp))+tb+1}vh)`;
+    trtb.style.height=(hvh*af*1.044)+'vh';
+    /* -5.5%: the film bottle's bbox includes its floor reflection, so its glass
+       base sits slightly above centre — shift the still image up to match */
+    trtb.style.transform=`translate(-50%,-50%) translate(${(mobile?13:8)}vw,0) translate(0,${(mobile?kf(MBY,sp):kf(BY,sp))+Math.sin(t*0.6)*0.5-hvh*af*0.0265}vh)`;
   }
   const fim=frames[fi-1];
   if(fim&&fim.complete&&fim.naturalWidth&&fi!==window.__curFi){
