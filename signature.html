@@ -359,7 +359,7 @@ function render(){
   const hv=kf(BS,sp);
   /* phones: keep footage compact; hero/finale duo shrink hard so the copy
      above and below never touches the bottles, even on short screens */
-  const mcap=50-15*kf(TRB,sp)-13*kf(CTA_OP,sp);
+  const mcap=50-7*kf(TRB,sp)-13*kf(CTA_OP,sp);
   const hvh=mobile?Math.min(hv,mcap):hv;
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
@@ -427,7 +427,7 @@ try{
   window.glideTo=function(p){
     const from=scrollY,to=p*smax();
     if(Math.abs(to-from)<2)return;
-    const dur=Math.min(4600,1600+Math.abs(p-from/smax())*11000);
+    const dur=Math.min(3800,1300+Math.abs(p-from/smax())*9000);
     const t0=performance.now();
     if(glideRAF)cancelAnimationFrame(glideRAF);
     (function stepG(){
@@ -440,21 +440,28 @@ try{
   if(('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches){
     /* swipe-glide replaces CSS snap on touch devices — iOS snap fights scripted scrolls */
     document.documentElement.style.scrollSnapType='none';
+    let startScroll=0;
     addEventListener('touchstart',function(e){
       if(glideRAF){cancelAnimationFrame(glideRAF);glideRAF=null;}
       touchY=e.touches[0].clientY;touchX=e.touches[0].clientX;
+      startScroll=scrollY;
     },{passive:true});
-    addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+    addEventListener('touchmove',function(e){
+      e.preventDefault();
+      if(touchY==null)return;
+      /* the page follows the finger while dragging — instant response */
+      const dy=touchY-e.touches[0].clientY;
+      window.scrollTo(0,Math.max(0,Math.min(smax(),startScroll+dy*0.9)));
+    },{passive:false});
     addEventListener('touchend',function(e){
       if(touchY==null)return;
       const dy=touchY-e.changedTouches[0].clientY;
-      const dx=touchX-e.changedTouches[0].clientX;
       touchY=null;
-      if(Math.abs(dy)<24||Math.abs(dy)<Math.abs(dx)||glideRAF)return;
-      const cur=scrollY/smax();
+      const sc=startScroll/smax();
       let target;
-      if(dy>0){target=STOPS.find(s=>s>cur+0.02);if(target===undefined)target=1;}
-      else{const prev=STOPS.filter(s=>s<cur-0.02);target=prev.length?prev[prev.length-1]:0;}
+      if(dy>24){target=STOPS.find(s=>s>sc+0.02);if(target===undefined)target=1;}
+      else if(dy<-24){const prev=STOPS.filter(s=>s<sc-0.02);target=prev.length?prev[prev.length-1]:0;}
+      else{target=STOPS.reduce((a,b)=>Math.abs(b-scrollY/smax())<Math.abs(a-scrollY/smax())?b:a);}
       window.glideTo(target);
     },{passive:true});
   }
