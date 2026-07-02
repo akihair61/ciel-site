@@ -250,9 +250,9 @@ const bw=$('bw'),cgb=$('cgb'),cgx=cgb.getContext('2d'),trtb=$('trtb'),
 
 /* preload frames: 1-121 closed→open→pour→gel · 122-182 morph→treatment ·
    183-303 cream ribbon→bergamot & white-tea assembly · 304-424 botanicals→duo bottles */
-const NF=424,frames=[];
+const NF=424,FV='?v=2',frames=[];
 for(let i=1;i<=NF;i++){const im=new Image();
-  im.src='seq_full/f_'+String(i).padStart(3,'0')+'.webp';frames[i-1]=im;}
+  im.src='seq_full/f_'+String(i).padStart(3,'0')+'.webp'+FV;frames[i-1]=im;}
 /* warm-up: pre-decode every frame once at idle so scrubbing never hits a decode stall.
    Skipped on touch devices — decoding 424 frames can blow iOS Safari's memory
    budget and force a blank reload ("images gone"). */
