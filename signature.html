@@ -343,7 +343,7 @@ function render(){
      phones: captions are bottom cards, so footage lives in the upper half.
      MBX compensates the gel/cream/arrangement sitting right-of-centre in frame */
   const MBY=[[0,6],[0.06,6],[0.13,-16],[0.79,-16],[0.87,-18],[0.945,-21],[1,-21]];
-  const MBX=[[0,50],[0.24,50],[0.30,50],[0.36,29],[0.43,29],[0.50,29],[0.575,29],[0.68,40],[0.72,42],[0.79,42],[0.87,46],[0.945,50],[1,50]];
+  const MBX=[[0,50],[0.24,50],[0.30,50],[0.36,46],[0.43,46],[0.50,29],[0.575,29],[0.68,40],[0.72,42],[0.79,42],[0.87,46],[0.945,50],[1,50]];
   const x=mobile?(kf(MBX,sp)-11*kf(TRB,sp)):kf(BX,sp);
   const y=50+(mobile?kf(MBY,sp):kf(BY,sp));
   const bob=Math.sin(t*0.6)*0.5;
