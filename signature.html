@@ -266,6 +266,43 @@ function animate(){requestAnimationFrame(animate);t+=0.016;step();}
 window.__set=p=>{__lock=true;sp=p;prog=p;render();};   /* debug: pin a progress value */
 window.__unlock=()=>{__lock=false;};
 
+/* ---- touch devices: one light swipe glides to the next chapter ---- */
+const STOPS=[0,0.165,0.395,0.54,0.755,1];
+let glideRAF=null,touchY=null,touchX=null;
+const smax=()=>document.documentElement.scrollHeight-innerHeight;
+function glideTo(p){
+  const from=scrollY,to=p*smax();
+  if(Math.abs(to-from)<2)return;
+  const dur=Math.min(2200,700+Math.abs(p-from/smax())*5200);
+  const t0=performance.now();
+  cancelAnimationFrame(glideRAF);
+  (function stepG(){
+    const u=Math.min(1,(performance.now()-t0)/dur);
+    const e=u<0.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;   /* easeInOutCubic */
+    window.scrollTo(0,from+(to-from)*e);
+    glideRAF=u<1?requestAnimationFrame(stepG):null;
+  })();
+}
+if(matchMedia('(pointer:coarse)').matches){
+  addEventListener('touchstart',e=>{
+    if(glideRAF){cancelAnimationFrame(glideRAF);glideRAF=null;}
+    touchY=e.touches[0].clientY;touchX=e.touches[0].clientX;
+  },{passive:true});
+  addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
+  addEventListener('touchend',e=>{
+    if(touchY==null)return;
+    const dy=touchY-e.changedTouches[0].clientY;
+    const dx=touchX-e.changedTouches[0].clientX;
+    touchY=null;
+    if(Math.abs(dy)<24||Math.abs(dy)<Math.abs(dx)||glideRAF)return;
+    const cur=scrollY/smax();
+    let target;
+    if(dy>0){target=STOPS.find(s=>s>cur+0.02);if(target===undefined)target=1;}
+    else{const prev=STOPS.filter(s=>s<cur-0.02);target=prev.length?prev[prev.length-1]:0;}
+    glideTo(target);
+  },{passive:true});
+}
+
 /* ---- i18n: JA / EN / TH ---- */
 const I18N={
 ja:{heroH1:'答えは、髪が教えてくれた。',
