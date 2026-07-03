@@ -427,7 +427,7 @@ animate();
    Runs AFTER animate() and inside try/catch — can never break rendering. ---- */
 try{
   const STOPS=[0,0.165,0.395,0.54,0.755,1];
-  let glideRAF=null,touchY=null,touchX=null;
+  let glideRAF=null,touchY=null,touchX=null,glideEndAt=0;
   const smax=()=>document.documentElement.scrollHeight-innerHeight;
   window.glideTo=function(p){
     const from=scrollY,to=p*smax();
@@ -439,7 +439,8 @@ try{
       const u=Math.min(1,(performance.now()-t0)/dur);
       const e=1-Math.pow(1-u,3);   /* easeOutCubic — responds instantly, settles softly */
       window.scrollTo(0,from+(to-from)*e);
-      glideRAF=u<1?requestAnimationFrame(stepG):null;
+      if(u<1){glideRAF=requestAnimationFrame(stepG);}
+      else{glideRAF=null;glideEndAt=performance.now();}
     })();
   };
   if(('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches){
@@ -469,6 +470,19 @@ try{
       else{target=STOPS.reduce((a,b)=>Math.abs(b-scrollY/smax())<Math.abs(a-scrollY/smax())?b:a);}
       window.glideTo(target);
     },{passive:true});
+  }else{
+    /* desktop: one wheel / trackpad gesture glides one chapter */
+    addEventListener('wheel',function(e){
+      e.preventDefault();
+      if(glideRAF)return;
+      if(performance.now()-glideEndAt<600)return;   /* absorb trackpad inertia tail */
+      if(Math.abs(e.deltaY)<6||Math.abs(e.deltaY)<Math.abs(e.deltaX))return;
+      const cur=scrollY/smax();
+      let target;
+      if(e.deltaY>0){target=STOPS.find(s=>s>cur+0.02);if(target===undefined)target=1;}
+      else{const prev=STOPS.filter(s=>s<cur-0.02);target=prev.length?prev[prev.length-1]:0;}
+      window.glideTo(target);
+    },{passive:false});
   }
 }catch(e){try{window.__err=(window.__err||'')+' swipe:'+e.message;}catch(_){}}
 </script>
