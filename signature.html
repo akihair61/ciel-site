@@ -114,6 +114,18 @@
   @media (max-width:760px){#hero-lead{bottom:6vh;max-width:86vw;font-size:13px;
     line-height:2;}
     #hero-lead br{display:none;}}
+  /* short desktop windows: compact finale caption so it clears the duo */
+  @media (min-width:761px) and (max-height:960px){
+    #cap-cta h2{font-size:clamp(26px,3.6vw,42px);}
+    .cap .rule{margin:10px auto 0;}
+    .cap .catch{font-size:14px;margin-top:10px;}
+    .cap .words{font-size:11px;margin-top:8px;}
+    #cap-cta .jp{font-size:13px;margin-top:10px;}
+    .cap .sizes{margin-top:12px;padding:8px 4px;}
+    .cap .sizes .row{padding:3px 0;font-size:10.5px;}
+    #cap-cta .btn{margin-top:12px;padding:11px 30px;font-size:12px;}
+    #hero-lead{font-size:12.5px;line-height:1.8;bottom:3vh;}
+  }
   /* treatment bottle standing beside the shampoo in the hero */
   #trtb{position:fixed;left:50vw;top:50vh;height:44vh;z-index:5;opacity:0;
     pointer-events:none;will-change:transform,opacity;
@@ -363,7 +375,10 @@ function render(){
   /* phones: keep footage compact; hero/finale duo shrink hard so the copy
      above and below never touches the bottles, even on short screens */
   const mcap=50-9*kf(TRB,sp)-13*kf(CTA_OP,sp);
-  const hvh=mobile?Math.min(hv,mcap):hv;
+  let hvh=mobile?Math.min(hv,mcap):hv;
+  /* short desktop windows: same protection for hero/finale */
+  const shortDesk=!mobile&&VH<960;
+  if(shortDesk)hvh=Math.min(hvh,50-6*kf(TRB,sp)-14*kf(CTA_OP,sp));
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
      shrink footage as the window gets narrower than ~16:10 */
@@ -375,7 +390,8 @@ function render(){
   const MBY=[[0,-2],[0.06,-2],[0.13,-16],[0.79,-16],[0.87,-18],[0.945,-26],[1,-26]];
   const MBX=[[0,50],[0.24,50],[0.30,50],[0.36,46],[0.43,46],[0.50,29],[0.575,29],[0.68,40],[0.72,42],[0.79,42],[0.87,46],[0.945,50],[1,50]];
   const x=mobile?(kf(MBX,sp)-11*kf(TRB,sp)):kf(BX,sp);
-  const y=50+(mobile?kf(MBY,sp):kf(BY,sp));
+  let y=50+(mobile?kf(MBY,sp):kf(BY,sp));
+  if(shortDesk)y-=4*kf(CTA_OP,sp);   /* lift the finale duo on short windows */
   const bob=Math.sin(t*0.6)*0.5;
   const yAdj=(0.5-BCF)*frameH;               /* align bottle centre, not frame */
   const rot=kf(BR,sp)+Math.sin(t*0.5)*1.2;   /* ORYZO drift: lean into the arc */
