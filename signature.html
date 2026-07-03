@@ -250,7 +250,7 @@ function kf(t,p){let a=t[0],b=t[t.length-1];
    scent .72-.79 · finale .945-1  (travel segments in between) */
 const BX =[[0,44],[0.06,44],[0.13,26],[0.20,26],[0.24,34],[0.30,72],[0.36,68],[0.575,67],[0.68,24],[0.72,22],[0.79,22],[0.87,44],[0.945,50],[1,50]];
 const BY =[[0,4],[0.06,4],[0.13,7],[0.20,7],[0.24,2],[0.30,12],[0.36,8],[0.43,8],[0.50,0],[0.575,0],[0.72,-2],[0.79,-2],[0.87,-8],[0.945,-20],[1,-20]];
-const BS =[[0,48],[0.06,48],[0.13,58],[0.20,58],[0.30,48],[0.36,52],[0.43,52],[0.50,56],[0.53,58],[0.575,58],[0.68,58],[0.72,57],[0.79,57],[0.87,54],[0.945,42],[1,42]];
+const BS =[[0,48],[0.06,48],[0.13,58],[0.20,58],[0.30,48],[0.36,52],[0.43,52],[0.50,56],[0.53,58],[0.575,58],[0.68,58],[0.72,57],[0.79,57],[0.87,55],[0.945,46],[1,46]];
 const TRB=[[0,1],[0.07,1],[0.11,0]];   /* hero treatment bottle (beside shampoo) */
 const BOP=[[0,1],[1,1]];
 const BR =[[0,0],[0.05,0],[0.10,-8],[0.13,-3],[0.20,-3],[0.26,9],[0.32,3],[0.36,0],[0.575,0],[0.65,-2],[0.72,0],[1,0]];
@@ -379,11 +379,11 @@ function render(){
   const hv=kf(BS,sp);
   /* phones: keep footage compact; hero/finale duo shrink hard so the copy
      above and below never touches the bottles, even on short screens */
-  const mcap=50-9*kf(TRB,sp)-13*kf(CTA_OP,sp);
+  const mcap=50-9*kf(TRB,sp)-9*kf(CTA_OP,sp);
   let hvh=mobile?Math.min(hv,mcap):hv;
   /* short desktop windows: same protection for hero/finale */
   const shortDesk=!mobile&&VH<960;
-  if(shortDesk)hvh=Math.min(hvh,50-10*kf(TRB,sp)-20*kf(CTA_OP,sp));
+  if(shortDesk)hvh=Math.min(hvh,50-10*kf(TRB,sp)-16*kf(CTA_OP,sp));
   const frameH=hvh/OCC;
   /* narrow windows: footage height is vh-based but layout is vw-based —
      shrink footage as the window gets narrower than ~16:10 */
@@ -396,7 +396,7 @@ function render(){
   const MBX=[[0,50],[0.24,50],[0.30,50],[0.36,46],[0.43,46],[0.50,29],[0.575,29],[0.68,40],[0.72,42],[0.79,42],[0.87,46],[0.945,50],[1,50]];
   const x=mobile?(kf(MBX,sp)-11*kf(TRB,sp)):kf(BX,sp);
   let y=50+(mobile?kf(MBY,sp):kf(BY,sp));
-  if(shortDesk)y-=6*kf(CTA_OP,sp);   /* lift the finale duo on short windows */
+  if(shortDesk)y-=8*kf(CTA_OP,sp);   /* lift the finale duo on short windows */
   const bob=Math.sin(t*0.6)*0.5;
   const yAdj=(0.5-BCF)*frameH;               /* align bottle centre, not frame */
   const rot=kf(BR,sp)+Math.sin(t*0.5)*1.2;   /* ORYZO drift: lean into the arc */
