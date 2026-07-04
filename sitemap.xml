@@ -316,4 +316,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://www.ciel-japanesehairstudio-bkk.com/guide.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.ciel-japanesehairstudio-bkk.com/guide.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ciel-japanesehairstudio-bkk.com/guide.en.html"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.ciel-japanesehairstudio-bkk.com/guide.th.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.ciel-japanesehairstudio-bkk.com/guide.html"/>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
