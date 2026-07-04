@@ -54,17 +54,18 @@
   onScroll(); frame();
 
   var lang=document.documentElement.lang||'ja';
-  var bk={ja:['booking.html','ご予約'],en:['booking.en.html','Book'],th:['booking.th.html','จอง']}[lang]||['booking.html','ご予約'];
-  if(!/booking\.(html|en\.html|th\.html)$/.test(location.pathname)){
-    var fab=document.createElement('a');
-    fab.href=bk[0]; fab.className='fab-book'; fab.textContent=bk[1]; fab.setAttribute('aria-label',bk[1]);
-    document.body.appendChild(fab);
-  }
+  var FRESHA='https://www.fresha.com/ja/a/ciel-japanese-hair-studio-by-aki-khlong-toei-19-soi-sukhumvit-24-yyuld3cq/booking';
+  var lbl={ja:'予約する',en:'Book Now',th:'จองเลย'}[lang]||'予約する';
+  var fab=document.createElement('a');
+  fab.href=FRESHA; fab.className='fab-book'; fab.target='_blank'; fab.rel='noopener';
+  fab.textContent=lbl; fab.setAttribute('aria-label',lbl);
+  document.body.appendChild(fab);
 
   // GA: 予約・連絡ボタンのクリックをイベント計測（コンバージョン把握）
   document.addEventListener('click',function(e){
     var a=e.target&&e.target.closest&&e.target.closest('a'); if(!a) return;
     var h=a.getAttribute('href')||'';
+    if(h.indexOf('fresha.com')>-1&&window.gtag)gtag('event','fresha_click',{link_url:a.href||h});
     function t(n,m){ if(window.gtag) gtag('event',n,{method:m}); }
     if(/fresha\.com/.test(h)) t('booking_click','fresha');
     else if(/line\.me/.test(h)) t('contact_click','line');
