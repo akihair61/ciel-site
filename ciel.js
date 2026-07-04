@@ -82,10 +82,10 @@
   var ext=lang==='en'?'.en.html':lang==='th'?'.th.html':'.html';
   function u(s,h){return s+ext+(h||'');}
   var th=lang==='th';
-  var L=th?{wic:'รู้จัก Ciel',menu:'เมนู',hs:'เฮดสปา',bp:'นโยบายการจอง',story:'เรื่องราว',media:'สื่อ',ig:'Instagram',contact:'ติดต่อ',resv:'จองคิว',sig:'Signature',faq:'FAQ'}
-          :{wic:'What is Ciel',menu:'Menu',hs:'Head Spa',bp:'Booking Policy',story:'Story',media:'Media',ig:'Instagram',contact:'Contact',resv:'Reservation',sig:'Signature',faq:'FAQ'};
+  var L=th?{wic:'รู้จัก Ciel',menu:'เมนู',hs:'เฮดสปา',bp:'นโยบายการจอง',story:'เรื่องราว',media:'สื่อ',ig:'Instagram',contact:'ติดต่อ',resv:'จองคิว',sig:'Signature',faq:'FAQ',about:'About Aki'}
+          :{wic:'What is Ciel',menu:'Menu',hs:'Head Spa',bp:'Booking Policy',story:'Story',media:'Media',ig:'Instagram',contact:'Contact',resv:'Reservation',sig:'Signature',faq:'FAQ',about:'About Aki'};
   nl.innerHTML='<div class="nav-main"><a href="'+u('what-is-ciel')+'">'+L.wic+'</a><a href="'+u('menu')+'">'+L.menu+'</a><a href="'+u('headspa')+'">'+L.hs+'</a><a href="'+u('booking-policy')+'">'+L.bp+'</a></div><button class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>';
-  var items=[[L.story,u('index','#story')],[L.wic,u('what-is-ciel')],[L.menu,u('menu')],[L.hs,u('headspa')],[L.sig,'/signature.html'],[L.bp,u('booking-policy')],[L.media,u('press')],[L.ig,u('index','#instagram')],[L.contact,u('contact')],[L.faq,u('faq')],[L.resv,u('booking')]];
+  var items=[[L.story,u('index','#story')],[L.wic,u('what-is-ciel')],[L.about,u('about-aki')],[L.menu,u('menu')],[L.hs,u('headspa')],[L.sig,'/signature.html'],[L.bp,u('booking-policy')],[L.media,u('press')],[L.ig,u('index','#instagram')],[L.contact,u('contact')],[L.faq,u('faq')],[L.resv,u('booking')]];
   var path=location.pathname.replace(/^\//,''); var slug=path.replace(/\.(en|th)\.html$/,'').replace(/\.html$/,''); if(!slug)slug='index';
   function lu(c){var e=c==='en'?'.en.html':c==='th'?'.th.html':'.html';return '/'+slug+e;}
   var ov=document.createElement('div'); ov.className='nav-overlay'; var html='';
