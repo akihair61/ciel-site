@@ -3,7 +3,7 @@
 > A Japanese hair salon in Phrom Phong, Sukhumvit, Bangkok, Thailand. Japanese, English and Thai spoken. Known for high-tone colour, highlights, balayage, Japanese straight perm, keratin treatment and Japanese head spa. 5.0 rated.
 
 ## About
-Ciel is led by Aki, a Japanese stylist and colourist based in Bangkok with experience in Japan, Australia and Dubai. The salon offers a calm, comfortable space and tailored cuts, colour and treatments for all hair types, including both Asian and Western hair. Careful counselling in the guest's own language.
+Ciel is led by Aki, a Japanese-Thai stylist and colourist based in Bangkok with experience in Japan, Australia and Dubai. The salon offers a calm, comfortable space and tailored cuts, colour and treatments for all hair types, including both Asian and Western hair. Careful counselling in the guest's own language.
 
 ## Location & contact
 - Address: Ariston Hotel 2F, 19 Soi Sukhumvit 24, Khlong Tan, Khlong Toei, Bangkok 10110, Thailand
@@ -33,6 +33,8 @@ Ciel is led by Aki, a Japanese stylist and colourist based in Bangkok with exper
 - Home: https://www.ciel-japanesehairstudio-bkk.com/ (Japanese)
 - English: https://www.ciel-japanesehairstudio-bkk.com/index.en.html
 - Thai: https://www.ciel-japanesehairstudio-bkk.com/index.th.html
+- FAQ (AI-friendly Q&A): https://www.ciel-japanesehairstudio-bkk.com/faq.html
+- Signature Shampoo & Treatment (coming soon): https://www.ciel-japanesehairstudio-bkk.com/signature.html
 - Menu & prices: https://www.ciel-japanesehairstudio-bkk.com/menu.html
 - Japanese Head Spa: https://www.ciel-japanesehairstudio-bkk.com/headspa.html
 - Access & contact: https://www.ciel-japanesehairstudio-bkk.com/contact.html
