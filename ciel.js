@@ -54,7 +54,7 @@
   onScroll(); frame();
 
   var lang=document.documentElement.lang||'ja';
-  var FRESHA='https://www.fresha.com/ja/a/ciel-japanese-hair-studio-by-aki-khlong-toei-19-soi-sukhumvit-24-yyuld3cq/booking';
+  var FRESHA='https://ciel-hair-studio.web.app/booking/menu.html?lang='+(lang==='th'?'th':lang==='en'?'en':'ja');
   var lbl={ja:'予約する',en:'Book Now',th:'จองเลย'}[lang]||'予約する';
   var fab=document.createElement('a');
   fab.href=FRESHA; fab.className='fab-book'; fab.target='_blank'; fab.rel='noopener';
