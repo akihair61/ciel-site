@@ -1,0 +1,586 @@
+# Ciel — Japanese Hair Studio by Aki (full content for LLMs)
+
+> Complete text content of ciel-japanesehairstudio-bkk.com for AI assistants. Bangkok, Thailand. Japanese/English/Thai spoken.
+> Live availability API: https://publicstate-es4zi7itma-as.a.run.app/
+> Online booking: https://ciel-hair-studio.web.app/booking/
+
+---
+## Home (ja) — https://www.ciel-japanesehairstudio-bkk.com/index.html
+
+Ciel — バンコクの日本人美容室 | Japanese Hair Studio by Aki 
+ Ciel
+ Story What is Ciel About Aki Menu Head Spa Booking Policy Contact JA · EN · TH 
+ SCROLL
+ BANGKOK · SUKHUMVIT
+ Ciel
+ Japanese Hair Studio by Aki
+ Quiet.
+ Effortless.
+ Simply you.
+ Our Story
+ Cielについて
+ Cielは、ただ髪を整えるだけの場所ではなく、心まで解きほぐされるような、くつろぎのひとときを過ごしていただくために生まれました。
+ Cielの中心にいるのは、バンコクでNo.1の日本人カラーリスト Aki。丁寧なカウンセリングと心地よい空間で、おひとりおひとりが本来持つ美しさをそっと引き出します。誰もが、ありのままの自分でいられる場所です。
+ Founder & Creative Director
+ Aki
+ Stylist / Colourist
+ Instagram @aki_hair_ciel789 
+ 日本とタイのハーフ。日本で4年、オーストラリアで3年の経験を経て、現在はバンコクで世界中のお客様をお迎えしています。繊細なアジアの髪質を活かすカットから、欧米の髪のフォイルワークまで、幅広い技術でご対応します。
+ 日本語・英語・タイ語に対応。丁寧なカウンセリングを通して、髪質・骨格・ライフスタイルに寄り添った、上質でパーソナルなスタイルをご提案します。心から信頼できるスタイリストをお探しなら、ぜひお任せください。
+ 日本語 / English / ภาษาไทย High-tone Color Balayage 
+ Our Team
+ Tar
+ Assistant
+ ゲストおひとりおひとりが心地よく過ごせるよう、丁寧なサポートでAkiを支えるアシスタント。やわらかな笑顔と細やかな気配りで、上質な時間を一緒につくります。
+ Menu
+ Our Services
+ 01
+ Hair Cut
+ 骨格と髪質を見極めた、再現性の高いデザインカット。
+ View more 
+ 02
+ Design Colour
+ ハイトーン・ハイライト・バレイヤージュ。透明感のある色設計。
+ View more 
+ 03
+ Premium Treatment
+ TOKIO 4ステップ・Olaplex・Kerasilk など、髪を芯から補修する上質トリートメント。
+ View more 
+ 04
+ Japanese Head Spa
+ ヘッドバス＋頭皮マッサージ＋TOKIOトリートメント。
+ View more 
+ New · Coming Soon
+ Ciel Signature
+ 詳しく見る 
+ Instagram
+ @ciel_japanese_hair_bangkok
+ 最新の作品とサロンの日常は Instagram で。
+ Instagramでフォロー 
+ Access
+ Ciel Japanese Hair Studio
+ Address Ariston Hotel 2F, 19 Sukhumvit 24 Alley,
+Khlong Tan, Khlong Toei, Bangkok 10110 
+ Tel 092-692-3578 
+ Email ciel.hair@icloud.com 
+ Instagram WhatsApp LINE 
+ FAQ
+ よくある質問
+ 初めての方・言語
+ 日本語は通じますか？ + オーナーのAkiは日タイハーフの日本語ネイティブ。他のスタッフはタイ人ですが、全員がAkiの日本式の技術・ノウハウを継承しています。さらに市販の翻訳アプリではなく、ヘアサロンに特化して自社開発したオリジナルのカウンセリングアプリを使うので、細かなニュアンスまで正確に伝わります。日本語・英語・タイ語対応、言語が不安な方も安心です。
+ 欧米系の髪や外国人でも対応できますか？ + はい、対応可能です。アジア人の髪はもちろん、欧米系の髪質にも対応しています。
+ カウンセリングはありますか？ + はい、徹底的に行います。お店独自のカウンセリングアプリを使って、なりたいイメージを丁寧にすり合わせることもあります。
+ ご予約・キャンセル
+ 予約は必要ですか？ + ご予約をおすすめしています。特に 公式オンライン予約（Ciel Reservation）がスムーズです。
+ 予約方法は？ + オンライン予約（おすすめ）・LINE・WhatsApp・お電話で承っています。
+ キャンセルや変更について + ご予約の前に、必ず予約ポリシーをご確認ください。 予約ポリシーを見る → 
+ 料金・お支払い
+ 支払い方法は？ + 現金、QRコード決済（タイの銀行口座からのみ）、Visa・Mastercard に対応しています。カード決済には2.5%の手数料がかかります。
+ 表示料金で確定ですか？ + カット以外のメニューは、髪の長さ・毛量により変動します。最終価格はご来店時のカウンセリングで確定します。
+ 初回割引やセットメニューはありますか？ + あります。内容や料金は オンライン予約ページでご確認ください。
+ メニュー・技術
+ カットや前髪だけでも利用できますか？ + 可能です。前髪カットのみのメニューもございます。
+ ブリーチした髪でも縮毛矯正できますか？ + 申し訳ございませんが、ブリーチ毛・強いダメージ毛への縮毛矯正はお断りしています（断毛などのリスクを避けるため）。
+ ヘッドスパだけの利用は可能ですか？ + 可能です。ヘッドスパ単体でもご利用いただけます。
+ 男性やお子様も利用できますか？ + どちらもご利用いただけます（キッズカットは10歳以下のお子様が対象です）。
+ アクセス・営業
+ 場所・行き方は？ + Ariston Hotel 2F（スクンビット Soi 24）。BTSプロンポン駅から約100m・徒歩2分、Emporium・EmQuartier のすぐ近くです。
+ 営業時間・定休日は？ + 10:00〜19:00。毎週水曜と第1・第3火曜が定休です（火曜は時期により変動する場合があります）。
+ Reviews
+ ★ 5.0
+ Google・GoogleとFreshaで、たくさんの嬉しいお声をいただいています。
+ Googleの口コミ Freshaの口コミ 
+ Reservation
+ Meet Ciel.
+ Online Booking 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Home (en) — https://www.ciel-japanesehairstudio-bkk.com/index.en.html
+
+Ciel — Japanese Hair Studio by Aki | Bangkok 
+ Ciel
+ Story What is Ciel About Aki Menu Head Spa Booking Policy Contact JA · EN · TH 
+ SCROLL
+ BANGKOK · SUKHUMVIT
+ Ciel
+ Japanese Hair Studio by Aki
+ Quiet.
+ Effortless.
+ Simply you.
+ Our Story
+ Get to know Ciel
+ Our salon was created not just to style hair, but to provide a calm and relaxing space where you can unwind and feel at ease.
+ At the heart of Ciel is Aki — the No.1 Japanese colourist in Bangkok. Through careful consultation and a relaxing ambience, we help each guest's natural beauty rise gently to the surface — a place where everyone can truly be themselves.
+ Founder & Creative Director
+ Aki
+ Stylist / Colourist
+ Instagram @aki_hair_ciel789 
+ Half Japanese and half Thai. With 4 years of experience in Japan and 3 years in Australia, I now welcome clients from around the world here in Bangkok — from delicate techniques for Asian hair to advanced foil work for Western hair.
+ Fluent in Japanese, Thai, and English. If you're looking for a stylist you can truly trust — I'd be honoured to welcome you.
+ 日本語 / English / ภาษาไทย High-tone Color Balayage 
+ Our Team
+ Tar
+ Assistant
+ An assistant who supports Aki with attentive care so every guest feels at ease. With a warm smile and thoughtful detail, she helps create your refined time at Ciel.
+ Menu
+ Our Services
+ 01
+ Hair Cut
+ A precise cut shaped to your bone structure and hair type — easy to restyle at home.
+ View more 
+ 02
+ Design Colour
+ High-tone colour, highlights and balayage — luminous, dimensional colour design.
+ View more 
+ 03
+ Premium Treatment
+ Premium repair treatments — TOKIO 4-step, Olaplex and Kerasilk — restoring hair from within.
+ View more 
+ 04
+ Japanese Head Spa
+ Head bath, scalp massage and TOKIO treatment.
+ View more 
+ New · Coming Soon
+ Ciel Signature
+ Discover 
+ Instagram
+ @ciel_japanese_hair_bangkok
+ See our latest work and salon moments on Instagram.
+ Follow on Instagram 
+ Access
+ Ciel Japanese Hair Studio
+ Address Ariston Hotel 2F, 19 Sukhumvit 24 Alley,
+Khlong Tan, Khlong Toei, Bangkok 10110 
+ Tel 092-692-3578 
+ Email ciel.hair@icloud.com 
+ Instagram WhatsApp LINE 
+ FAQ
+ Questions
+ First visit & language
+ Do you speak English or Japanese? + We have Japanese-speaking staff and serve guests in Japanese, English and Thai, so you can discuss everything in your own language.
+ Can you work with Western / non-Asian hair? + Yes. We handle both Asian and Western hair types.
+ Is there a consultation? + Yes — a thorough one. We sometimes use our own counselling app to fine-tune exactly the look you want.
+ Booking & cancellation
+ Do I need a reservation? + We recommend booking in advance — online online is the smoothest.
+ How do I book? + Via Online booking (recommended), LINE, WhatsApp or phone.
+ What about cancellations and changes? + Please read our booking policy before reserving. View booking policy → 
+ Pricing & payment
+ What payment methods do you accept? + Cash, QR payment (Thai bank accounts only) and Visa / Mastercard. Card payments incur a 2.5% surcharge.
+ Are the listed prices final? + For services other than cuts, prices vary with hair length and volume. The final price is confirmed during your in-salon consultation.
+ Are there first-time discounts or set menus? + Yes. Please check the details and prices online.
+ Menu & techniques
+ Can I come for just a cut or fringe trim? + Yes. We also offer a fringe-only cut.
+ Can you do a straight perm on bleached hair? + We're sorry, but we don't perform straightening on bleached or heavily damaged hair (to avoid breakage).
+ Can I book a head spa only? + Yes, the head spa is available on its own.
+ Are men and children welcome? + Both are welcome (the kids' cut is for children aged 10 and under).
+ Access & hours
+ Where are you and how do I get there? + Ariston Hotel 2F (Sukhumvit Soi 24) — about 100m (a 2-minute walk) from BTS Phrom Phong, right by Emporium and EmQuartier.
+ What are your opening hours? + 10:00–19:00. Closed every Wednesday and on the 1st & 3rd Tuesday of the month (Tuesday may vary).
+ Reviews
+ ★ 5.0
+ We're grateful for the many kind reviews on Google and Fresha.
+ Google reviews Fresha reviews 
+ Reservation
+ Meet Ciel.
+ Online Booking 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## What is Ciel (ja) — https://www.ciel-japanesehairstudio-bkk.com/what-is-ciel.html
+
+What is Ciel? | Ciel — Japanese Hair Studio by Aki, Bangkok 
+ Ciel JAPANESE HAIR STUDIO 
+ JA · EN · TH ← Home 
+ What is Ciel
+ Ciel Hair Studio
+ A design of comfort without borders
+国境のない、心地よさのデザイン
+ 【Ciel】 とは、フランス語で「空」を意味します。
+どこまでも広く、開かれていて、いつもそこにあるもの。
+ Cielでは、言語・文化・価値観を越えて、おひとりおひとりの個性を大切にします。美しさとは見た目で決まるものではなく、自分自身をどう感じられるか——そのことだと私たちは考えています。
+ 違う国から来た方も、いつもとは違う一日を過ごしている方も。あなたはありのままで歓迎されます。気負いも、背伸びも、必要ありません。
+ 心が静かに落ち着き、本来のあなたがそっと表れる。そんな穏やかなひとときをつくります。
+ これは、新しいかたちの美しさ。
+これが、Cielのデザインです。
+ — Ciel
+ ご予約・お問い合わせ 
+ © 2026 Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## What is Ciel (en) — https://www.ciel-japanesehairstudio-bkk.com/what-is-ciel.en.html
+
+What is Ciel? | Ciel — Japanese Hair Studio by Aki, Bangkok 
+ Ciel JAPANESE HAIR STUDIO 
+ JA · EN · TH ← Home 
+ What is Ciel
+ Ciel Hair Studio
+ A design of comfort without borders
+ Ciel means "sky" in French —
+vast, open, and always there.
+ At Ciel, we honour each person's individuality — beyond language, culture, or values. We believe beauty isn't defined by appearance, but by how you feel in your own skin.
+ Whether you've come from another country or are simply having a different kind of day, you are welcomed exactly as you are. No pressure, no pretence.
+ We create quiet moments where the mind settles and your true self gently rises to the surface.
+ This is a new form of beauty.
+This is the design of Ciel.
+ — Ciel
+ Reservations & Enquiries 
+ © 2026 Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## About Aki (ja) — https://www.ciel-japanesehairstudio-bkk.com/about-aki.html
+
+About Aki — 日タイハーフのカラーリスト｜Ciel Japanese Hair Studio バンコク 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ About
+ About Aki
+ Ciel Japanese Hair Studio
+ Aki — オーナースタイリスト / カラーリスト 
+ Akiは、日本とタイのルーツを持つヘアスタイリスト／カラーリストです。日本で4年間、日本式の精密なカット・カラー技術を学んだ後、オーストラリアで3年間、欧米の多様な髪質・カラーデザインに向き合い、さらにドバイでの経験を重ねてきました。
+ 2025年10月、バンコク・プロンポンに Ciel Japanese Hair Studio をオープン。「Ciel（シエル）」はフランス語で「空」。誰もが自分らしくいられる、開かれた空間でありたいという想いを込めています。
+ 専門領域
+ ハイトーンカラー／ブリーチワーク — ダメージを最小限に抑えるブリーチ設計と、色落ちの過程まで計算したカラーデザイン
+ バラヤージュ／ハイライト — 欧米で培ったフォイルワーク
+ 精密カット — 日本式のベースカット。アジア系・欧米系どちらの髪質にも対応
+ 日本式ヘッドスパ — TOKIOトリートメントを含むCielシグネチャー
+ 経歴
+ 日本（4年）— ヘアサロン勤務。日本式カット・カラー・薬剤知識の基礎を習得
+ オーストラリア（3年）— 多国籍の顧客を担当。フォイルワーク・欧米系髪質への施術を専門化
+ ドバイ — 国際的な環境での経験
+ 2025年10月 — バンコク・プロンポンに Ciel Japanese Hair Studio をオープン
+ 現在 — Fresha ★5.0（約200件のレビュー）。日本語・英語・タイ語の3言語で対応
+ メッセージ
+ 「タイと日本、両方のルーツを持つ自分だからこそ、バンコクに住むすべての人 — 日本人も、タイの方も、世界中から来た方も — に同じクオリティを届けられると思っています。髪の悩みも、なりたいイメージも、あなたの言葉で話してください。」 
+ ご予約・お問い合わせ 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## About Aki (en) — https://www.ciel-japanesehairstudio-bkk.com/about-aki.en.html
+
+About Aki — Japanese-Thai Colourist | Ciel Japanese Hair Studio, Bangkok 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ About
+ About Aki
+ Ciel Japanese Hair Studio
+ Aki — Owner / Colourist 
+ Aki is a Japanese-Thai hair stylist and colourist based in Bangkok. After four years mastering precision cutting and colour techniques at salons in Japan, he spent three years in Australia specialising in foil work and colour design for diverse hair types, with further experience in Dubai.
+ In October 2025 he opened Ciel Japanese Hair Studio in Phrom Phong, Bangkok. "Ciel" means "sky" in French — a space open to everyone.
+ Specialties
+ High-tone colour & low-damage bleach work — bleach designed to minimise damage, with colour planned right through to the fade-out
+ Balayage & highlights — foil work refined in Australia
+ Precision Japanese cuts — for both Asian and Western hair types
+ Japanese head spa — the Ciel signature, including the TOKIO treatment
+ Background
+ Japan (4 years) — salon work; foundations of Japanese cutting, colour and product knowledge
+ Australia (3 years) — international clientele; specialised in foil work and Western hair types
+ Dubai — experience in an international setting
+ October 2025 — opened Ciel Japanese Hair Studio in Phrom Phong, Bangkok
+ Today — 5.0 online (around 200 reviews). Services in Japanese, English and Thai
+ A message
+ "With roots in both Thailand and Japan, I believe I can offer the same quality to everyone living in Bangkok — Japanese, Thai, and people from all over the world. Tell me about your hair, and the look you want, in your own language." 
+ Contact us 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Menu & Prices (ja) — https://www.ciel-japanesehairstudio-bkk.com/menu.html
+
+メニュー＆料金 | Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Price List
+ Menu
+ 全メニュー・料金
+ ※ 表示価格はショートヘアの目安です。髪の長さ・太さ・状態により最終価格が変わる場合があり、ご来店時のカウンセリングで確定します。最新の空き状況・正確なお見積りは 公式オンライン予約ページでご確認ください。
+ オンラインで予約する 
+ Guide
+ 人気メニューの詳細
+ バラヤージュ ハイトーンカラー・ブリーチ ハイライト 縮毛矯正 料金相場ガイド 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Menu & Prices (en) — https://www.ciel-japanesehairstudio-bkk.com/menu.en.html
+
+Menu & Price | Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Price List
+ Menu
+ Full menu & prices
+ ※ Listed prices are a guide for short hair. The final price may vary with hair length, thickness and condition, and is confirmed during your in-salon counselling. For the latest availability and an accurate quote, please check the official online booking page.
+ Book online 
+ Guide
+ Popular services in detail
+ Balayage High-tone Colour Highlights Straight Perm Price guide 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Japanese Head Spa (ja) — https://www.ciel-japanesehairstudio-bkk.com/headspa.html
+
+ジャパニーズヘッドスパ | Ciel — バンコク・プロンポン 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Ciel
+ Japanese Head Spa
+ ジャパニーズヘッドスパ
+ Luxury Head Spa · Phrom Phong
+ 深い、やすらぎ
+ バンコク・スクンビット／プロンポンの高級ジャパニーズヘッドスパ。頭皮ケア・深いリラックス・なめらかで健やかな髪へと導く、Ciel独自の技術をご体感ください。
+ Price
+ from ฿2,000
+ Time
+ 約45分
+ Language
+ 日 / EN / ไทย
+ Ciel's Signature Techniques
+ The ritual
+ 01 — Cleansing Shampoo
+ 余分な皮脂や汚れを落とし、頭皮を整えます。
+ 02 — Head Spa Massage
+ スチームと精密な指圧で凝りをほぐし、血行を促進。
+ 03 — Waterfall Head Bath
+ 温かい水流が不純物を流し、心を落ち着けます。
+ 04 — Aroma Shampoo
+ 清潔感のある、柔らかな洗い上がりに。
+ 05 — Moisture Treatment
+ スチームで中間〜毛先をうるおし、柔らかく。
+ 06 — Simple Blow-Dry
+ 自然で軽やかな仕上げ。
+ 90分プレミアムは、上記に加え TOKIO 4ステップ補修＋超音波アイロン で芯から補修。
+ ※料金は髪の長さ・毛量により変わります。最終価格は店頭で確定します。 
+ Premium Finish
+ TOKIO Premium Treatment
+ TOKIO 4ステップは、INKARAMI（インカラミ）技術で髪を内側から補修する日本のプレミアムトリートメント。ダメージ毛を強く、なめらかにし、重さを残さず自然なツヤを取り戻します。
+カラー・ブリーチ・乾燥が気になる髪に最適。Ciel独自の仕上げで、長持ちするシルクのような手触りに。
+ ヘッドスパを予約する 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Japanese Head Spa (en) — https://www.ciel-japanesehairstudio-bkk.com/headspa.en.html
+
+Japanese Head Spa | Ciel — Bangkok 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Ciel
+ Japanese Head Spa
+ Scalp care & deep relaxation
+ Luxury Head Spa · Phrom Phong
+ Relax, deeply
+ A luxury Japanese Head Spa in Phrom Phong, Sukhumvit Bangkok — featuring Ciel's signature techniques for scalp treatment, deep relaxation, and smooth, healthy hair care.
+ Price
+ from ฿2,000
+ Time
+ 約45分
+ Language
+ 日 / EN / ไทย
+ Ciel's Signature Techniques
+ The ritual
+ 01 — Cleansing Shampoo
+ Removes excess oil and impurities to prepare the scalp.
+ 02 — Head Spa Massage
+ Steam and precise pressure-point massage release tension and boost circulation.
+ 03 — Waterfall Head Bath
+ A warm flow of water rinses away impurities and calms the mind.
+ 04 — Aroma Shampoo
+ A clean, soft and refreshing wash.
+ 05 — Moisture Treatment
+ Steam infuses moisture from mid-lengths to ends for lasting softness.
+ 06 — Simple Blow-Dry
+ A natural, light finish.
+ The 90-min Premium adds TOKIO 4-step repair + ultrasonic iron to restore hair from the core.
+ ※ Prices vary by hair length and volume. The final price is confirmed in salon. 
+ Premium Finish
+ TOKIO Premium Treatment
+ TOKIO 4-Step is a premium Japanese treatment using INKARAMI technology to repair hair from the inside. It strengthens damaged hair, improves smoothness, and restores natural shine without heaviness.
+Ideal for colored, bleached, or dry hair. Finished with Ciel's exclusive technique for long-lasting, silky results.
+ Book a Head Spa 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Balayage & Colour (ja) — https://www.ciel-japanesehairstudio-bkk.com/balayage-bangkok.html
+
+バンコクでバラヤージュ｜プロンポンの日系サロン Ciel 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Ciel
+ バラヤージュ｜Bangkok
+ Balayage in Phrom Phong
+ Ciel Japanese Hair Studio のバラヤージュは、オーナースタイリスト Aki がオーストラリアで培ったフォイルワークがベース。根元から毛先へ自然に明るくなるグラデーションで、伸びても境目が気になりにくく、メンテナンスの頻度を抑えられます。タイの強い紫外線・水質を踏まえ、ダメージを最小限にしたブリーチ設計と、色落ちの過程まで計算したカラーデザインが強みです。日本語・英語・タイ語で丁寧にカウンセリング。BTSプロンポン駅から徒歩約2分。
+ Price ฿2,490〜（長さ・状態により変動）
+ バラヤージュはどのくらい持ちますか？
+ 根元が伸びても境目が自然なため、一般的なフルカラーより長く楽しめます。3〜4ヶ月に一度のメンテナンスが目安です（髪質・明るさにより変動）。
+ ブリーチは必要ですか？ダメージが心配です。
+ 明るいデザインではブリーチを使いますが、Cielはダメージを最小限に抑える薬剤選定・設計を行います。TOKIOトリートメントの併用もおすすめです。
+ ご予約・お問い合わせ 
+ 他のカラーメニュー 
+ ハイトーンカラー & ブリーチ ハイライト｜Bangkok 縮毛矯正・ストレートパーマ メニュー全体 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Balayage & Colour (en) — https://www.ciel-japanesehairstudio-bkk.com/balayage-bangkok.en.html
+
+Balayage in Bangkok | Japanese Salon in Phrom Phong — Ciel 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Ciel
+ Balayage in Bangkok
+ Phrom Phong · Sukhumvit
+ Balayage at Ciel Japanese Hair Studio is built on the foil work owner-stylist Aki refined during three years in Australia. A soft, hand-painted gradient from root to tip grows out beautifully with a less obvious regrowth line, so you can stretch the time between appointments. Designed around Bangkok’s strong UV and water, with low-damage bleach and colour planned right through to the fade-out. Consultations in Japanese, English and Thai. About a 2-minute walk from BTS Phrom Phong.
+ Price from ฿2,490 (varies by length & condition)
+ How long does balayage last?
+ Because the regrowth line stays soft, balayage lasts longer than a full colour — a touch-up every 3–4 months is typical, depending on hair and brightness.
+ Do I need bleach? I’m worried about damage.
+ Brighter designs use bleach, but Ciel selects products and designs the service to keep damage to a minimum. Pairing with a TOKIO treatment is recommended.
+ Contact us 
+ Other colour services 
+ High-tone Colour & Bleach Highlights in Bangkok Japanese Straight Perm Full menu 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## FAQ (ja) — https://www.ciel-japanesehairstudio-bkk.com/faq.html
+
+よくある質問（FAQ）| Ciel Japanese Hair Studio by Aki バンコク 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ FAQ
+ よくある質問
+ Frequently Asked Questions
+ バンコク・プロンポンでおすすめの日系美容室はどこですか？
+ BTSプロンポン駅から徒歩数分、スクンビット・ソイ24のAriston Hotel 2Fにある「Ciel Japanese Hair Studio by Aki」がおすすめです。日本・オーストラリア・ドバイで経験を積んだ日タイハーフのオーナースタイリストAkiが担当し、Fresha ★5.0の高評価をいただいています。日本語で予約・相談が可能です。
+ Ciel Japanese Hair Studioの場所とアクセスは？
+ 住所は Ariston Hotel 2F, 19 Soi Sukhumvit 24, Khlong Tan, Khlong Toei, Bangkok 10110。BTSプロンポン駅から約100m・徒歩約2分で、Emporium・EmQuartier・Benjasiri Park のすぐ近くです。
+ 日本語は通じますか？
+ はい。オーナースタイリストのAkiは日タイハーフの日本語ネイティブで、カウンセリングから施術まですべて日本語で対応します。ほかのスタッフはタイ人ですが、全員がAkiの技術とノウハウを受け継いだ日本式の施術ができます。さらにCielでは、市販の翻訳アプリではなく「ヘアサロンに特化して自社開発したオリジナルのカウンセリングアプリ」を使用。こうしたいという細かなニュアンスまで正確に伝わるので、言語に不安がある方も安心です。英語・タイ語にも対応しています。
+ どんなメニューが得意ですか？
+ Ciel Japanese Hair Studio はハイトーンカラーとブリーチワークが最大の強みです。ダメージを最小限に抑えたブリーチと、色落ちの過程まで計算したカラーデザインを提供しています。カット・トリートメント・ヘッドスパも人気です。
+ 営業時間と定休日は？
+ 営業時間は10:00〜19:00、定休日は毎週水曜（加えて第1・第3火曜もお休み。火曜は時期により変動します）。完全予約制のため、公式オンライン予約・InstagramのDM・お電話（+66 92 692 3578）からご予約ください。
+ 料金の目安は？
+ Ciel Japanese Hair Studio の目安は、カット ฿1,200、カラー ฿2,490〜、TOKIOプレミアムトリートメント ฿1,990〜、リタッチカラー ฿2,500〜です。髪の長さや状態により変動し、最新の料金はオンライン予約ページ（公式オンライン予約ページ）でご確認いただけます。
+ ご予約はこちら 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## FAQ (en) — https://www.ciel-japanesehairstudio-bkk.com/faq.en.html
+
+FAQ | Ciel Japanese Hair Studio by Aki, Bangkok 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ FAQ
+ FAQ
+ Frequently Asked Questions
+ What is a good Japanese hair salon near Phrom Phong, Bangkok?
+ Ciel Japanese Hair Studio by Aki is on the 2nd floor of the Ariston Hotel on Sukhumvit Soi 24, just a few minutes' walk from BTS Phrom Phong. It is highly rated (5.0 online) and run by Aki, a Japanese-Thai stylist trained in Japan, Australia and Dubai. Japanese, English and Thai are all spoken.
+ Does the stylist speak English?
+ Yes. Owner-stylist Aki is a native Japanese speaker (Japanese-Thai) and handles everything from consultation to styling in Japanese. Our other stylists are Thai, but every one of them works in the Japanese style, trained in Aki’s techniques and know-how. On top of that, Ciel uses its own original counselling app — built specifically for hair salons, not a generic translation app — so even the subtle nuances of the look you want come across clearly. English and Thai are spoken too, so you can relax even if you’re unsure about the language.
+ What is Ciel Japanese Hair Studio known for?
+ High-tone color and bleach work with minimal damage, precision Japanese haircuts, and detailed one-on-one consultations. Treatments and head spa services are also popular.
+ How do I book an appointment?
+ Ciel Japanese Hair Studio is appointment-only. You can book online, Instagram DM, or phone (+66 92 692 3578). Opening hours are 10:00–19:00, closed on Wednesdays (and the 1st & 3rd Tuesday).
+ How much does a haircut cost at Ciel?
+ At Ciel Japanese Hair Studio, haircuts are ฿1,200, hair color starts from ฿2,490, TOKIO premium treatments from ฿1,990, and touch-up color from ฿2,500. Final prices vary by length and condition — see the up-to-date menu on the official online booking page.
+ Book now 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Booking Policy (ja) — https://www.ciel-japanesehairstudio-bkk.com/booking-policy.html
+
+Booking Policy | Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Policy
+ Booking Policy
+ ご予約・キャンセルについて
+ キャンセル・予約変更について
+ ご予約時間に15分以上遅れた場合、予約は自動的にキャンセルとなります。
+ その場合、ご予約メニュー料金の100%をキャンセル料として申し受けます。
+ ご予約日の2日前を過ぎてからのキャンセル・変更はお受けできません。
+ キャンセル・変更をご希望の場合は、2日前までにご連絡ください。
+ 2日前以降のキャンセル・変更には、メニュー料金の100%を申し受けます。
+ キャンセル料は、ご予約時にいただいた電話番号・メールアドレス宛に請求いたします。
+ お支払いがない場合やご連絡がつかない場合、当店は適切な法的措置を取る権利を有します。
+ ご理解とご協力をお願いいたします。
+これらの方針は、すべてのお客様に最高のサービスをご提供し、品質を保つためのものです。
+ ご予約に戻る 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Booking Policy (en) — https://www.ciel-japanesehairstudio-bkk.com/booking-policy.en.html
+
+Booking Policy | Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Policy
+ Booking Policy
+ Booking & Cancellation
+ Cancellation & Reschedule
+ If you are more than 15 minutes late, your appointment will be automatically cancelled.
+ In such cases, 100% of the reserved service fee will be charged as a cancellation fee.
+ Cancellations or changes within 2 days of the appointment are not accepted.
+ If you wish to cancel or reschedule, please contact us at least 2 days in advance.
+ If you cancel or reschedule within 2 days of your appointment, 100% of the reserved service fee will be charged.
+ The cancellation fee will be invoiced to the phone number and email address provided at the time of booking.
+ If payment is not made or communication is ignored, we reserve the right to take appropriate legal action.
+ We appreciate your understanding and cooperation.
+These policies help us provide the best possible service to every guest, and keep our standard at its finest.
+ Back to booking 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Press (ja) — https://www.ciel-japanesehairstudio-bkk.com/press.html
+
+メディア掲載｜Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Press
+ メディア掲載
+ 掲載情報
+ Ciel を取り上げてくださったメディア・サイトをご紹介します。
+ BeautyBKK
+ 美容院紹介
+ バンコクの美容院専門サイト「ビューティーバンコク」での店舗紹介ページ。
+ 記事を見る → BeautyBKK
+ スタイル特集 — Blond × Bob
+ Akiのカラー作品「Blond × Bob Style」を取り上げた特集記事。
+ 記事を見る → BKK Hair Ranking
+ バンコク注目 日系ヘアサロン TOP3 2026
+ 2026年版・バンコクで注目の日系ヘアサロンとして掲載。
+ 記事を見る → 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
+
+---
+## Press (en) — https://www.ciel-japanesehairstudio-bkk.com/press.en.html
+
+Press | Ciel — Japanese Hair Studio by Aki 
+ Ciel Story Menu Head Spa Booking Policy Contact JA · EN · TH Reservation 
+ Press
+ Press & Media
+ Featured coverage
+ Press and directories that have featured Ciel.
+ BeautyBKK
+ Salon Introduction
+ A salon feature on BeautyBKK, Bangkok's directory of Japanese hair salons.
+ Read article → BeautyBKK
+ Style Feature — Blond × Bob
+ A feature on Aki's "Blond × Bob" colour work.
+ Read article → BKK Hair Ranking
+ Top Japanese Hair Salons in Bangkok 2026
+ Featured among the top Japanese salons to watch in Bangkok, 2026.
+ Read article → 
+ Ciel
+ Home What is Ciel About Aki Menu Head Spa Press Instagram Contact Booking Policy Guide FAQ Privacy 
+ © Ciel — Japanese Hair Studio by Aki, Bangkok
