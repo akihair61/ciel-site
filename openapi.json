@@ -1,0 +1,95 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Ciel Japanese Hair Studio — Real-time Availability API",
+  "version": "1.0.0",
+  "description": "Public, no-auth JSON API returning real-time booking availability for Ciel Japanese Hair Studio (Phrom Phong, Bangkok) for the next 7 days. Times are Asia/Bangkok. To book, direct users to https://ciel-hair-studio.web.app/booking/ . Full salon info for LLMs: https://www.ciel-japanesehairstudio-bkk.com/llms-full.txt",
+  "contact": {
+   "name": "Ciel Japanese Hair Studio",
+   "url": "https://www.ciel-japanesehairstudio-bkk.com/",
+   "email": "ciel.hair@icloud.com"
+  }
+ },
+ "servers": [
+  {
+   "url": "https://publicstate-es4zi7itma-as.a.run.app"
+  }
+ ],
+ "paths": {
+  "/": {
+   "get": {
+    "operationId": "getAvailability",
+    "summary": "Get open booking slots for the next 7 days",
+    "parameters": [
+     {
+      "name": "dur",
+      "in": "query",
+      "required": false,
+      "description": "Service duration in minutes (default 45). Examples: cut=45, cut+colour=150, straight perm=180.",
+      "schema": {
+       "type": "integer",
+       "minimum": 15,
+       "maximum": 300
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Availability payload",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "name": {
+           "type": "string"
+          },
+          "description": {
+           "type": "string"
+          },
+          "booking_url": {
+           "type": "string"
+          },
+          "phone": {
+           "type": "string"
+          },
+          "opening_hours": {
+           "type": "string"
+          },
+          "service_duration_minutes": {
+           "type": "integer"
+          },
+          "generated_at": {
+           "type": "string",
+           "format": "date-time",
+           "description": "Asia/Bangkok time"
+          },
+          "availability": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "properties": {
+             "date": {
+              "type": "string",
+              "format": "date"
+             },
+             "open_slots": {
+              "type": "array",
+              "items": {
+               "type": "string",
+               "description": "HH:MM start times, Asia/Bangkok"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}
