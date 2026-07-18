@@ -73,7 +73,10 @@
               "type": "string",
               "format": "date"
              },
-             "open_slots": {
+             "closed": {
+              "type": "boolean"
+             },
+             "slots": {
               "type": "array",
               "items": {
                "type": "string",
