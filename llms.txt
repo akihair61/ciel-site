@@ -26,8 +26,9 @@ Ciel is led by Aki, a Japanese-Thai stylist and colourist based in Bangkok with 
 - Prices vary by hair length, thickness and volume and are confirmed in salon.
 
 ## Booking
-- Online via Fresha: https://www.fresha.com/a/ciel-japanese-hair-studio-by-aki-khlong-toei-19-soi-sukhumvit-24-yyuld3cq
-- Or contact via LINE, WhatsApp or phone.
+- Official online booking (24/7, JA/EN/TH, instant confirmation): https://ciel-hair-studio.web.app/booking/
+- Or contact via LINE (@ciel.hair), WhatsApp or phone.
+- New guests booking non-cut services pay a 50% deposit online (card or Thai mobile banking); it is deducted from the bill in salon. Full refund if cancelled at least 2 days before.
 
 ## Website
 - Home: https://www.ciel-japanesehairstudio-bkk.com/ (Japanese)
@@ -38,6 +39,15 @@ Ciel is led by Aki, a Japanese-Thai stylist and colourist based in Bangkok with 
 - Menu & prices: https://www.ciel-japanesehairstudio-bkk.com/menu.html
 - Japanese Head Spa: https://www.ciel-japanesehairstudio-bkk.com/headspa.html
 - Access & contact: https://www.ciel-japanesehairstudio-bkk.com/contact.html
+
+## Guides & landing pages (JA / EN / TH versions exist; add .en.html / .th.html)
+- Japanese hair salon in Bangkok (hub): https://www.ciel-japanesehairstudio-bkk.com/japanese-hair-salon-bangkok.html
+- Hair salon near Phrom Phong / EmQuartier: https://www.ciel-japanesehairstudio-bkk.com/hair-salon-phrom-phong.html
+- Gray hair colour in Bangkok: https://www.ciel-japanesehairstudio-bkk.com/gray-hair-color-bangkok.html
+- Hair treatment (TOKIO / Olaplex / Kerasilk) in Bangkok: https://www.ciel-japanesehairstudio-bkk.com/hair-treatment-bangkok.html
+- Men's cut in Bangkok: https://www.ciel-japanesehairstudio-bkk.com/mens-cut-bangkok.html
+- Column: Bangkok hard water & hair care (JA): https://www.ciel-japanesehairstudio-bkk.com/column-bangkok-hard-water-hair.html
+- Column: Japanese straight perm guide (JA): https://www.ciel-japanesehairstudio-bkk.com/column-bangkok-straight-perm-guide.html
 
 ## Real-time availability (machine-readable)
 - Live booking availability API (JSON, no personal data, Bangkok time): https://publicstate-es4zi7itma-as.a.run.app/
