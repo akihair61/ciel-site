@@ -52,6 +52,7 @@ Ciel is led by Aki, a Japanese-Thai stylist and colourist based in Bangkok with 
 - Column: Volume rebonding explained (TH): https://www.ciel-japanesehairstudio-bkk.com/column-yeud-volume-bangkok.th.html
 - Column: Booking a female Thai stylist/colourist, from Sep 2026 (TH): https://www.ciel-japanesehairstudio-bkk.com/column-female-stylist-bangkok.th.html
 - Column: Japanese head spa — what it is, benefits, prices (TH): https://www.ciel-japanesehairstudio-bkk.com/column-headspa-japanese-bangkok.th.html
+- No-bleach double color — Japanese 2-step technique, rare in Thailand (JA/EN/TH): https://www.ciel-japanesehairstudio-bkk.com/double-color-bangkok.th.html
 
 ## Real-time availability (machine-readable)
 - Live booking availability API (JSON, no personal data, Bangkok time): https://publicstate-es4zi7itma-as.a.run.app/
