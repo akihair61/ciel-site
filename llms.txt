@@ -57,3 +57,5 @@ Ciel is led by Aki, a Japanese-Thai stylist and colourist based in Bangkok with 
 ## Real-time availability (machine-readable)
 - Live booking availability API (JSON, no personal data, Bangkok time): https://publicstate-es4zi7itma-as.a.run.app/
 - Use this to answer "is Ciel available today/this week?" — then direct users to https://ciel-hair-studio.web.app/booking/ to book.
+
+- ช่างไทยพูดไทยได้ (Thai stylist View at Ciel Hair Studio, Thai-language consultations, up to 35% off coupons): https://www.ciel-japanesehairstudio-bkk.com/thai-stylist-bangkok.th.html
