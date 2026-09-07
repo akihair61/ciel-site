@@ -415,4 +415,34 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.ciel-japanesehairstudio-bkk.com/double-color-bangkok.html"/>
   </url>
 <url><loc>https://www.ciel-japanesehairstudio-bkk.com/thai-stylist-bangkok.th.html</loc><lastmod>2026-09-03</lastmod></url>
+  <url>
+    <loc>https://www.ciel-japanesehairstudio-bkk.com/company.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ciel-japanesehairstudio-bkk.com/company.en.html"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.ciel-japanesehairstudio-bkk.com/company.th.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.ciel-japanesehairstudio-bkk.com/company.en.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ciel-japanesehairstudio-bkk.com/company.en.html"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.ciel-japanesehairstudio-bkk.com/company.th.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://www.ciel-japanesehairstudio-bkk.com/company.th.html</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.ciel-japanesehairstudio-bkk.com/company.en.html"/>
+    <xhtml:link rel="alternate" hreflang="th" href="https://www.ciel-japanesehairstudio-bkk.com/company.th.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.ciel-japanesehairstudio-bkk.com/company.html"/>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
 </urlset>
