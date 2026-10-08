@@ -52,7 +52,7 @@
 <section class="panel light">
   <div class="wrap"><nav class="toc" aria-label="ページ内目次"><a href="#first-time">初回限定</a><a href="#headspa-combo">ヘッドスパコンボ</a><a href="#cut">カット</a><a href="#colour">カラー</a><a href="#perm">パーマ・縮毛矯正</a><a href="#headspa">ヘッドスパ</a><a href="#treatment">トリートメント</a><a href="#others">その他</a><a href="#guide">人気メニュー詳細</a></nav></div>
   <div class="wrap" id="menu"></div>
-  <div class="wrap"><p class="note">※ 表示価格はショートヘアの目安です。髪の長さ・太さ・状態により最終価格が変わる場合があり、ご来店時のカウンセリングで確定します。最新の空き状況・正確なお見積りは 公式オンライン予約ページでご確認ください。</p>
+  <div class="wrap"><p class="note">※カット以外の料金はすべて「〜」の目安料金です。髪の長さだけでなく、毛量・髪の状態によっても変わります。最終価格はカウンセリング時に確定します。先に確定金額を知りたい方は、施術前に担当スタイリストにお尋ねください。<br>※エクステンションを付けている方の施術はお受けしておりません。ご予約前に取り外しをお願いいたします。</p>
     <div class="ctr" style="margin-top:50px"><a class="btn" href="https://ciel-hair-studio.web.app/booking/menu.html?lang=ja" target="_blank" rel="noopener">オンラインで予約する</a></div>
   </div>
 </section>
@@ -67,7 +67,7 @@
 <script>
 var SLUG={"First-Time Package": "first-time", "Head Spa Special Combo": "headspa-combo", "Hair Cut": "cut", "Hair Colour": "colour", "Perm": "perm", "Japanese Head Spa": "headspa", "Treatment": "treatment", "Others": "others"};
 var LANG='ja';
-var NOTE={ja:'※料金は髪の長さ・毛量により変わります。最終価格は店頭で確定します。',en:'※ Prices vary by hair length and volume. The final price is confirmed in salon.',th:'※ ราคาขึ้นอยู่กับความยาวและปริมาณเส้นผม ราคาสุดท้ายจะยืนยันที่ร้าน'};
+var NOTE={ja:'※カット以外の料金はすべて「〜」の目安料金です。髪の長さだけでなく、毛量・髪の状態によっても変わります。最終価格はカウンセリング時に確定します。先に確定金額を知りたい方は、施術前に担当スタイリストにお尋ねください。',en:'※ All prices except cuts are "from" prices. The final price depends not only on hair length but also on hair volume and condition, and is confirmed at your counselling. If you would like to know the final price in advance, please ask your stylist before the service starts.',th:'※ ราคาทุกรายการยกเว้นตัดผมเป็นราคาเริ่มต้น ราคาสุดท้ายไม่ได้ขึ้นอยู่กับความยาวผมเท่านั้น แต่ขึ้นอยู่กับปริมาณและสภาพเส้นผมด้วย และจะยืนยันตอนปรึกษาที่ร้าน หากต้องการทราบราคาสุดท้ายก่อน กรุณาสอบถามช่างผู้ดูแลก่อนเริ่มบริการ'};
 var CUT={ja:'カット',en:'Hair Cut',th:'ตัดผม'};
 fetch('data/menu.json').then(function(r){return r.json();}).then(function(d){
   var note=NOTE[LANG], cut=CUT[LANG];
