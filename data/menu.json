@@ -10,7 +10,7 @@
    "items": [
     {
      "name": "Tokyo Combo — Cut + Full Color + 4Step TOKIO",
-     "price": "฿4,017~",
+     "price": "฿4,017~5,980",
      "off": "35% OFF",
      "dur": {
       "ja": "4時間",
@@ -25,7 +25,7 @@
     },
     {
      "name": "Colour + 4Step TOKIO Treatment",
-     "price": "฿3,486~",
+     "price": "฿3,486~5,600",
      "off": "30% OFF",
      "dur": {
       "ja": "3時間",
@@ -40,7 +40,7 @@
     },
     {
      "name": "Cut + Full Colour",
-     "price": "฿3,142.50~",
+     "price": "฿3,142.50~4,275",
      "off": "25% OFF",
      "dur": {
       "ja": "3時間",
@@ -55,7 +55,7 @@
     },
     {
      "name": "Hokkaido — Cut + 4Step TOKIO",
-     "price": "฿2,711.50~",
+     "price": "฿2,711.50~3,995",
      "off": "15% OFF",
      "dur": {
       "ja": "2時間",
@@ -70,7 +70,7 @@
     },
     {
      "name": "Full Bleach + 4Step TOKIO",
-     "price": "฿5,584~",
+     "price": "฿5,584~9,200",
      "off": "20% OFF",
      "dur": {
       "ja": "5時間",
@@ -85,7 +85,7 @@
     },
     {
      "name": "Japanese Straight Perm (Rebonding) + Cut",
-     "price": "฿4,671~",
+     "price": "฿4,671~6,930",
      "off": "10% OFF",
      "dur": {
       "ja": "4時間",
@@ -100,7 +100,7 @@
     },
     {
      "name": "New York — half Foil & Toner + Olaplex + Cut",
-     "price": "฿5,760~",
+     "price": "฿5,760~9,525",
      "off": "25% OFF",
      "dur": {
       "ja": "4時間45分",
@@ -115,7 +115,7 @@
     },
     {
      "name": "Osaka — Inner Bleach & Color + Cut",
-     "price": "฿4,411.50~",
+     "price": "฿4,411.50~6,120",
      "off": "15% OFF",
      "dur": {
       "ja": "4時間",
@@ -140,7 +140,7 @@
    "items": [
     {
      "name": "90min Premium Head Spa (TOKIO) + Full Colour",
-     "price": "฿4,792~",
+     "price": "฿4,792~7,200",
      "off": "20% OFF",
      "dur": {
       "ja": "3時間30分",
@@ -155,7 +155,7 @@
     },
     {
      "name": "90min Premium Head Spa (TOKIO) + Hair Cut",
-     "price": "฿3,570~",
+     "price": "฿3,570~4,845",
      "off": "15% OFF",
      "dur": {
       "ja": "2時間30分",
@@ -170,7 +170,7 @@
     },
     {
      "name": "60min Head Spa + Full Colour",
-     "price": "฿3,992~",
+     "price": "฿3,992~6,000",
      "off": "20% OFF",
      "dur": {
       "ja": "3時間",
@@ -185,7 +185,7 @@
     },
     {
      "name": "60min Head Spa + Hair Cut",
-     "price": "฿2,560~",
+     "price": "฿2,560~3,360",
      "off": "20% OFF",
      "dur": {
       "ja": "2時間",
@@ -280,7 +280,7 @@
    "items": [
     {
      "name": "Touch up Color",
-     "price": "฿2,500~",
+     "price": "฿2,500~3,000",
      "off": "",
      "dur": {
       "ja": "2時間",
@@ -295,7 +295,7 @@
     },
     {
      "name": "Full Color",
-     "price": "฿2,990~",
+     "price": "฿2,990~4,500",
      "off": "",
      "dur": {
       "ja": "2時間",
@@ -310,7 +310,7 @@
     },
     {
      "name": "Full Bleach & Full Color",
-     "price": "฿4,990~",
+     "price": "฿4,990~8,000",
      "off": "",
      "dur": {
       "ja": "4時間",
@@ -325,7 +325,7 @@
     },
     {
      "name": "High Light Bleach & Full Color",
-     "price": "฿4,990~",
+     "price": "฿4,990~8,000",
      "off": "",
      "dur": {
       "ja": "4時間",
@@ -340,7 +340,7 @@
     },
     {
      "name": "Half head foil & Toner",
-     "price": "฿4,490~",
+     "price": "฿4,490~8,000",
      "off": "",
      "dur": {
       "ja": "3時間30分",
@@ -355,7 +355,7 @@
     },
     {
      "name": "Inner Bleach & Design Color",
-     "price": "฿3,990~",
+     "price": "฿3,990~6,000",
      "off": "",
      "dur": {
       "ja": "3時間",
@@ -370,7 +370,7 @@
     },
     {
      "name": "Balayage Design",
-     "price": "฿5,590~",
+     "price": "฿5,590~9,000",
      "off": "",
      "dur": {
       "ja": "4時間",
@@ -395,7 +395,7 @@
    "items": [
     {
      "name": "Japanese Hair-Repair Straight Perm",
-     "price": "฿3,990~",
+     "price": "฿3,990~6,500",
      "off": "",
      "dur": {
       "ja": "3時間",
@@ -410,7 +410,7 @@
     },
     {
      "name": "Roots Straight Perm (returning guests only)",
-     "price": "฿2,990~",
+     "price": "฿2,990~4,000",
      "off": "",
      "dur": {
       "ja": "1時間30分",
@@ -450,7 +450,7 @@
    "items": [
     {
      "name": "Head Spa & Warm Water Bath",
-     "price": "฿2,000~",
+     "price": "฿2,000~3,000",
      "off": "",
      "dur": {
       "ja": "60分",
@@ -465,7 +465,7 @@
     },
     {
      "name": "Premium Head Spa & TOKIO 4Step & Warm Water Bath",
-     "price": "฿3,000~",
+     "price": "฿3,000~4,500",
      "off": "",
      "dur": {
       "ja": "90分",
@@ -490,7 +490,7 @@
    "items": [
     {
      "name": "Japanese 4Step TOKIO Premium Treatment",
-     "price": "฿1,990~",
+     "price": "฿1,990~3,500",
      "off": "",
      "dur": {
       "ja": "1時間",
@@ -505,7 +505,7 @@
     },
     {
      "name": "Olaplex Treatment",
-     "price": "฿1,990~",
+     "price": "฿1,990~3,500",
      "off": "",
      "dur": {
       "ja": "15分",
@@ -520,7 +520,7 @@
     },
     {
      "name": "Kerasilk Keratin Treatment",
-     "price": "฿3,990~",
+     "price": "฿3,990~6,000",
      "off": "",
      "dur": {
       "ja": "2時間",
@@ -560,7 +560,7 @@
     },
     {
      "name": "Shampoo & Blow",
-     "price": "฿500~",
+     "price": "฿500~900",
      "off": "",
      "dur": {
       "ja": "1時間",
