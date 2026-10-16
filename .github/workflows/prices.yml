@@ -24,7 +24,7 @@ jobs:
         id: build
         run: |
           set +e
-          node tools/prices/build.mjs | tee build.log
+          node tools/prices/build.mjs | tee build.log; node tools/prices/build.mjs >> build.log
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
       - name: commit
         run: |

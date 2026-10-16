@@ -1,9 +1,9 @@
 {
- "at": "2026-10-16T07:55:20.152Z",
+ "at": "2026-10-16T08:53:20.879Z",
  "menus": 41,
  "orphans": [],
  "broken": [],
- "changed": [
-  "data/menu.json"
- ]
+ "changed": [],
+ "unregistered": [],
+ "autoRegistered": []
 }

@@ -40,9 +40,19 @@ const report = { at: new Date().toISOString(), menus: visIds.size, orphans: [], 
 const MIN_CATS = { cut: ['Hair Cut'], colour: ['Hair Colour'], straight: ['Perm'], headspa: ['Japanese Head Spa'], treatment: ['Treatment'] };
 const MIN_SKIP = /fringe|kid|returning|前髪|キッズ|既存/i;
 function resolve(id) {
+  if (id.startsWith('set:')) { // 割引率の幅「15〜20%」: 公開中のセットの割引率の最小・最大
+    const vs = id.slice(4).split(',').map((x) => resolve(x)).filter(Boolean).filter((v) => v.pct);
+    return vs.length ? { price: 0, max: null, from: false, pct: 0, pctLo: Math.min(...vs.map((v) => v.pct)), pctHi: Math.max(...vs.map((v) => v.pct)) } : null;
+  }
+  if (id.startsWith('minof:')) { // 併記（例「TOKIO/Olaplex ฿1,990」）: 公開中の中で一番安い物
+    const vs = id.slice(6).split(',').map((x) => resolve(x)).filter(Boolean);
+    return vs.length ? vs.reduce((a, b) => (b.price < a.price ? b : a)) : null;
+  }
   if (id.startsWith('min:')) {
     const keys = MIN_CATS[id.slice(4)] || [];
-    const its = cats.filter((c) => keys.includes(c.key)).flatMap((c) => c.items).filter((i) => !MIN_SKIP.test(i.name.en + ' ' + i.name.ja));
+    const all = cats.filter((c) => keys.includes(c.key)).flatMap((c) => c.items);
+    let its = all.filter((i) => !MIN_SKIP.test(i.name.en + ' ' + i.name.ja));
+    if (!its.length) its = all; // 代表メニューが全部非公開なら、残っている物の最安
     if (!its.length) return null;
     const lo = its.reduce((a, b) => (b.price < a.price ? b : a));
     return { price: lo.price, max: null, from: true };
@@ -59,6 +69,9 @@ function resolve(id) {
 function render(slot, v) {
   if (slot.fmt === 'x') return R.fmt(v.max != null ? v.max : v.price);
   if (slot.fmt === 'pct') return v.pct ? String(v.pct) : slot.cur; // クーポンの割引率「20%OFF」の数字（割引率の無い定額クーポンはそのまま）
+  if (slot.fmt === 'pctrange') return v.pctLo === v.pctHi ? String(v.pctHi) : String(v.pctLo) + slot.sep + String(v.pctHi);
+  if (slot.fmt === 'pctlo') return String(v.pctLo);
+  if (slot.fmt === 'pcthi') return String(v.pctHi);
   if (slot.fmt === 'r') return R.fmt(v.price) + (v.max != null ? slot.sep + R.fmt(v.max) : (v.from ? slot.sep : ''));
   return R.fmt(v.price);
 }
@@ -88,7 +101,8 @@ function eachLd(s, fn) {
     return (JSON.stringify(j) === before && out === body) ? all : a + out + b;
   });
 }
-function walkArrays(o, key, fn) { if (Array.isArray(o)) { if (o.some((x) => x && x['@type'] === 'Offer' && x.sku)) fn(o, key); o.forEach((x, i) => walkArrays(x, key + '[' + i + ']', fn)); } else if (o && typeof o === 'object') Object.entries(o).forEach(([k, v]) => walkArrays(v, key + '.' + k, fn)); }
+// 空になった配列にも戻せるよう、配列は全部見る
+function walkArrays(o, key, fn) { if (Array.isArray(o)) { fn(o, key); o.forEach((x, i) => walkArrays(x, key + '[' + i + ']', fn)); } else if (o && typeof o === 'object') Object.entries(o).forEach(([k, v]) => walkArrays(v, key + '.' + k, fn)); }
 const OFFER_STASH_FILE = 'data/price-offers-hidden.json';
 const offerStash = fs.existsSync(path.join(ROOT, OFFER_STASH_FILE)) ? JSON.parse(rd(OFFER_STASH_FILE)) : [];
 let ldIndex = 0;
@@ -120,6 +134,20 @@ for (const f of htmlFiles) {
         if (o && o['@type'] === 'Offer' && o.sku && !OFFERS.includes(o) && !resolve(String(o.sku))) { offerStash.push({ k: sk, idx: i, offer: o }); arr.splice(i, 1); report.hiddenOffers = (report.hiddenOffers || 0) + 1; }
       }
     });
+    // 4b. 配列でなく1つだけの Offer（"offers": {...}）も同じく外して保管・戻す
+    (function walkObj(o, key) {
+      if (!o || typeof o !== 'object' || Array.isArray(o)) { if (Array.isArray(o)) o.forEach((x, i) => walkObj(x, key + '[' + i + ']')); return; }
+      const sk = `${f}|${ldIndex}|${key}`;
+      offerStash.filter((x) => x.k === sk && x.prop && resolve(x.offer.sku)).forEach((x) => {
+        const cur = { ...o, [x.prop]: x.offer }; const order = (x.order || []).filter((kk) => kk in cur).concat(Object.keys(cur).filter((kk) => !(x.order || []).includes(kk)));
+        Object.keys(o).forEach((kk) => delete o[kk]); order.forEach((kk) => { o[kk] = cur[kk]; }); // 元のキーの順番で戻す
+        offerStash.splice(offerStash.indexOf(x), 1);
+      });
+      for (const [pk, v] of Object.entries(o)) {
+        if (v && typeof v === 'object' && !Array.isArray(v) && v['@type'] === 'Offer' && v.sku && !resolve(String(v.sku))) { offerStash.push({ k: sk, prop: pk, offer: v, order: Object.keys(o) }); delete o[pk]; report.hiddenOffers = (report.hiddenOffers || 0) + 1; }
+        else walkObj(v, key + '.' + pk);
+      }
+    })(j, '$');
     // 4. 個別ページの Offer（sku 付き）
     walk(j, (o) => {
       if (o['@type'] !== 'Offer' || !o.sku || o === undefined) return;
@@ -127,6 +155,7 @@ for (const f of htmlFiles) {
       const v = resolve(String(o.sku));
       if (!v) { report.orphans.push({ f, where: 'jsonld', id: o.sku }); return; }
       o.price = String(v.price);
+      if (v.pct && typeof o.name === 'string') o.name = o.name.replace(/(\d{1,2})(\s?%)/, String(v.pct) + '$2');
       if (v.max != null) o.priceSpecification = { '@type': 'PriceSpecification', minPrice: String(v.price), maxPrice: String(v.max), priceCurrency: 'THB' };
       else if (o.priceSpecification) delete o.priceSpecification;
     });
@@ -142,7 +171,7 @@ const DELIMS = [" · ", " / ", " | ", " ｜ ", " ／ ", " ・ ", " and ", " or "
 const segs = fs.existsSync(path.join(ROOT, SEG_FILE)) ? JSON.parse(rd(SEG_FILE)) : [];
 const reEsc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // 値段らしい数字（3桁以上か桁区切り付き）だけを「何かの値段」にする。「60 min」「90分」のような短い数字は文字どおりに照合（取り違え防止）
-const skel = (x) => reEsc(x).replace(/[0-9]{1,3}(?:,[0-9]{3})+(?:\\\.[0-9]+)?|[0-9]{3,}(?:\\\.[0-9]+)?/g, '[0-9][0-9,]*(?:\\.[0-9]+)?');
+const skel = (x) => reEsc(x).replace(/[0-9]{1,2}(?:\s?[〜~–\\-]\s?[0-9]{1,2})?(?=\s?%)|[0-9]{1,3}(?:,[0-9]{3})+(?:\\\.[0-9]+)?|[0-9]{3,}(?:\\\.[0-9]+)?/g, (m) => (/,|^[0-9]{3,}/.test(m) && !/[〜~–-]/.test(m) ? '[0-9][0-9,]*(?:\\.[0-9]+)?' : '[0-9]{1,2}(?:\\s?[〜~–\\-]\\s?[0-9]{1,2})?')); // 値段と割引率（幅「15〜20%」も1つ）は変わりうる数字として照合
 // 目印の端が数字の途中（「฿2,」など）にならないよう、数字の切れ目まで伸ばす
 const NUMCH = /[0-9.,]/;
 function widen(txt, a, b) { while (a > 0 && NUMCH.test(txt[a]) && NUMCH.test(txt[a - 1])) a--; while (b < txt.length && NUMCH.test(txt[b - 1]) && NUMCH.test(txt[b])) b++; return [a, b]; }
@@ -179,7 +208,7 @@ const SLOTS_FILE = 'data/price-slots.json';
 const slots = fs.existsSync(path.join(ROOT, SLOTS_FILE)) ? JSON.parse(rd(SLOTS_FILE)) : [];
 // 消えた文の中で休眠中の値段（壊れた配線にも孤立にも数えない）
 const parked = (sl) => sl.parkedIn != null && segs[sl.parkedIn] && segs[sl.parkedIn].hidden;
-const segInsideHidden = (g) => segs.some((h) => h !== g && h.hidden && h.f === g.f && h.text.includes(g.text));
+const segInsideHidden = (g) => (g.overlapOf != null && segs[g.overlapOf] && segs[g.overlapOf].hidden) || segs.some((h) => h !== g && h.hidden && h.f === g.f && (h.removed || h.text).includes(g.text));
 const segByFile = {};
 segs.forEach((g, k) => { (segByFile[g.f] = segByFile[g.f] || []).push(k); });
 // 1ファイルずつ: スロットとセグメントの位置を先に全部見つける → 消す/戻すを当てる → 位置をずらして目印を取り直す
@@ -208,13 +237,15 @@ for (const [f, ks] of Object.entries(segByFile)) {
       if (!m || m === 'many') { report.broken.push({ f, id: g.id, seg: g.text.slice(0, 50), why: 'セグメントの目印が見つからない' }); continue; }
       const st = m.index + m[1].length; g.text = m[2];
       loc.push({ kind: 'seg', k, st, en: st + m[2].length });
-      if (want) edits.push({ st, en: st + m[2].length, ins: '', k, hide: true, core: [st, st + m[2].length] });
+      if (want) edits.push({ st, en: st + m[2].length, ins: g.alt != null ? g.alt : '', k, hide: true, core: [st, st + m[2].length] });
     } else {
-      const m = locate(s, [g.pre, g.post]);
+      const alt = g.alt != null ? g.alt : '';
+      const m = alt ? locate(s, [g.pre, alt, g.post]) : locate(s, [g.pre, g.post]);
+      if (!m && segInsideHidden(g)) continue; // 外側の記述ごと消えている → 外側が戻れば一緒に戻る
       if (!m || m === 'many') { report.broken.push({ f, id: g.id, seg: g.text.slice(0, 50), why: '戻す場所が見つからない' }); continue; }
       const at = m.index + m[1].length;
-      loc.push({ kind: 'seg', k, st: at, en: at });
-      if (!want) edits.push({ st: at, en: at, ins: g.cut ? (g.cut.side === 'before' ? g.cut.d + g.text : g.text + g.cut.d) : g.text, k, hide: false });
+      loc.push({ kind: 'seg', k, st: at, en: at + alt.length });
+      if (!want) edits.push({ st: at, en: at + alt.length, ins: g.removed != null ? g.removed : (g.cut ? (g.cut.side === 'before' ? g.cut.d + g.text : g.text + g.cut.d) : g.text), k, hide: false });
     }
   }
   const ordOf = (k) => (segs[k].ord != null ? segs[k].ord : k);
@@ -222,7 +253,7 @@ for (const [f, ks] of Object.entries(segByFile)) {
   // 消す時は区切り（・ / 、 and など）を1つだけ一緒に消す。基本は前側、前が無い・前の区切りを他が使った時は後ろ側
   { let usedTo = -1;
     edits.forEach((e, i) => {
-      if (!e.hide || segs[e.k].noDelim) return;
+      if (!e.hide || segs[e.k].noDelim || segs[e.k].alt != null) return;
       const next = edits.slice(i + 1).find((x) => x.hide);
       const dBefore = DELIMS.find((d) => e.st - d.length >= 0 && s.slice(e.st - d.length, e.st) === d);
       const dAfter = DELIMS.find((d) => s.slice(e.en, e.en + d.length) === d);
@@ -231,6 +262,7 @@ for (const [f, ks] of Object.entries(segByFile)) {
       // 両側に区切りがある時は、完全な形（前後に空白がある等＝長い方）を消して、残る区切りの見た目を揃える
       if (canB && (!canA || dBefore.length >= dAfter.length)) { e.st -= dBefore.length; e.cut = { side: 'before', d: dBefore }; }
       else if (canA) { e.en += dAfter.length; e.cut = { side: 'after', d: dAfter }; }
+      if (s[e.st - 1] === ' ' && s[e.en] === ' ') e.en += 1; // 消した後に空白が2つ並ばないように
       usedTo = e.en;
     });
   }
@@ -240,6 +272,7 @@ for (const [f, ks] of Object.entries(segByFile)) {
     if (e.st < lastEnd) {
       const outer = ok[ok.length - 1];
       if (e.hide && outer && outer.hide && e.en <= outer.en) { nested.push(e); continue; } // 大きい方に含まれる → 一緒に消える
+      if (e.hide && outer && outer.hide && outer.ins === '' && e.ins === '') { outer.en = e.en; lastEnd = e.en; nested.push(e); continue; } // 一部重なる → 合わせて1回で消す（戻す時は消した文字列をそのまま戻す）
       report.broken.push({ f, id: segs[e.k].id, seg: segs[e.k].text.slice(0, 50), why: '他の消す範囲と重なる' }); continue;
     }
     ok.push(e); lastEnd = e.en;
@@ -257,8 +290,11 @@ for (const [f, ks] of Object.entries(segByFile)) {
   };
   // 目印が本文で1か所に決まるまで前後を伸ばす
   const insideEdit = (st, en) => ok.find((e) => e.hide && st >= e.st && en <= e.en);
+  for (const e of ok) if (e.hide) e.removed = s.slice(e.st, e.en);
   for (const e of ok.slice().reverse()) s = s.slice(0, e.st) + e.ins + s.slice(e.en);
-  for (const e of ok.concat(nested)) { if (e.hide) { if (e.cut) segs[e.k].cut = e.cut; else delete segs[e.k].cut; } else delete segs[e.k].cut; segs[e.k].hidden = e.hide; if (e.hide) report.hiddenSegs = (report.hiddenSegs || 0) + 1; else report.restoredSegs = (report.restoredSegs || 0) + 1; }
+  // 外側と一緒に戻った入れ子の記述は「表示中」に直す（中身がそのまま本文に戻っている）
+  for (const k of ks) { const g = segs[k]; if (g.hidden && !ok.some((e) => e.k === k)) { const m0 = locate(s, [g.pre, g.text, g.post]); if (m0 && m0 !== 'many') g.hidden = false; } }
+  for (const e of ok.concat(nested)) { if (e.hide) { if (e.cut) segs[e.k].cut = e.cut; else delete segs[e.k].cut; if (e.removed != null) segs[e.k].removed = e.removed; else delete segs[e.k].removed; } else { delete segs[e.k].cut; delete segs[e.k].removed; } segs[e.k].hidden = e.hide; if (e.hide) report.hiddenSegs = (report.hiddenSegs || 0) + 1; else report.restoredSegs = (report.restoredSegs || 0) + 1; }
   for (const x of loc) {
     if (x.kind === 'slot') {
       const sl = slots[x.k];
@@ -273,9 +309,10 @@ for (const [f, ks] of Object.entries(segByFile)) {
       if (!g.hidden && insideEdit(x.st, x.en) && !ok.some((e) => e.k === x.k)) continue; // 別メニューの消えた文の中に入っている → 目印はそのまま
       const own = ok.find((e) => e.k === x.k);
       let ns = mapPos(own && own.hide ? own.st : x.st, x.k); // 区切りごと消した時は消した範囲の頭が新しい継ぎ目
-      if (own && !own.hide && !own.ins.startsWith(g.text)) ns += own.ins.length - g.text.length; // 前の区切りと一緒に戻した → 本文は区切りの後ろから
-      if (g.hidden) { [g.pre, g.post] = anchor(s, ns, ns, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
-      else { const ne = ns + g.text.length; [g.pre, g.post] = anchor(s, ns, ne, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
+      if (own && !own.hide) { const off = own.ins.indexOf(g.text); if (off > 0) ns += off; } // 区切りや重なり分と一緒に戻した → 本文はその中の位置から
+      if (g.hidden) { const al = (g.alt || '').length; [g.pre, g.post] = anchor(s, ns, ns + al, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
+      else if (!own && ok.some((e) => e.hide && e.st < x.en && e.en > x.st && !(e.st <= x.st && e.en >= x.en) && !(e.st >= x.st && e.en <= x.en))) { g.overlapOf = ok.find((e) => e.hide && e.st < x.en && e.en > x.st).k; continue; } // 隠れた記述と一部重なる → 目印はそのまま（相手が戻れば見つかる）
+      else { delete g.overlapOf; const ne = own ? ns + g.text.length : mapPos(x.en, x.k); if (!own) g.text = s.slice(ns, ne); [g.pre, g.post] = anchor(s, ns, ne, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
     }
   }
   wr(f, s);
@@ -346,6 +383,48 @@ if (segs.length) wr(SEG_FILE, JSON.stringify(segs, null, 0).replace(/\},\{/g, '}
 
 
 wr(OFFER_STASH_FILE, JSON.stringify(offerStash, null, 1) + '\n');
+// ── 6. 未登録の値段を見張る: 本文の「฿数字」で、どの配線にも入っていない物 ──
+// 名前がすぐ前（120文字以内）に書かれていて値段も一致するメニューが1つだけなら、自動で配線に登録する（記述の範囲＝名前〜値段）。
+// それ以外は data/price-report.json の unregistered に出す（自動では触らない）
+{
+  const visItems = cats.flatMap((c) => c.items);
+  const allNames = (it) => [it.name.ja, it.name.en, it.name.th].map((x) => String(x || '').trim()).filter((x) => x.length >= 3);
+  const files = fs.readdirSync(ROOT).filter((f) => f.endsWith('.html') || f === 'llms.txt' || f === 'llms-full.txt');
+  report.unregistered = []; report.autoRegistered = [];
+  // data/price-ignore.json: 他店・相場など Ciel の値段ではない物 {files:[正規表現], items:[{f, price, near}]}
+  const IGN = fs.existsSync(path.join(ROOT, 'data/price-ignore.json')) ? JSON.parse(rd('data/price-ignore.json')) : { files: [], items: [] };
+  const ignored = (f, price, before) => (IGN.files || []).some((r) => new RegExp(r).test(f)) || (IGN.items || []).some((x) => x.f === f && x.price === price && before.includes(x.near));
+  for (const f of files) {
+    const s = rd(f);
+    if (/^menu(\.(en|th))?\.html$/.test(f)) continue; // メニューページは丸ごと生成
+    const covered = [];
+    slots.filter((x) => x.f === f).forEach((x) => { const n = s.indexOf(x.pre + x.cur + x.post); if (n >= 0) covered.push([n + x.pre.length, n + x.pre.length + x.cur.length]); });
+    const inLd = (p) => { const a = s.lastIndexOf('<script type="application/ld+json">', p); return a >= 0 && s.indexOf('</script>', a) > p && /"sku"|"OfferCatalog"|"makesOffer"/.test(s.slice(Math.max(a, p - 300), p)); };
+    for (const m of s.matchAll(/฿\s?([0-9]{1,2},[0-9]{3}|[0-9]{3,5})(?:\.[0-9]{2})?/g)) {
+      const p = m.index + m[0].indexOf(m[1]);
+      if (covered.some(([a, b]) => p >= a && p < b) || inLd(p)) continue;
+      const val = Number(m[1].replace(/,/g, ''));
+      const before = s.slice(Math.max(0, p - 120), p);
+      const hits = visItems.filter((it) => it.price === val && allNames(it).some((n) => before.includes(n)));
+      if (hits.length === 1) {
+        const it = hits[0];
+        const nm = allNames(it).filter((n) => before.includes(n)).sort((a, b) => b.length - a.length)[0];
+        const nameAt = p - 120 + before.lastIndexOf(nm) + (p - 120 < 0 ? 120 - p : 0);
+        const tail = s.slice(p).match(/^[0-9,]+(\s?[〜~–]\s?[0-9,]*)?/)[0];
+        const curEnd = p + m[1].length + ((tail.match(/\s?[〜~–]\s?[0-9,]*[0-9]/) || [''])[0].length); // 後ろの読点は値段に含めない
+        const cur = s.slice(p, curEnd); const sep = (cur.match(/\s?[〜~–]\s?/) || [''])[0];
+        const [pre, post] = anchor(s, p, curEnd, 24, 12);
+        slots.push({ f, id: it.id, fmt: sep ? 'r' : 'n', sep, pre, cur, post });
+        const [gp, gq] = anchor(s, nameAt, curEnd, 24, 24);
+        segs.push({ f, id: it.id, pre: gp, text: s.slice(nameAt, curEnd), post: gq, hidden: false, ord: nameAt });
+        report.autoRegistered.push({ f, id: it.id, text: s.slice(nameAt, curEnd).slice(0, 60) });
+      } else if (!ignored(f, m[0], before)) {
+        report.unregistered.push({ f, price: m[0], context: before.slice(-50).replace(/<[^>]*>/g, ' ') });
+      }
+    }
+  }
+  if (report.autoRegistered.length) { wr(SLOTS_FILE, JSON.stringify(slots, null, 0).replace(/\},\{/g, '},\n{') + '\n'); wr(SEG_FILE, JSON.stringify(segs, null, 0).replace(/\},\{/g, '},\n{') + '\n'); }
+}
 report.changed = changed.filter((f) => f !== SLOTS_FILE && f !== SEG_FILE && f !== OFFER_STASH_FILE);
 // 報告は中身（時刻以外）が変わった時だけ書く（毎時の空コミットを出さない）
 if (!CHECK) {
@@ -354,7 +433,7 @@ if (!CHECK) {
   const cur = { ...report, changed: report.changed }; const curNoAt = { ...cur }; delete curNoAt.at;
   if (prev !== JSON.stringify(curNoAt) || report.changed.length) fs.writeFileSync(rp, JSON.stringify(cur, null, 1) + '\n');
 }
-console.log(`menus=${report.menus} changed=${report.changed.length} orphans=${report.orphans.length} broken=${report.broken.length} hidden=${report.hiddenSegs || 0} restored=${report.restoredSegs || 0}`);
+console.log(`menus=${report.menus} changed=${report.changed.length} orphans=${report.orphans.length} broken=${report.broken.length} hidden=${report.hiddenSegs || 0} restored=${report.restoredSegs || 0} unregistered=${(report.unregistered || []).length} auto=${(report.autoRegistered || []).length}`);
 report.changed.forEach((f) => console.log('  changed', f));
 report.orphans.forEach((o) => console.log('  ORPHAN', JSON.stringify(o)));
 report.broken.forEach((o) => console.log('  BROKEN', JSON.stringify(o)));
