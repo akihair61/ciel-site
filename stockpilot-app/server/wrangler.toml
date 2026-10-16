@@ -1,0 +1,13 @@
+name = "stockpilot-ai"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Create with: npx wrangler kv namespace create QUOTA  — then paste the id here.
+# [[kv_namespaces]]
+# binding = "QUOTA"
+# id = "<your-kv-id>"
+
+# Secrets (set with `npx wrangler secret put <NAME>`):
+#   ANTHROPIC_API_KEY, APP_KEY, REVENUECAT_WEBHOOK_SECRET
+# Optional var: CLAUDE_MODEL (defaults to claude-opus-5-5)
