@@ -347,7 +347,13 @@ if (segs.length) wr(SEG_FILE, JSON.stringify(segs, null, 0).replace(/\},\{/g, '}
 
 wr(OFFER_STASH_FILE, JSON.stringify(offerStash, null, 1) + '\n');
 report.changed = changed.filter((f) => f !== SLOTS_FILE && f !== SEG_FILE && f !== OFFER_STASH_FILE);
-if (!CHECK) fs.writeFileSync(path.join(ROOT, 'data', 'price-report.json'), JSON.stringify({ ...report, changed: report.changed }, null, 1) + '\n');
+// 報告は中身（時刻以外）が変わった時だけ書く（毎時の空コミットを出さない）
+if (!CHECK) {
+  const rp = path.join(ROOT, 'data', 'price-report.json');
+  const prev = fs.existsSync(rp) ? (() => { try { const o = JSON.parse(fs.readFileSync(rp, 'utf8')); delete o.at; return JSON.stringify(o); } catch (e) { return ''; } })() : '';
+  const cur = { ...report, changed: report.changed }; const curNoAt = { ...cur }; delete curNoAt.at;
+  if (prev !== JSON.stringify(curNoAt) || report.changed.length) fs.writeFileSync(rp, JSON.stringify(cur, null, 1) + '\n');
+}
 console.log(`menus=${report.menus} changed=${report.changed.length} orphans=${report.orphans.length} broken=${report.broken.length} hidden=${report.hiddenSegs || 0} restored=${report.restoredSegs || 0}`);
 report.changed.forEach((f) => console.log('  changed', f));
 report.orphans.forEach((o) => console.log('  ORPHAN', JSON.stringify(o)));
