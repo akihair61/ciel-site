@@ -10,6 +10,8 @@
 | 文章中の値段・割引率 | data/price-slots.json に1か所ずつ登録（どのメニューか・書式・前後の目印）→ 数字を書き換え | 1時間以内 |
 
 - 実行: GitHub Actions `prices-from-admin`（毎時7分・手動実行も可）。手元では `node tools/prices/build.mjs`（`--check` で確認だけ）。
-- メニューを非公開・削除したのに文章に値段が残っている所は「孤立」として data/price-report.json に出る（文章は自動で消さない）。
+- **非公開・削除 → 文章からも自動で消える**: data/price-segments.json に「そのメニューが無くなったら消す範囲」（箇条の1項目・文・表の行・カード）を1か所ずつ登録。非公開にすると消え、公開に戻すと元の場所へ元の文のまま戻る（中の値段は最新）。消す範囲が決められない少数の箇所は「孤立」として data/price-report.json に出る。
+- 構造化データの Offer（sku 付き）も同じく、非公開で外し（data/price-offers-hidden.json に保管）、公開で元の位置へ戻る。
+- 試験: `PRICES_TEST_PATCH='{"fs27":{"pub":0}}' node tools/prices/build.mjs` で管理画面を触らずに試せる（必ずコピーしたフォルダで）。
 - ページの文章を手で直して目印が消えた所は「壊れた配線」として出る。新しい値段を文章に書いたら price-slots.json に登録する。
 - 特別 id: `min:cut` / `min:colour` / `min:straight` / `min:headspa` / `min:treatment` … カテゴリの最安（前髪・キッズ・既存客のみは除く）。
