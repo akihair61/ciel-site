@@ -65,7 +65,7 @@
       .replace(/\s{2,}/g, ' ').trim();
   }
   function tagOf(m, lang) {
-    var src = lang === 'ja' ? (m.name_ja || m.nameJa || m.name_en || m.name) : (m.name_en || m.name);
+    var src = lang === 'ja' ? (m.name_ja || m.nameJa || m.name_en || m.name) : lang === 'th' ? (m.name_th || m.name_en || m.name) : (m.name_en || m.name);
     var t = (String(src || '').match(/【([^】]*)】/) || [])[1];
     if (t) return clean(t).replace(/\s*·+\s*/g, ' · ');
     var pc = num(m.percent);
