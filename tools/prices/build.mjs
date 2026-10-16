@@ -137,6 +137,8 @@ for (const f of htmlFiles) {
 // ── 5a. 文章中の「そのメニューの記述」（セグメント）: 非公開・削除で消し、公開に戻ったら元の場所へ戻す ──
 // data/price-segments.json: [{f, id, pre, text, post, hidden}]。数字はその都度変わるので、探す時は数字を「何かの数字」として照合する
 const SEG_FILE = 'data/price-segments.json';
+// 区切りの候補（長い物から）。記述の範囲（text）には区切りを含めない
+const DELIMS = [" · ", " / ", " | ", " ｜ ", " ／ ", " ・ ", " and ", " or ", " และ ", " หรือ ", "· ", " ·", "・ ", " ・", "／ ", " ／", "/ ", " /", "| ", " |", "、 ", "; ", ", ", "and ", "or ", " and", " or", "และ", "หรือ", "／", "・", "·", "、", "｜", "/", "|", ";", ",", " ", "　"];
 const segs = fs.existsSync(path.join(ROOT, SEG_FILE)) ? JSON.parse(rd(SEG_FILE)) : [];
 const reEsc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // 値段らしい数字（3桁以上か桁区切り付き）だけを「何かの値段」にする。「60 min」「90分」のような短い数字は文字どおりに照合（取り違え防止）
@@ -163,8 +165,16 @@ function locate(s, parts) {
   if (a >= 0) return 'many';
   return findOne(s, parts.slice(0, -1).map((x) => '(' + skel(x) + ')').join('') + skel(parts[parts.length - 1]));
 }
+// 記述の中身が変わっていても（中に入れ子の別メニューが消えた等）、前後の目印で挟まれた範囲として見つける
+function locateLoose(s, g) {
+  const m = locate(s, [g.pre, g.text, g.post]);
+  if (m) return m;
+  const re = '(' + skel(g.pre) + ')([\\s\\S]{1,' + (g.text.length + 400) + '}?)' + skel(g.post);
+  return findOne(s, re);
+}
 function findOne(s, reSrc) { const ms = [...s.matchAll(new RegExp(reSrc, 'g'))]; return ms.length === 1 ? ms[0] : (ms.length ? 'many' : null); }
-const visibleNow = (id) => !!resolve(id);
+// any:fs25,fs26 … どれか1つでも公開なら表示（括弧などの「入れ物」用）
+const visibleNow = (id) => (String(id).startsWith('any:') ? String(id).slice(4).split(',').some((x) => !!resolve(x)) : !!resolve(id));
 const SLOTS_FILE = 'data/price-slots.json';
 const slots = fs.existsSync(path.join(ROOT, SLOTS_FILE)) ? JSON.parse(rd(SLOTS_FILE)) : [];
 // 消えた文の中で休眠中の値段（壊れた配線にも孤立にも数えない）
@@ -193,21 +203,37 @@ for (const [f, ks] of Object.entries(segByFile)) {
     // 「消えている」はずなのに本文がそのまま在る（外側の文が戻った時に一緒に戻った）→ 表示中として扱う
     if (g.hidden) { const m0 = locate(s, [g.pre, g.text, g.post]); if (m0 && m0 !== 'many') g.hidden = false; }
     if (!g.hidden) {
-      const m = locate(s, [g.pre, g.text, g.post]);
+      const m = locateLoose(s, g);
       if (!m && segInsideHidden(g)) continue; // 別メニューの消えた文の中 → 休眠
       if (!m || m === 'many') { report.broken.push({ f, id: g.id, seg: g.text.slice(0, 50), why: 'セグメントの目印が見つからない' }); continue; }
       const st = m.index + m[1].length; g.text = m[2];
       loc.push({ kind: 'seg', k, st, en: st + m[2].length });
-      if (want) edits.push({ st, en: st + m[2].length, ins: '', k, hide: true });
+      if (want) edits.push({ st, en: st + m[2].length, ins: '', k, hide: true, core: [st, st + m[2].length] });
     } else {
       const m = locate(s, [g.pre, g.post]);
       if (!m || m === 'many') { report.broken.push({ f, id: g.id, seg: g.text.slice(0, 50), why: '戻す場所が見つからない' }); continue; }
       const at = m.index + m[1].length;
       loc.push({ kind: 'seg', k, st: at, en: at });
-      if (!want) edits.push({ st: at, en: at, ins: g.text, k, hide: false });
+      if (!want) edits.push({ st: at, en: at, ins: g.cut ? (g.cut.side === 'before' ? g.cut.d + g.text : g.text + g.cut.d) : g.text, k, hide: false });
     }
   }
-  edits.sort((a, b) => a.st - b.st || a.k - b.k); // 同じ位置に戻す文が並ぶ時は元の順（登録順＝本文の順）
+  const ordOf = (k) => (segs[k].ord != null ? segs[k].ord : k);
+  edits.sort((a, b) => a.st - b.st || ordOf(a.k) - ordOf(b.k)); // 同じ位置に戻す文が並ぶ時は元の本文の順（ord）
+  // 消す時は区切り（・ / 、 and など）を1つだけ一緒に消す。基本は前側、前が無い・前の区切りを他が使った時は後ろ側
+  { let usedTo = -1;
+    edits.forEach((e, i) => {
+      if (!e.hide || segs[e.k].noDelim) return;
+      const next = edits.slice(i + 1).find((x) => x.hide);
+      const dBefore = DELIMS.find((d) => e.st - d.length >= 0 && s.slice(e.st - d.length, e.st) === d);
+      const dAfter = DELIMS.find((d) => s.slice(e.en, e.en + d.length) === d);
+      const canB = dBefore && e.st - dBefore.length >= usedTo;
+      const canA = dAfter && (!next || e.en + dAfter.length <= next.st);
+      // 両側に区切りがある時は、完全な形（前後に空白がある等＝長い方）を消して、残る区切りの見た目を揃える
+      if (canB && (!canA || dBefore.length >= dAfter.length)) { e.st -= dBefore.length; e.cut = { side: 'before', d: dBefore }; }
+      else if (canA) { e.en += dAfter.length; e.cut = { side: 'after', d: dAfter }; }
+      usedTo = e.en;
+    });
+  }
   const ok = []; let lastEnd = -1;
   const nested = [];
   for (const e of edits) {
@@ -232,7 +258,7 @@ for (const [f, ks] of Object.entries(segByFile)) {
   // 目印が本文で1か所に決まるまで前後を伸ばす
   const insideEdit = (st, en) => ok.find((e) => e.hide && st >= e.st && en <= e.en);
   for (const e of ok.slice().reverse()) s = s.slice(0, e.st) + e.ins + s.slice(e.en);
-  for (const e of ok.concat(nested)) { segs[e.k].hidden = e.hide; if (e.hide) report.hiddenSegs = (report.hiddenSegs || 0) + 1; else report.restoredSegs = (report.restoredSegs || 0) + 1; }
+  for (const e of ok.concat(nested)) { if (e.hide) { if (e.cut) segs[e.k].cut = e.cut; else delete segs[e.k].cut; } else delete segs[e.k].cut; segs[e.k].hidden = e.hide; if (e.hide) report.hiddenSegs = (report.hiddenSegs || 0) + 1; else report.restoredSegs = (report.restoredSegs || 0) + 1; }
   for (const x of loc) {
     if (x.kind === 'slot') {
       const sl = slots[x.k];
@@ -245,7 +271,9 @@ for (const [f, ks] of Object.entries(segByFile)) {
       const g = segs[x.k];
       if (nested.some((e) => e.k === x.k)) continue; // 外側と一緒に消えた → 目印はそのまま（外側が戻れば見つかる）
       if (!g.hidden && insideEdit(x.st, x.en) && !ok.some((e) => e.k === x.k)) continue; // 別メニューの消えた文の中に入っている → 目印はそのまま
-      const ns = mapPos(x.st, x.k);
+      const own = ok.find((e) => e.k === x.k);
+      let ns = mapPos(own && own.hide ? own.st : x.st, x.k); // 区切りごと消した時は消した範囲の頭が新しい継ぎ目
+      if (own && !own.hide && !own.ins.startsWith(g.text)) ns += own.ins.length - g.text.length; // 前の区切りと一緒に戻した → 本文は区切りの後ろから
       if (g.hidden) { [g.pre, g.post] = anchor(s, ns, ns, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
       else { const ne = ns + g.text.length; [g.pre, g.post] = anchor(s, ns, ne, Math.max(24, Math.min(g.pre.length, 80)), Math.max(24, Math.min(g.post.length, 80))); }
     }
@@ -307,7 +335,7 @@ for (const [f, ks] of Object.entries(segByFile)) {
   for (const k of ks) {
     const g = segs[k];
     if (g.hidden) continue;
-    const m = locate(s, [g.pre, g.text, g.post]);
+    const m = locateLoose(s, g);
     if (!m && segInsideHidden(g)) continue;
     if (!m || m === 'many') { report.broken.push({ f, id: g.id, seg: g.text.slice(0, 50), why: 'セグメントの目印が見つからない（後）' }); continue; }
     const st = m.index + m[1].length;
