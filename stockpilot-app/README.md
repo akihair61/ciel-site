@@ -106,6 +106,12 @@ npm run typecheck && npm test && npx expo lint   # アプリ
 cd server && npm run typecheck && npm test       # サーバー
 ```
 
+## ストア申請用の資料
+
+- `docs/store/listing.md`：ストア掲載文（App名・説明文・キーワード、8言語）と審査用メモ
+- `docs/store/privacy.md`：プライバシーポリシー（事業者名と連絡先を記入して公開）
+- アプリアイコン・スプラッシュ・Androidアダプティブアイコンは `assets/images/` に作成済み
+
 ## 構成
 
 ```
