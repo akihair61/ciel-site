@@ -838,6 +838,33 @@
    },
    "items": [
     {
+     "id": "m1792214592176",
+     "name": "Ladies' Cut + Cold Perm",
+     "names": {
+      "ja": "レディースカット＋パーマ（コールド）",
+      "en": "Ladies' Cut + Cold Perm",
+      "th": "ตัดผมผู้หญิง + ดัดเย็น"
+     },
+     "price": "฿4,221~5,121",
+     "min": 4221,
+     "max": 5121,
+     "off": {
+      "ja": "10%OFF View限定｜Aki指名不可",
+      "en": "10% OFF View Limited · Not with Aki",
+      "th": "ลด 10% เฉพาะช่าง View · เลือก Aki ไม่ได้"
+     },
+     "dur": {
+      "ja": "2時間",
+      "en": "2 hrs",
+      "th": "2 ชม."
+     },
+     "desc": {
+      "ja": "⚠️ このクーポンはView（または指名なし）担当限定です。Akiのご指名はできません。レディース専用。ブリーチや縮毛矯正をしている髪、エクステをつけている方は施術できません。",
+      "en": "⚠️ Stylist View or \"No request\" only — NOT available with Aki. Ladies only. Not available for bleached hair, hair that has been chemically straightened (straight perm), or with hair extensions.",
+      "th": "⚠️ คูปองนี้เฉพาะช่าง View (หรือไม่ระบุช่าง) เท่านั้น เลือกช่าง Aki ไม่ได้ · สำหรับผู้หญิงเท่านั้น · ไม่รับผมที่ฟอก ผมที่ยืดมาแล้ว และผู้ที่ต่อผม"
+     }
+    },
+    {
      "id": "fs24",
      "name": "Japanese Hair-Repair Straight Perm",
      "names": {
@@ -935,9 +962,9 @@
       "th": ""
      },
      "dur": {
-      "ja": "2.5時間",
-      "en": "2.5 hrs",
-      "th": "2.5 ชม."
+      "ja": "90分",
+      "en": "90 min",
+      "th": "90 นาที"
      },
      "desc": {
       "ja": "レディース専用のコールドパーマ。ブリーチや縮毛矯正をしている髪、エクステをつけている方は施術できません。",
