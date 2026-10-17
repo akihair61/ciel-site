@@ -917,6 +917,33 @@
       "en": "・New customers are not accepted. ・Only returning customers.",
       "th": "ยืดเฉพาะผมหน้าม้า เฉพาะลูกค้าที่กลับมาใช้บริการซ้ำ (ไม่รับลูกค้าใหม่)"
      }
+    },
+    {
+     "id": "m1792213032941",
+     "name": "Ladies' Cold Perm",
+     "names": {
+      "ja": "レディースパーマ（コールド）",
+      "en": "Ladies' Cold Perm",
+      "th": "ดัดเย็น (สำหรับผู้หญิง)"
+     },
+     "price": "฿3,490~4,490",
+     "min": 3490,
+     "max": 4490,
+     "off": {
+      "ja": "",
+      "en": "",
+      "th": ""
+     },
+     "dur": {
+      "ja": "2.5時間",
+      "en": "2.5 hrs",
+      "th": "2.5 ชม."
+     },
+     "desc": {
+      "ja": "レディース専用のコールドパーマ。ブリーチや縮毛矯正をしている髪、エクステをつけている方は施術できません。",
+      "en": "Cold perm for ladies only. Not available for bleached hair, hair that has been chemically straightened (straight perm), or with hair extensions.",
+      "th": "ดัดเย็นสำหรับผู้หญิงเท่านั้น ไม่รับผมที่ฟอก ผมที่ยืดมาแล้ว และผู้ที่ต่อผม"
+     }
     }
    ]
   },
