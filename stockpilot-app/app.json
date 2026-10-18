@@ -12,7 +12,8 @@
       "bundleIdentifier": "app.stockpilot.ios",
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "StockPilot uses your photos when you choose a shelf or delivery-note picture to read."
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
