@@ -1,9 +1,266 @@
 {
- "at": "2026-10-17T06:09:13.483Z",
+ "at": "2026-10-20T09:56:34.838Z",
  "menus": 43,
  "orphans": [],
- "broken": [],
+ "broken": [
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "seg": "ราคาเริ่ม ฿3,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "seg": "ราคาเริ่ม ฿3,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "seg": "เริ่ม ฿1,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "seg": "เริ่ม ฿1,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "seg": "เริ่ม ฿1,200",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "seg": "เริ่ม ฿1,200",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "cur": "2,990",
+   "pre": "นหม่น ชาเย็น น้ำตาลเทา เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "cur": "2,990",
+   "pre": "นหม่น ชาเย็น น้ำตาลเทา เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "cur": "2,990",
+   "pre": "นหม่น ชาเย็น น้ำตาลเทา เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "index.th.html",
+   "id": "fs13",
+   "cur": "1,200",
+   "pre": " Google 4.9 (135) ตัดผมเริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "index.th.html",
+   "id": "fs13",
+   "cur": "1,200",
+   "pre": " Google 4.9 (135) ตัดผมเริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "cur": "1,200",
+   "pre": "ปุ่น ตัดซอยตามโครงหน้า เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "cur": "1,200",
+   "pre": "ปุ่น ตัดซอยตามโครงหน้า เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "cur": "1,000",
+   "pre": "พงษ์ สุขุมวิท 24 เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "cur": "1,000",
+   "pre": "พงษ์ สุขุมวิท 24 เริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "cur": "3,990",
+   "pre": " กรุงเทพ ที่ไหนดี? ราคาเริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "cur": "3,990",
+   "pre": " กรุงเทพ ที่ไหนดี? ราคาเริ่ม ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "seg": "ราคาเริ่ม ฿3,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "id": "fs24",
+   "seg": "ราคาเริ่ม ฿3,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "seg": "เริ่ม ฿1,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "id": "fs14",
+   "seg": "เริ่ม ฿1,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "seg": "เริ่ม ฿1,200",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "id": "fs13",
+   "seg": "เริ่ม ฿1,200",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "id": "fs18",
+   "seg": "เริ่ม ฿2,990",
+   "why": "セグメントの目印が見つからない（後）"
+  }
+ ],
  "changed": [],
- "unregistered": [],
+ "unregistered": [
+  {
+   "f": "double-color-bangkok.th.html",
+   "price": "฿2,990",
+   "context": "itle>ทำสีผมไม่ฟอก กรุงเทพ | สีผมไม่ต้องฟอก เริ่ม ฿"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "price": "฿2,990",
+   "context": "e\": \"ทำสีผมไม่ฟอก กรุงเทพ | สีผมไม่ต้องฟอก เริ่ม ฿"
+  },
+  {
+   "f": "double-color-bangkok.th.html",
+   "price": "฿2,990",
+   "context": "e\": \"ทำสีผมไม่ฟอก กรุงเทพ | สีผมไม่ต้องฟอก เริ่ม ฿"
+  },
+  {
+   "f": "index.th.html",
+   "price": "฿1,200",
+   "context": "(Fresha 214 รีวิว) · Google 4.9 (135) ตัดผมเริ่ม ฿"
+  },
+  {
+   "f": "index.th.html",
+   "price": "฿1,200",
+   "context": "(Fresha 214 รีวิว) · Google 4.9 (135) ตัดผมเริ่ม ฿"
+  },
+  {
+   "f": "index.th.html",
+   "price": "฿3,990",
+   "context": "รีเมียม กรุงเทพ — ยืดผมญี่ปุ่น ตรงธรรมชาติ เริ่ม ฿"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "price": "฿1,200",
+   "context": "ล์ญี่ปุ่น กรุงเทพ | ช่างตัดผม สไตล์ญี่ปุ่น เริ่ม ฿"
+  },
+  {
+   "f": "japanese-haircut-bangkok.th.html",
+   "price": "฿1,200",
+   "context": "ล์ญี่ปุ่น กรุงเทพ | ช่างตัดผม สไตล์ญี่ปุ่น เริ่ม ฿"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "price": "฿1,000",
+   "context": "ญี่ปุ่น กรุงเทพ | ร้านตัดผมสไตล์ญี่ปุ่นชาย เริ่ม ฿"
+  },
+  {
+   "f": "mens-cut-bangkok.th.html",
+   "price": "฿1,000",
+   "context": "ญี่ปุ่น กรุงเทพ | ร้านตัดผมสไตล์ญี่ปุ่นชาย เริ่ม ฿"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "price": "฿3,990",
+   "context": " กรุงเทพ | ร้านยืดผมพรีเมียม พร้อมพงษ์ ราคาเริ่ม ฿"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "price": "฿3,990",
+   "context": "นต์และสอนวิธีสระให้ตรงอยู่นาน ที่ Ciel ราคาเริ่ม ฿"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "price": "฿3,990",
+   "context": " กรุงเทพ | ร้านยืดผมพรีเมียม พร้อมพงษ์ ราคาเริ่ม ฿"
+  },
+  {
+   "f": "straight-perm-bangkok.th.html",
+   "price": "฿3,990",
+   "context": "นต์และสอนวิธีสระให้ตรงอยู่นาน ที่ Ciel ราคาเริ่ม ฿"
+  }
+ ],
  "autoRegistered": []
 }
