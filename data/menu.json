@@ -872,8 +872,8 @@
       "en": "Japanese Hair-Repair Straight Perm",
       "th": "ยืดผมญี่ปุ่นฟื้นฟูเส้นผม"
      },
-     "price": "฿3,990~6,500",
-     "min": 3990,
+     "price": "฿4,590~6,500",
+     "min": 4590,
      "max": 6500,
      "off": {
       "ja": "",
@@ -1056,8 +1056,8 @@
       "en": "Japanese 4step Tokio Premium Treatment",
       "th": "ทรีตเมนต์ TOKIO 4 ขั้นตอน"
      },
-     "price": "฿1,990~3,500",
-     "min": 1990,
+     "price": "฿2,390~3,500",
+     "min": 2390,
      "max": 3500,
      "off": {
       "ja": "",
@@ -1148,8 +1148,8 @@
       "en": "Consultations",
       "th": "ปรึกษา"
      },
-     "price": "฿200",
-     "min": 200,
+     "price": "฿300",
+     "min": 300,
      "max": null,
      "off": {
       "ja": "",
