@@ -1,0 +1,12 @@
+{
+  "name": "currency-intelligence",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["packages/core"],
+  "scripts": {
+    "test": "npm --prefix packages/core test",
+    "typecheck": "npm --prefix packages/core run typecheck",
+    "build": "npm --prefix packages/core run build && node apps/web/build.mjs"
+  },
+  "engines": { "node": ">=22.18" }
+}

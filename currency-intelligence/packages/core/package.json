@@ -1,0 +1,22 @@
+{
+  "name": "@currency-intelligence/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Money, rates, conversion, comparison and split engine. BigInt minor units, no floats, no dependencies.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

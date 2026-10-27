@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F4FD8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Currency Intelligence</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">Currency Intelligence<small>P1 Converter Core</small></div>
+    <button class="pill" id="ratePill" type="button" title="レートの出典と鮮度">レート: 取得中…</button>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <main class="main">
+    <!-- F01: amount input with base currency -->
+    <section class="stage" aria-label="入力">
+      <div class="row">
+        <button class="cur" id="btnBase" type="button" aria-label="基準通貨を変更"><b id="baseCode">JPY</b><span id="baseName">日本円</span></button>
+        <div class="big num" id="amtIn" aria-live="polite"></div>
+      </div>
+      <div class="hint" id="inHint"></div>
+    </section>
+
+    <!-- F03: multi-currency list -->
+    <section class="list" aria-label="換算結果">
+      <ul id="targets" class="targets"></ul>
+      <div class="listfoot">
+        <button class="btn ghost" id="btnAddTarget" type="button">+ 通貨を追加</button>
+        <span class="note" id="targetCount"></span>
+      </div>
+    </section>
+
+    <!-- My rate -->
+    <section class="card" id="mineCard">
+      <div class="cardhead">
+        <h2>自分レート</h2>
+        <span class="note">両替レシートの数字から、本当のレートで換算</span>
+      </div>
+      <div class="two">
+        <label class="field"><span id="lblPaid">払った(JPY)</span><input id="paidHome" class="num" type="text" inputmode="decimal" placeholder="100000" autocomplete="off"></label>
+        <label class="field"><span id="lblGot">受け取った(THB)</span><input id="gotLocal" class="num" type="text" inputmode="decimal" placeholder="22500" autocomplete="off"></label>
+      </div>
+      <div class="two">
+        <button class="btn" id="btnSetMine" type="button">自分レートにする</button>
+        <button class="btn ghost" id="btnClearMine" type="button">解除</button>
+      </div>
+      <p class="note" id="mineNote"></p>
+    </section>
+
+    <!-- F01: history -->
+    <section class="card">
+      <div class="cardhead"><h2>履歴</h2><button class="link" id="btnClearHistory" type="button">消去</button></div>
+      <ul class="history" id="history"></ul>
+      <p class="note" id="historyEmpty">まだありません。「記録」を押すとここに残ります。</p>
+    </section>
+
+    <section class="card provenance" id="provenance" aria-label="レートの出典">
+      <h2>このレートについて</h2>
+      <dl id="provList"></dl>
+    </section>
+  </main>
+
+  <div class="actions">
+    <button id="btnCopy" type="button">コピー</button>
+    <button id="btnShare" type="button">共有</button>
+    <button id="btnRecord" class="primary" type="button">記録</button>
+  </div>
+
+  <div class="pad" id="pad" role="group" aria-label="テンキー">
+    <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" class="fn" data-k="C">C</button>
+    <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" class="fn" data-k="⌫">⌫</button>
+    <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" class="fn" data-k="+">+</button>
+    <button type="button" data-k="0">0</button><button type="button" data-k="00">00</button><button type="button" data-k=".">.</button><button type="button" class="fn" data-k="=">=</button>
+  </div>
+</div>
+
+<!-- S03 Currency picker -->
+<dialog id="picker">
+  <form method="dialog" class="pickerbox">
+    <div class="pickerhead">
+      <input id="pickerSearch" type="search" placeholder="通貨コードや名前で検索" autocomplete="off">
+      <button class="link" value="cancel" type="submit">閉じる</button>
+    </div>
+    <ul id="pickerList" class="pickerlist"></ul>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
