@@ -3,100 +3,175 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1F4FD8">
+<meta name="theme-color" content="#F4F5F7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Currency Intelligence</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <div id="app">
-  <header class="top">
-    <div class="brand">Currency Intelligence<small>P1 Converter Core</small></div>
-    <button class="pill" id="ratePill" type="button" title="レートの出典と鮮度">レート: 取得中…</button>
-  </header>
 
-  <div id="banner" class="banner" hidden></div>
+  <!-- ============ Convert ============ -->
+  <section class="screen" id="s-convert">
+    <header class="bar">
+      <button class="round" id="btnHistory" type="button" aria-label="履歴"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/></svg></button>
+      <h1>Convert</h1>
+      <button class="round" id="btnRates" type="button" aria-label="レートについて"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.5"/></svg></button>
+    </header>
 
-  <main class="main">
-    <!-- F01: amount input with base currency -->
-    <section class="stage" aria-label="入力">
-      <div class="row">
-        <button class="cur" id="btnBase" type="button" aria-label="基準通貨を変更"><b id="baseCode">JPY</b><span id="baseName">日本円</span></button>
-        <div class="big num" id="amtIn" aria-live="polite"></div>
+    <div class="pair">
+      <div class="box" id="boxFrom">
+        <div class="boxhead"><span>払う</span><span class="bal" id="balFrom"></span><button class="chip blue" id="btnMax" type="button">Max</button></div>
+        <div class="boxrow">
+          <button class="curpill" id="btnFrom" type="button"><span class="flag" id="flagFrom"></span><b id="codeFrom">JPY</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+          <div class="amt num" id="amtFrom"></div>
+        </div>
       </div>
-      <div class="hint" id="inHint"></div>
-    </section>
-
-    <!-- F03: multi-currency list -->
-    <section class="list" aria-label="換算結果">
-      <ul id="targets" class="targets"></ul>
-      <div class="listfoot">
-        <button class="btn ghost" id="btnAddTarget" type="button">+ 通貨を追加</button>
-        <span class="note" id="targetCount"></span>
+      <button class="swap" id="btnSwap" type="button" aria-label="通貨を入れ替える"><svg viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4"/><path d="M17 20V4M13 16l4 4 4-4"/></svg></button>
+      <div class="box" id="boxTo">
+        <div class="boxhead"><span>受け取る</span><span class="bal" id="balTo"></span></div>
+        <div class="boxrow">
+          <button class="curpill" id="btnTo" type="button"><span class="flag" id="flagTo"></span><b id="codeTo">THB</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+          <div class="amt num" id="amtTo"></div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- My rate -->
-    <section class="card" id="mineCard">
-      <div class="cardhead">
-        <h2>自分レート</h2>
-        <span class="note">両替レシートの数字から、本当のレートで換算</span>
-      </div>
-      <div class="two">
-        <label class="field"><span id="lblPaid">払った(JPY)</span><input id="paidHome" class="num" type="text" inputmode="decimal" placeholder="100000" autocomplete="off"></label>
-        <label class="field"><span id="lblGot">受け取った(THB)</span><input id="gotLocal" class="num" type="text" inputmode="decimal" placeholder="22500" autocomplete="off"></label>
-      </div>
-      <div class="two">
-        <button class="btn" id="btnSetMine" type="button">自分レートにする</button>
-        <button class="btn ghost" id="btnClearMine" type="button">解除</button>
-      </div>
-      <p class="note" id="mineNote"></p>
-    </section>
+    <button class="raterow" id="rateRow" type="button">
+      <span class="dot" id="rateDot"></span>
+      <span class="ratetext"><b id="rateMain">—</b><small id="rateSub">レート取得中…</small></span>
+      <svg class="spark" id="spark" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
+      <span class="chip" id="rateChip">—</span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg>
+    </button>
 
-    <!-- F01: history -->
-    <section class="card">
-      <div class="cardhead"><h2>履歴</h2><button class="link" id="btnClearHistory" type="button">消去</button></div>
-      <ul class="history" id="history"></ul>
-      <p class="note" id="historyEmpty">まだありません。「記録」を押すとここに残ります。</p>
-    </section>
+    <div class="spacer"></div>
 
-    <section class="card provenance" id="provenance" aria-label="レートの出典">
-      <h2>このレートについて</h2>
-      <dl id="provList"></dl>
-    </section>
-  </main>
+    <div class="pad" id="pad" role="group" aria-label="テンキー">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k=".">.</button><button type="button" data-k="0">0</button>
+      <button type="button" data-k="⌫" aria-label="1文字消す"><svg viewBox="0 0 24 24"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7Z"/><path d="m12 9 5 5M17 9l-5 5"/></svg></button>
+    </div>
 
-  <div class="actions">
-    <button id="btnCopy" type="button">コピー</button>
-    <button id="btnShare" type="button">共有</button>
-    <button id="btnRecord" class="primary" type="button">記録</button>
-  </div>
+    <button class="cta" id="btnConvert" type="button"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg><span id="ctaText">金額を入れてください</span></button>
+  </section>
 
-  <div class="pad" id="pad" role="group" aria-label="テンキー">
-    <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" class="fn" data-k="C">C</button>
-    <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" class="fn" data-k="⌫">⌫</button>
-    <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" class="fn" data-k="+">+</button>
-    <button type="button" data-k="0">0</button><button type="button" data-k="00">00</button><button type="button" data-k=".">.</button><button type="button" class="fn" data-k="=">=</button>
+  <!-- ============ Receipt ============ -->
+  <section class="screen" id="s-receipt" hidden>
+    <header class="bar">
+      <button class="round" id="btnReceiptBack" type="button" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Receipt</h1>
+      <span class="round ghost"></span>
+    </header>
+    <div class="paperwrap">
+      <article class="paper" id="paper">
+        <div class="paperhead"><span class="logo"><i></i>Currency Intelligence</span><span class="eyebrow">EXCHANGE RECEIPT</span></div>
+        <div class="stampwrap">
+          <div class="flags2"><span class="flag" id="rFlagFrom"></span><span class="flag" id="rFlagTo"></span><i class="mini"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></i></div>
+          <span class="stamp">COMPLETED</span>
+        </div>
+        <div class="rcenter">
+          <small>両替した金額</small>
+          <div class="rbig num" id="rBig"></div>
+          <div class="rfor" id="rFor"></div>
+          <div class="rdate" id="rDate"></div>
+        </div>
+        <div class="dash"></div>
+        <dl class="rrows" id="rRows"></dl>
+        <div class="dash"></div>
+        <div class="eyebrow small">レートの出典</div>
+        <dl class="rrows" id="rProv"></dl>
+        <svg class="barcode" id="barcode" viewBox="0 0 200 40" preserveAspectRatio="none"></svg>
+        <div class="rref" id="rRef"></div>
+        <div class="rthanks">このレシートは端末内で作成されたメモです。両替所やカード会社の明細ではありません。</div>
+      </article>
+    </div>
+    <div class="actions2">
+      <button class="cta" id="btnReceiptShare" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v12M8 8l4-4 4 4"/><path d="M5 14v5h14v-5"/></svg><span>共有</span></button>
+      <button class="cta white" id="btnReceiptDone" type="button">Done</button>
+    </div>
+  </section>
+</div>
+
+<!-- ============ Converted sheet ============ -->
+<div class="sheet" id="sheetDone" hidden>
+  <div class="sheetbox">
+    <h2>Converted</h2>
+    <p class="sheetsub" id="doneRate"></p>
+    <div class="tiles">
+      <div class="tile"><small><span class="flag" id="dFlagFrom"></span><span id="dFromLbl"></span></small><b class="num neg" id="dFromAmt"></b></div>
+      <svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg>
+      <div class="tile"><small><span class="flag" id="dFlagTo"></span><span id="dToLbl"></span></small><b class="num pos" id="dToAmt"></b></div>
+    </div>
+    <dl class="bals" id="doneBals"></dl>
+    <button class="listbtn" id="btnReceipt" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>レシートを作る</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="cta" id="btnDone" type="button">Done</button>
+    <button class="textbtn" id="btnMore" type="button">続けて両替する</button>
   </div>
 </div>
 
-<!-- S03 Currency picker -->
-<dialog id="picker">
-  <form method="dialog" class="pickerbox">
-    <div class="pickerhead">
-      <input id="pickerSearch" type="search" placeholder="通貨コードや名前で検索" autocomplete="off">
-      <button class="link" value="cancel" type="submit">閉じる</button>
+<!-- ============ Currency picker ============ -->
+<div class="sheet" id="sheetPick" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2 id="pickTitle">通貨を選ぶ</h2><button class="round small" id="btnPickClose" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <input id="pickSearch" class="search" type="search" placeholder="JPY、バーツ、euro…" autocomplete="off">
+    <ul class="picklist" id="pickList"></ul>
+  </div>
+</div>
+
+<!-- ============ Rate detail ============ -->
+<div class="sheet" id="sheetRate" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>このレート</h2><button class="round small" id="btnRateClose" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="ratehero"><div class="num" id="rhMain"></div><div class="sub" id="rhSub"></div></div>
+    <svg class="bigspark" id="bigSpark" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
+    <div class="legend" id="sparkLegend"></div>
+    <dl class="bals" id="provRows"></dl>
+
+    <div class="mine">
+      <div class="minehead"><b>自分レート</b><span>両替レシートの数字を入れると、その実効レートで換算します</span></div>
+      <div class="two">
+        <label><span id="lblPaid">払った</span><input id="inPaid" class="num" type="text" inputmode="decimal" placeholder="100000" autocomplete="off"></label>
+        <label><span id="lblGot">受け取った</span><input id="inGot" class="num" type="text" inputmode="decimal" placeholder="22500" autocomplete="off"></label>
+      </div>
+      <div class="two">
+        <button class="cta small" id="btnSetMine" type="button">このレートを使う</button>
+        <button class="cta white small" id="btnClearMine" type="button">市場レートに戻す</button>
+      </div>
+      <p class="sub" id="mineNote"></p>
     </div>
-    <ul id="pickerList" class="pickerlist"></ul>
-  </form>
-</dialog>
+
+    <div class="mine">
+      <div class="minehead"><b>残高</b><span>手元の現金を入れておくと「Max」と残高表示が使えます</span></div>
+      <div class="two">
+        <label><span id="lblBalFrom"></span><input id="inBalFrom" class="num" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+        <label><span id="lblBalTo"></span><input id="inBalTo" class="num" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></label>
+      </div>
+      <button class="cta small" id="btnSetBal" type="button">残高を保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ History ============ -->
+<div class="sheet" id="sheetHistory" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>履歴</h2><button class="round small" id="btnHistoryClose" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <ul class="histlist" id="histList"></ul>
+    <p class="sub" id="histEmpty">まだありません。Convert を押すとここに残ります。</p>
+    <button class="textbtn" id="btnHistClear" type="button">履歴を消す</button>
+  </div>
+</div>
 
 <div id="toast" class="toast" hidden></div>
-
 <script type="module" src="./app.js"></script>
 </body>
 </html>

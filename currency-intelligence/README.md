@@ -12,7 +12,7 @@ AI Currency & Global Money Super App の実装リポジトリ(作業ブランチ
 | ブロッカー一覧 | `BLOCKERS.md` | 作成済み |
 | 設計判断記録 | `docs/adr/` | 2件 |
 | 計算エンジン(Shared Core) | `packages/core` (TypeScript, 依存ゼロ) | **実装済み・28テスト通過** |
-| Web クライアント(PWA) | `apps/web` | **動作確認済み**(Playwright で操作・スクリーンショット) |
+| Web クライアント(PWA) | `apps/web` | **動作確認済み**(Playwright で操作・スクリーンショット)。Convert → Converted シート → Receipt の流れ、レート詳細(30日チャート・出典・自分レート・残高)、履歴、通貨ピッカー |
 | iOS Shared Core | `ios/CoreMoney` (Swift Package) | **未ビルド**(この環境に Xcode / Swift なし) |
 | SwiftUI アプリ | — | 未着手(macOS 環境が必要。BLOCKERS B-01) |
 

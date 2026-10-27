@@ -1,6 +1,6 @@
 // App-shell cache. Rates are never cached here: they live in localStorage with
 // their observedAt, so the app can say how old they are. Bump VERSION on deploy.
-const VERSION = "ci-shell-v1";
+const VERSION = "ci-shell-v2";
 const SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg",
   "./core/index.js", "./core/dec.js", "./core/currencies.js", "./core/money.js", "./core/rates.js",
   "./core/convert.js", "./core/compare.js", "./core/split.js", "./core/providers.js", "./core/cache.js"];
