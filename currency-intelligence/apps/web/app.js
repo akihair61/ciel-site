@@ -101,10 +101,11 @@ function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "�
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
 const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? 0 : ms));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
 
 // ---------- number tween (count-up like the reference) ----------
 const tw = new WeakMap();
-function tweenMoney(el, money, { duration = 650, instant = false } = {}) {
+function tweenMoney(el, money, { duration = 450, instant = false, ease = easeOut } = {}) {
   const target = Number(money.toDecimalString()); const ccy = money.currency;
   const prev = tw.get(el);
   if (prev && prev.raf) cancelAnimationFrame(prev.raf);
@@ -113,7 +114,7 @@ function tweenMoney(el, money, { duration = 650, instant = false } = {}) {
   }
   const from = prev.value; const t0 = performance.now();
   const step = (now) => {
-    const t = Math.min(1, (now - t0) / duration); const v = from + (target - from) * easeOut(t);
+    const t = Math.min(1, (now - t0) / duration); const v = from + (target - from) * ease(t);
     el.textContent = t < 1 ? fmtNum(v, ccy) : fmt(money);
     const rec = tw.get(el); if (t < 1) rec.raf = requestAnimationFrame(step); else rec.raf = 0;
   };
@@ -136,7 +137,7 @@ function scramble(el, finalText, duration = 420) {
 const SCREENS = ["onboard", "home", "convert", "wallet", "receipt"];
 let current = null;
 function show(name, how = "auto") {
-  for (const s of SCREENS) { const el = $("s-" + s); el.hidden = s !== name; el.classList.remove("push", "fadein", "enter"); }
+  for (const s of SCREENS) { const el = $("s-" + s); if (el.classList.contains("leaving")) continue; el.hidden = s !== name; el.classList.remove("push", "fadein", "enter", "blurout"); }
   document.body.classList.toggle("night", name === "home" || name === "onboard");
   const tabs = ["home", "convert", "wallet"].includes(name);
   $("tabbar").hidden = !tabs;
@@ -145,8 +146,8 @@ function show(name, how = "auto") {
   if (tabs) requestAnimationFrame(moveTabHl);
   const el = $("s-" + name);
   if (!REDUCED && current && current !== name) {
-    if (name === "convert" || name === "receipt") el.classList.add("push");
-    else if (name === "home" || name === "wallet") { el.classList.add("enter"); setTimeout(() => el.classList.remove("enter"), 1400); }
+    if (name === "convert") el.classList.add("push");
+    else if (name === "home" || name === "wallet") { el.classList.add("enter"); setTimeout(() => el.classList.remove("enter"), 1200); }
     else el.classList.add("fadein");
   }
   current = name;
@@ -250,8 +251,8 @@ function renderHome(entering = false) {
   requestAnimationFrame(() => { const on = tk.querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
   const sel = balance(S.sel) || Money.zero(S.sel);
   const hb = $("homeBal");
-  if (entering) { tweenSeed(hb, Money.zero(S.sel).add(Money.fromMinor(sel.minor * 6n / 10n, S.sel))); tweenMoney(hb, sel, { duration: 900 }); }
-  else tweenMoney(hb, sel, { duration: 800 });
+  if (entering) { tweenSeed(hb, Money.zero(S.sel).add(Money.fromMinor(sel.minor * 6n / 10n, S.sel))); tweenMoney(hb, sel, { duration: 800, ease: easeOutQuad }); }
+  else tweenMoney(hb, sel, { duration: 750, ease: easeOutQuad });
   const h = S.sel === S.home ? null : toCcy(sel, S.home);
   $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? "(自分レート)" : ""}` : S.sel === S.home ? "基準通貨" : "基準通貨への換算レートがありません";
   $("miniCards").innerHTML = ccys.map((c) => `<button type="button" class="mc ${c === S.sel ? "on" : ""}" data-c="${c}" style="background:${grad(c)}">${flag(c)}</button>`).join("") + `<button type="button" class="mc add" id="mcAdd" aria-label="通貨を追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
@@ -304,7 +305,7 @@ function buildCards() {
 }
 function walletInfo(animated = true) {
   const b = balance(S.sel) || Money.zero(S.sel);
-  tweenMoney($("wBal"), b, { duration: 700, instant: !animated });
+  tweenMoney($("wBal"), b, { duration: 600, instant: !animated, ease: easeOutQuad });
   const h = S.sel === S.home ? null : toCcy(b, S.home); $("wSub").textContent = h ? `≈ ${fmt(h)}` : "";
   $("dots").innerHTML = car.ccys.map((c) => `<i class="${c === S.sel ? "on" : ""}"></i>`).join("");
   const since = Date.now() - 7 * 864e5;
@@ -352,7 +353,7 @@ async function doConvert() {
   const amount = inputMoney(); const aq = activeQuote(); if (amount.isZero() || !aq) return;
   const cta = $("btnConvert");
   if (!REDUCED && !cta.classList.contains("loading")) {
-    cta.style.width = cta.offsetWidth + "px"; await new Promise((r) => requestAnimationFrame(r)); cta.classList.add("loading"); await wait(650);
+    cta.style.width = cta.offsetWidth + "px"; await new Promise((r) => requestAnimationFrame(r)); cta.classList.add("loading"); await wait(1050);
   }
   const r = convert(amount, aq.quote, { rounding: ROUNDING });
   const bf = balance(S.from), bt = balance(S.to);
@@ -385,22 +386,24 @@ async function showReceipt(tx) {
   $("barcode").innerHTML = barcodeFor(tx.ref); $("rRef").textContent = tx.ref; lastTx = tx;
   const token = ++printToken;
   const slot = $("slot"), label = $("slotLabel"), wrap = $("paperwrap"), stamp = $("stamp"), actions = $("rActions");
-  slot.classList.remove("gone"); stamp.classList.remove("in"); actions.classList.remove("in");
+  slot.classList.remove("gone"); slot.classList.add("busy"); stamp.classList.remove("in"); actions.classList.remove("in");
   label.textContent = "GENERATING…";
   wrap.classList.add("printing"); wrap.style.setProperty("--h", "0px");
   show("receipt");
   if (REDUCED) { wrap.classList.remove("printing"); slot.classList.add("gone"); stamp.classList.add("in"); actions.classList.add("in"); return; }
-  await wait(800); if (token !== printToken) return;
+  // Reference timing (30fps analysis): GENERATING 2.0s → PRINTING 0.85s (slow start, fast finish) → DONE + slot retract 0.5s → pause 1.2s → stamp and buttons together.
+  await wait(2000); if (token !== printToken) return;
   label.textContent = "PRINTING…";
-  const full = $("paper").offsetHeight + 16; const dur = 2300; const t0 = performance.now();
-  await new Promise((done) => { const step = (now) => { if (token !== printToken) return done(); const t = Math.min(1, (now - t0) / dur); const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; wrap.style.setProperty("--h", (full * e).toFixed(1) + "px"); if (t < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  await wait(250); if (token !== printToken) return;
+  const full = $("paper").offsetHeight + 16; const dur = 850; const t0 = performance.now();
+  // slow linear feed → accelerate → short decelerate (shape of the reference motion curve)
+  const curve = (t) => (t < 0.35 ? (t / 0.35) * 0.2 : t < 0.75 ? 0.2 + 0.65 * Math.pow((t - 0.35) / 0.4, 1.8) : 0.85 + 0.15 * (1 - Math.pow(1 - (t - 0.75) / 0.25, 2)));
+  await new Promise((done) => { const step = (now) => { if (token !== printToken) return done(); const t = Math.min(1, (now - t0) / dur); wrap.style.setProperty("--h", (full * curve(t)).toFixed(1) + "px"); if (t < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
   if (token !== printToken) return;
-  label.textContent = "DONE"; await wait(450); if (token !== printToken) return;
+  label.textContent = "DONE"; slot.classList.remove("busy"); await wait(120); if (token !== printToken) return;
   slot.classList.add("gone"); wrap.classList.remove("printing"); wrap.style.removeProperty("--h");
-  await wait(380); if (token !== printToken) return;
-  stamp.classList.add("in");
-  await wait(420); if (token !== printToken) return;
-  actions.classList.add("in");
+  await wait(1250); if (token !== printToken) return;
+  stamp.classList.add("in"); actions.classList.add("in");
 }
 
 // ---------- add / spend ----------
@@ -425,7 +428,12 @@ function runProgress(title, vis, done) {
     if (stage !== i || pct === 100) { for (let k = 0; k < 3; k++) { steps[k].className = "step " + (k < stage || pct === 100 ? "done" : k === stage ? "active" : ""); if (k < 2) lines[k].className = k < stage || pct === 100 ? "done" : ""; } i = stage; }
     $("pLabel").textContent = pct === 100 ? "完了" : labels[stage];
     if (pct < 100) setTimeout(tick, REDUCED ? 10 : 45 + Math.random() * 50);
-    else setTimeout(() => { $("pDoneTitle").textContent = done.title; $("pDoneSub").textContent = done.sub; p.classList.add("done"); }, REDUCED ? 0 : 500);
+    else {
+      // Reference: steps fade out (0.45s), the card alone for ~1.5s, then a hard background switch with title and buttons popping in.
+      $("pDoneTitle").textContent = done.title; $("pDoneSub").textContent = done.sub;
+      setTimeout(() => p.classList.add("fading"), REDUCED ? 0 : 450);
+      setTimeout(() => { p.classList.remove("fading"); p.classList.add("done"); }, REDUCED ? 0 : 450 + 450 + 1500);
+    }
   };
   tick();
 }
@@ -443,7 +451,7 @@ $("btnSpendGo").addEventListener("click", () => {
   const h = toCcy(m, S.home); toast(`−${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""} を記録`);
   if ($("s-home").hidden && $("s-wallet").hidden) go("home");
 });
-const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done"); };
+const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done", "fading"); };
 $("btnPDone").addEventListener("click", () => { closeProgress(); if (current === "wallet") renderWallet(true); else go("wallet"); });
 $("btnPDone2").addEventListener("click", () => { closeProgress(); route(); });
 $("addSource").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("addSource").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
@@ -487,10 +495,11 @@ async function leaveOnboarding(demo) {
   }
   save();
   const ob = $("s-onboard");
-  if (!REDUCED) { ob.classList.add("leaving"); await wait(700); }
-  ob.classList.remove("leaving", "play", "still");
-  current = null; // so home plays its entrance
-  location.hash = "home"; route();
+  if (REDUCED) { ob.classList.remove("play", "still"); location.hash = "home"; route(); return; }
+  ob.classList.add("leaving"); await wait(550);
+  location.hash = "home"; route(); // home enters underneath while the onboarding blurs out on top
+  await wait(650);
+  ob.hidden = true; ob.classList.remove("leaving", "play", "still");
 }
 function buildBurst() {
   const svg = $("burst"); let d = "";
@@ -517,7 +526,7 @@ $("btnMax").addEventListener("click", () => { const b = balance(S.from); if (b) 
 $("btnConvert").addEventListener("click", doConvert);
 $("btnDone").addEventListener("click", () => { closeSheets(); go("home"); });
 $("btnMore").addEventListener("click", closeSheets);
-$("btnReceipt").addEventListener("click", () => { closeSheets(); if (lastTx) showReceipt(lastTx); });
+$("btnReceipt").addEventListener("click", async () => { if (!lastTx) return closeSheets(); $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); showReceipt(lastTx); });
 $("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
 $("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
 $("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("コピーしました"); } catch { toast("共有できませんでした"); } });
