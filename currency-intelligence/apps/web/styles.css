@@ -427,3 +427,53 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .actions2.in .cta:nth-child(2){transition-delay:.06s}
 
 .toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--black);color:var(--black-ink);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;z-index:40;box-shadow:var(--shadow);max-width:90vw;animation:fadeup .3s var(--ease) both}
+
+/* ---------- add cash page (mirrors the reference Add card form) ---------- */
+.addcash{gap:10px}
+.acwrap{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+.accard{position:relative;border-radius:22px;aspect-ratio:1.586;padding:18px 20px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;box-shadow:0 18px 40px rgb(10 14 26 / .18);isolation:isolate}
+.accard .acbg{position:absolute;inset:0;opacity:0;transition:opacity .35s;z-index:-1}
+.accard .acbg[data-col="navy"]{background:linear-gradient(135deg,#2A3350,#121829 60%,#0B0F1E)}
+.accard .acbg[data-col="blue"]{background:linear-gradient(135deg,#5BA7FF,#3B5BDB 55%,#2A3F9E)}
+.accard .acbg[data-col="light"]{background:linear-gradient(135deg,#E9F0FF,#C9D8FF 60%,#AFC3F5)}
+.accard .acbg[data-col="red"]{background:linear-gradient(135deg,#F0646E,#B82D52 60%,#7A1E3C)}
+.accard .acbg[data-col="green"]{background:linear-gradient(135deg,#3FB27E,#1E7F5A 60%,#0F4D3A)}
+.accard.c-light{color:#111318}
+.accard .acbg.on{opacity:1}
+.accard::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 100% 0,rgb(255 255 255 / .22),transparent 55%);pointer-events:none}
+.actop{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800}
+.actop .mark{width:30px;height:30px}
+.acchip{display:flex;align-items:center;gap:8px}
+.acchip i{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#F3E7B0,#C9A64B)}
+.acchip svg{width:20px;height:20px;opacity:.85}
+.acnum{font-size:clamp(22px,7vw,30px);font-weight:700;letter-spacing:.08em;background:rgb(255 255 255 / .14);border-radius:12px;padding:6px 12px;align-self:flex-start;min-height:46px;display:flex;align-items:center;gap:0}
+.acnum .ph{opacity:.55;letter-spacing:.2em}
+.acnum .d{display:inline-block}
+.acnum .d.in{animation:digitin .16s var(--ease) both}
+.acbottom{display:flex;justify-content:space-between;align-items:flex-end}
+.acbottom small{display:block;font-size:9px;letter-spacing:.12em;opacity:.7}
+.acbottom b{font-size:13px;font-weight:800;letter-spacing:.04em}
+.acflag{font-size:30px;line-height:1}
+.acrow{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-radius:16px;padding:10px 14px;color:var(--muted);font-size:14px}
+.accols{display:flex;gap:8px;background:var(--box);border-radius:999px;padding:4px}
+.accols button{width:30px;height:30px;min-height:30px;border-radius:50%;display:grid;place-items:center;position:relative}
+.accols button[data-col="navy"]{background:#1B2B63}
+.accols button[data-col="blue"]{background:#2F6BFF}
+.accols button[data-col="light"]{background:#DCE6FB}
+.accols button[data-col="red"]{background:#D7483C}
+.accols button[data-col="green"]{background:#1E7F5A}
+.accols button.on::after{content:"";width:10px;height:6px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.accols button[data-col="light"].on::after{border-color:#111318}
+.acfield{display:flex;flex-direction:column;gap:4px;background:var(--paper);border-radius:16px;padding:10px 14px;font-size:13px;color:var(--muted)}
+.acfield input,.acfield select{font:inherit;font-size:17px;font-weight:600;color:var(--ink);border:0;background:transparent;padding:2px 0;min-height:30px;width:100%;outline:none}
+.acfield input::placeholder{color:var(--faint)}
+.acline{display:flex;align-items:center;gap:8px}
+.curpill.small{padding:4px 8px 4px 4px;font-size:13px;background:var(--box)}
+.curpill.small .flag{width:22px;height:22px;font-size:14px}
+.aclock{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:12px;margin:4px 0 0}
+.aclock svg{width:14px;height:14px}
+.screen.addcash.leaving{transition:opacity .35s,filter .35s;opacity:0;filter:blur(8px)}
+/* rate periods */
+.periods{display:flex;gap:4px;background:var(--box);border-radius:999px;padding:4px;align-self:center}
+.periods button{min-height:32px;padding:0 14px;font-size:12px;font-weight:800;color:var(--muted);border-radius:999px;transition:background .2s,color .2s}
+.periods button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0 / .08)}

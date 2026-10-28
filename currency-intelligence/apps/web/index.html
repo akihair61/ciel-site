@@ -143,6 +143,33 @@
     </div>
   </section>
 
+  <!-- ============ Add cash (page, mirrors the reference "Add card") ============ -->
+  <section class="screen addcash" id="s-addcash" hidden>
+    <header class="bar">
+      <button class="round" id="btnAddBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1>Add cash</h1>
+      <span class="round ghost"></span>
+    </header>
+    <div class="acwrap">
+      <div class="accard" id="acCard">
+        <div class="acbg" data-col="navy"></div><div class="acbg" data-col="blue"></div><div class="acbg" data-col="light"></div><div class="acbg" data-col="red"></div><div class="acbg" data-col="green"></div>
+        <div class="actop"><svg class="mark small"><use href="#logo"/></svg><span id="acKind">Cash</span></div>
+        <div class="acchip"><i></i><svg viewBox="0 0 24 24"><path d="M5 9a9 9 0 0 1 14 0M8 12a5 5 0 0 1 8 0M11 15a1.5 1.5 0 0 1 2 0"/></svg></div>
+        <div class="acnum num" id="acNum"><span class="ph">•••• •••• ••••</span></div>
+        <div class="acbottom"><span><small>HOLDER</small><b>TRAVELLER</b></span><span><small>ADDED</small><b id="acDate"></b></span><span class="acflag" id="acFlag"></span></div>
+      </div>
+      <div class="acrow"><span>Card colour</span><div class="accols" id="acCols"><button type="button" data-col="navy" aria-label="Navy"></button><button type="button" data-col="blue" class="on" aria-label="Blue"></button><button type="button" data-col="light" aria-label="Light"></button><button type="button" data-col="red" aria-label="Red"></button><button type="button" data-col="green" aria-label="Green"></button></div></div>
+      <label class="acfield"><span>Amount</span><div class="acline"><input id="addAmt" class="num" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"><button class="curpill small" id="addCur" type="button"><span class="flag" id="addFlag"></span><b id="addCode">THB</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button></div></label>
+      <div class="two">
+        <label class="acfield"><span>Source</span><select id="addSource"><option>Exchange booth</option><option>ATM</option><option>Brought from home</option><option>Other</option></select></label>
+        <label class="acfield"><span>Date</span><input id="addDate" type="date"></label>
+      </div>
+      <label class="acfield"><span>Note</span><input id="addNote" type="text" placeholder="Where you got it" autocomplete="off"></label>
+      <p class="aclock"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Your cash is recorded on this device only</p>
+    </div>
+    <button class="cta" id="btnAddGo" type="button" disabled>Add cash</button>
+  </section>
+
   <!-- ============ Receipt ============ -->
   <section class="screen receipt" id="s-receipt" hidden>
     <header class="bar">
@@ -213,22 +240,6 @@
   </div>
 </div>
 
-<!-- ============ Add cash sheet ============ -->
-<div class="sheet" id="sheetAdd" hidden>
-  <div class="sheetbox">
-    <div class="sheethead"><h2>Add cash</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <div class="fieldrow">
-      <button class="curpill" id="addCur" type="button"><span class="flag" id="addFlag"></span><b id="addCode">THB</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
-      <input id="addAmt" class="bigin num" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
-    </div>
-    <div class="chips" id="addSource">
-      <button type="button" data-v="Exchange booth" class="on">Exchange booth</button><button type="button" data-v="ATM">ATM</button><button type="button" data-v="Brought from home">Brought from home</button><button type="button" data-v="Other">Other</button>
-    </div>
-    <p class="sub">Exchanged at a booth? Enter what you paid under "Your rate" on the rate screen to keep your true rate.</p>
-    <button class="cta" id="btnAddGo" type="button">Add cash</button>
-  </div>
-</div>
-
 <!-- ============ Spend sheet ============ -->
 <div class="sheet" id="sheetSpend" hidden>
   <div class="sheetbox">
@@ -281,6 +292,7 @@
   <div class="sheetbox tall">
     <div class="sheethead"><h2>About this rate</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="ratehero"><div class="num" id="rhMain"></div><div class="sub" id="rhSub"></div></div>
+    <div class="periods" id="periods"><button type="button" data-p="1W">1W</button><button type="button" data-p="1M" class="on">1M</button><button type="button" data-p="3M">3M</button><button type="button" data-p="1Y">1Y</button></div>
     <svg class="bigspark" id="bigSpark" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
     <div class="legend" id="sparkLegend"></div>
     <dl class="bals" id="provRows"></dl>

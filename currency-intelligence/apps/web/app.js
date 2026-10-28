@@ -9,20 +9,23 @@ const TTL_MS = 6 * 60 * 60 * 1000;
 const CROSS_TOLERANCE_MS = 36 * 60 * 60 * 1000;
 const PIVOT = "USD";
 const ROUNDING = "HALF_EVEN";
-const SERIES_DAYS = 30;
+const PERIOD_DAYS = { "1W": 7, "1M": 30, "3M": 91, "1Y": 365 };
+let SERIES_DAYS = 30;
 // Motion is the product here: the OS "reduce motion" setting is deliberately not honoured (it hid every animation for users who have it on).
 const REDUCED = false;
 
 const FLAG_CC = { JPY:"JP", THB:"TH", USD:"US", EUR:"EU", GBP:"GB", KRW:"KR", TWD:"TW", CNY:"CN", HKD:"HK", SGD:"SG", MYR:"MY", IDR:"ID", PHP:"PH", VND:"VN", LAK:"LA", KHR:"KH", MMK:"MM", INR:"IN", AUD:"AU", NZD:"NZ", CAD:"CA", CHF:"CH", SEK:"SE", NOK:"NO", DKK:"DK", CZK:"CZ", PLN:"PL", HUF:"HU", ISK:"IS", TRY:"TR", AED:"AE", SAR:"SA", KWD:"KW", BHD:"BH", OMR:"OM", JOD:"JO", MXN:"MX", BRL:"BR", CLP:"CL", ZAR:"ZA", EGP:"EG", LKR:"LK", NPR:"NP" };
 const flag = (code) => { const cc = FLAG_CC[code]; return cc ? [...cc].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("") : "¤"; };
 const CARD_GRAD = { JPY:"linear-gradient(135deg,#E8505B,#8E2B5A)", THB:"linear-gradient(135deg,#3F7BFF,#1D3FB8)", USD:"linear-gradient(135deg,#2E9E6B,#114D3C)", EUR:"linear-gradient(135deg,#4C6FFF,#2A2F8F)", KRW:"linear-gradient(135deg,#6B7CFF,#3B2A8F)", TWD:"linear-gradient(135deg,#1FA5B8,#154E78)", VND:"linear-gradient(135deg,#E0433C,#7A1E1E)", GBP:"linear-gradient(135deg,#5B5BD6,#1E1E5A)", AUD:"linear-gradient(135deg,#F2A541,#B8541E)", SGD:"linear-gradient(135deg,#E64C4C,#5A1E2E)" };
-const grad = (c) => CARD_GRAD[c] || "linear-gradient(135deg,#5BA7FF,#3B5BDB 60%,#2A3F9E)";
+const COLOUR_GRAD = { navy:"linear-gradient(135deg,#2A3350,#121829 60%,#0B0F1E)", blue:"linear-gradient(135deg,#5BA7FF,#3B5BDB 55%,#2A3F9E)", light:"linear-gradient(135deg,#E9F0FF,#C9D8FF 60%,#AFC3F5)", red:"linear-gradient(135deg,#F0646E,#B82D52 60%,#7A1E3C)", green:"linear-gradient(135deg,#3FB27E,#1E7F5A 60%,#0F4D3A)" };
+const grad = (c) => (S.cardColor && S.cardColor[c] && COLOUR_GRAD[S.cardColor[c]]) || CARD_GRAD[c] || COLOUR_GRAD.blue;
+const cardInk = (c) => (S.cardColor && S.cardColor[c] === "light" ? "#111318" : "#fff");
 const CATS = [["food","Food","var(--c-food)","🍜"],["transport","Transport","var(--c-transport)","🚕"],["shop","Shopping","var(--c-shop)","🛍️"],["stay","Stay","var(--c-stay)","🏨"],["fun","Fun","var(--c-fun)","🎟️"],["other","Other","var(--c-other)","•"]];
 const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
-function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, series: {} }; }
+function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, series: {}, cardColor: {}, period: "1M" }; }
 function load() { try { const r = localStorage.getItem(STORE_KEY); if (r) return { ...defaults(), ...JSON.parse(r) }; } catch {} return defaults(); }
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch {} }
 let S = load();
@@ -52,7 +55,8 @@ async function loadRates() {
 }
 let series = null;
 async function loadSeries() {
-  const key = `${S.from}/${S.to}`; series = null; renderRate();
+  SERIES_DAYS = PERIOD_DAYS[S.period] || 30;
+  const key = `${S.from}/${S.to}/${S.period}`; series = null; renderRate();
   const end = new Date(); const start = new Date(end.getTime() - SERIES_DAYS * 864e5); const d = (x) => x.toISOString().slice(0, 10);
   try {
     const res = await fetch(`https://api.frankfurter.app/${d(start)}..${d(end)}?from=${S.from}&to=${S.to}`);
@@ -136,7 +140,7 @@ function scramble(el, finalText, duration = 420) {
 }
 
 // ---------- routing & screen transitions ----------
-const SCREENS = ["onboard", "home", "convert", "wallet", "receipt"];
+const SCREENS = ["onboard", "home", "convert", "wallet", "receipt", "addcash"];
 let current = null;
 function show(name, how = "auto") {
   for (const s of SCREENS) { const el = $("s-" + s); if (el.classList.contains("leaving")) continue; el.hidden = s !== name; el.classList.remove("push", "fadein", "enter", "blurout"); }
@@ -148,7 +152,7 @@ function show(name, how = "auto") {
   if (tabs) requestAnimationFrame(moveTabHl);
   const el = $("s-" + name);
   if (!REDUCED && current && current !== name) {
-    if (name === "convert") el.classList.add("push");
+    if (name === "convert" || name === "addcash") el.classList.add("push");
     else if (name === "home" || name === "wallet") { el.classList.add("enter"); setTimeout(() => el.classList.remove("enter"), 1200); }
     else el.classList.add("fadein");
   }
@@ -245,6 +249,7 @@ function renderRate() {
   if (html !== lastSpark) { sp.className.baseVal = cls; sp.innerHTML = html; lastSpark = html; }
 }
 function renderRateSheet() {
+  $("periods").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.p === (S.period || "1M")));
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   $("rhMain").textContent = aq ? `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}` : "—";
   $("rhSub").textContent = aq ? `${sourceLabel(aq.quote)}${mk && aq.mine ? ` · mid ${rateStr(mk.rate)}` : ""}` : "";
@@ -327,7 +332,7 @@ function layoutCards(animated = true) {
 function buildCards() {
   car.ccys = walletCcys(); if (!car.ccys.includes(S.sel)) S.sel = car.ccys[0]; car.idx = car.ccys.indexOf(S.sel);
   const c = $("carousel");
-  c.innerHTML = car.ccys.map((cc) => { const b = balance(cc) || Money.zero(cc); const meta = currency(cc); return `<div class="card3d" data-c="${cc}" style="background:${grad(cc)}"><div class="top"><span class="flag">${flag(cc)}</span><span class="kind">${cc} CASH</span></div><div class="chipw"><i></i><svg viewBox="0 0 24 24"><path d="M5 9a9 9 0 0 1 14 0M8 12a5 5 0 0 1 8 0M11 15a1.5 1.5 0 0 1 2 0"/></svg></div><div class="numline" data-num>${esc(b.format("en-US"))}</div><div class="bottom"><span><small>CURRENCY</small><b>${esc(meta.name.en.toUpperCase())}</b></span><span><small>HOLDER</small><b>TRAVELLER</b></span></div></div>`; }).join("");
+  c.innerHTML = car.ccys.map((cc) => { const b = balance(cc) || Money.zero(cc); const meta = currency(cc); return `<div class="card3d" data-c="${cc}" style="background:${grad(cc)};color:${cardInk(cc)}"><div class="top"><span class="flag">${flag(cc)}</span><span class="kind">${cc} CASH</span></div><div class="chipw"><i></i><svg viewBox="0 0 24 24"><path d="M5 9a9 9 0 0 1 14 0M8 12a5 5 0 0 1 8 0M11 15a1.5 1.5 0 0 1 2 0"/></svg></div><div class="numline" data-num>${esc(b.format("en-US"))}</div><div class="bottom"><span><small>CURRENCY</small><b>${esc(meta.name.en.toUpperCase())}</b></span><span><small>HOLDER</small><b>TRAVELLER</b></span></div></div>`; }).join("");
   layoutCards(false);
 }
 function walletInfo(animated = true) {
@@ -436,7 +441,26 @@ async function showReceipt(tx) {
 
 // ---------- add / spend ----------
 let addCcy = "THB", spCcy = "THB", spCat = "food";
-function openAdd(ccy) { addCcy = ccy || S.sel; $("addFlag").textContent = flag(addCcy); $("addCode").textContent = addCcy; $("addAmt").value = ""; stagger($("sheetAdd").querySelector(".sheetbox")); $("sheetAdd").hidden = false; setTimeout(() => $("addAmt").focus(), 60); }
+let acLast = "";
+function acColour(col) { S.cardColor[addCcy] = col; save(); $("acCols").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.col === col)); $("acCard").querySelectorAll(".acbg").forEach((b) => b.classList.toggle("on", b.dataset.col === col)); $("acCard").classList.toggle("c-light", col === "light"); }
+function acPreview() {
+  const raw = $("addAmt").value.replace(/[^0-9.]/g, ""); const el = $("acNum"); const sym = currency(addCcy).symbol;
+  if (!raw) { el.innerHTML = `<span class="ph">•••• •••• ••••</span>`; acLast = ""; $("btnAddGo").disabled = true; return; }
+  const shown = groupDigits(raw); const grew = acLast && raw.length > acLast.length && raw.startsWith(acLast);
+  const chars = [...shown]; el.innerHTML = `<span class="sym">${esc(sym)}</span>` + chars.map((c, i) => `<span class="d${grew && i >= chars.length - (raw.length - acLast.length) ? " in" : ""}">${esc(c)}</span>`).join("");
+  acLast = raw; $("btnAddGo").disabled = !parseAmt(raw, addCcy);
+}
+function openAdd(ccy) {
+  addCcy = ccy || S.sel; $("addFlag").textContent = flag(addCcy); $("addCode").textContent = addCcy; $("acFlag").textContent = flag(addCcy); $("acKind").textContent = `${addCcy} Cash`;
+  $("addAmt").value = ""; $("addNote").value = ""; $("addSource").value = "Exchange booth"; $("addDate").value = new Date().toISOString().slice(0, 10);
+  $("acDate").textContent = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  acColour(S.cardColor[addCcy] || (CARD_GRAD[addCcy] ? "blue" : "blue")); acLast = ""; acPreview();
+  show("addcash"); setTimeout(() => $("addAmt").focus(), 400);
+}
+$("addAmt").addEventListener("input", () => { acPreview(); });
+$("acCols").addEventListener("click", (e) => { const b = e.target.closest("button[data-col]"); if (b) acColour(b.dataset.col); });
+$("btnAddBack").addEventListener("click", () => route());
+$("addDate").addEventListener("change", () => { const v = $("addDate").value; if (v) $("acDate").textContent = new Date(v + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }); });
 function openSpend(ccy) {
   spCcy = ccy || S.sel; $("spFlag").textContent = flag(spCcy); $("spCode").textContent = spCcy; $("spAmt").value = ""; $("spNote").value = "";
   $("spCat").innerHTML = CATS.map((c) => `<button type="button" data-v="${c[0]}" class="${c[0] === spCat ? "on" : ""}" style="--c:${c[2]}">${c[1]}</button>`).join("");
@@ -445,7 +469,7 @@ function openSpend(ccy) {
 }
 function runProgress(title, vis, done) {
   const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = "This only takes a moment";
-  $("pVis").style.background = vis.grad; $("pVis").innerHTML = `<div class="cv"><small>${esc(vis.small)}</small>${esc(vis.big)}</div>`;
+  $("pVis").style.background = vis.grad; $("pVis").style.color = vis.ink || "#fff"; $("pVis").innerHTML = `<div class="cv"><small>${esc(vis.small)}</small>${esc(vis.big)}</div>`;
   const steps = [...$("pSteps").querySelectorAll(".step")], lines = [...$("pSteps").querySelectorAll("em")];
   steps.forEach((s) => (s.className = "step")); lines.forEach((l) => (l.className = ""));
   const labels = ["Recording your cash", "Converting to home currency", "Securing your wallet"]; let i = -1, pct = 0;
@@ -465,12 +489,14 @@ function runProgress(title, vis, done) {
   };
   tick();
 }
-$("btnAddGo").addEventListener("click", () => {
+$("btnAddGo").addEventListener("click", async () => {
   const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast("Enter an amount"); return; }
-  const src = $("addSource").querySelector(".on")?.dataset.v || "Other";
+  const src = $("addSource").value || "Other"; const note = $("addNote").value.trim();
+  const dv = $("addDate").value; const at = dv ? new Date(dv + "T" + new Date().toTimeString().slice(0, 8)).toISOString() : new Date().toISOString();
   setBalance(addCcy, (balance(addCcy) || Money.zero(addCcy)).add(m));
-  S.ledger.unshift({ kind: "add", at: new Date().toISOString(), ccy: addCcy, amount: m.toDecimalString(), note: src }); S.sel = addCcy; save(); closeSheets();
-  runProgress("Adding your cash", { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m) }, { title: "Cash added", sub: `${addCcy} ${fmt(m)} is ready to use · balance ${fmt(balance(addCcy))}` });
+  S.ledger.unshift({ kind: "add", at, ccy: addCcy, amount: m.toDecimalString(), note: note ? `${src} · ${note}` : src }); S.ledger.sort((a, b) => (a.at < b.at ? 1 : -1)); S.sel = addCcy; save();
+  $("s-addcash").classList.add("leaving"); await wait(350); $("s-addcash").classList.remove("leaving");
+  runProgress("Adding your cash", { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m), ink: cardInk(addCcy) }, { title: "Cash added", sub: `${addCcy} ${fmt(m)} is ready to use · balance ${fmt(balance(addCcy))}` });
 });
 $("btnSpendGo").addEventListener("click", () => {
   const m = parseAmt($("spAmt").value, spCcy); if (!m) { toast("Enter an amount"); return; }
@@ -480,15 +506,14 @@ $("btnSpendGo").addEventListener("click", () => {
   if ($("s-home").hidden && $("s-wallet").hidden) go("home");
 });
 const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done", "fading"); };
-$("btnPDone").addEventListener("click", () => { closeProgress(); if (current === "wallet") renderWallet(true); else go("wallet"); });
-$("btnPDone2").addEventListener("click", () => { closeProgress(); route(); });
-$("addSource").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("addSource").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
+$("btnPDone").addEventListener("click", () => { closeProgress(); if (current === "wallet") renderWallet(true); else { if (location.hash === "#wallet") { renderWallet(true); show("wallet"); } else go("wallet"); } });
+$("btnPDone2").addEventListener("click", () => { closeProgress(); if (current === "addcash") go("wallet"); else route(); });
 $("spCat").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; spCat = b.dataset.v; $("spCat").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
 $("addCur").addEventListener("click", () => openPicker("any", (c) => { addCcy = c; $("addFlag").textContent = flag(c); $("addCode").textContent = c; }));
 $("spCur").addEventListener("click", () => openPicker("any", (c) => { spCcy = c; $("spFlag").textContent = flag(c); $("spCode").textContent = c; }));
 
 // ---------- sheets ----------
-function closeSheets() { for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetAdd", "sheetSpend"]) $(id).hidden = true; }
+function closeSheets() { for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend"]) $(id).hidden = true; }
 function openPicker(which, onPick) {
   $("pickTitle").textContent = which === "from" ? "Convert from" : which === "to" ? "Convert to" : "Choose currency";
   const list = $("pickList"); const search = $("pickSearch");
@@ -558,11 +583,12 @@ $("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
 $("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
 $("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
 const openRate = () => { renderRateSheet(); $("sheetRate").hidden = false; };
+$("periods").addEventListener("click", async (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; S.period = b.dataset.p; save(); $("periods").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); await loadSeries(); renderRateSheet(); });
 $("rateRow").addEventListener("click", openRate); $("btnRates").addEventListener("click", openRate); $("btnRatesHome").addEventListener("click", openRate); $("btnTabRate").addEventListener("click", openRate);
 $("btnHistory").addEventListener("click", () => { renderHistory(); stagger($("sheetHistory").querySelector(".sheetbox")); $("sheetHistory").hidden = false; });
 $("btnHistClear").addEventListener("click", () => { S.history = []; save(); renderHistory(); });
 document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
-for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetAdd", "sheetSpend"]) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
+for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend"]) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
 $("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast("Enter both amounts"); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast("Converting at your rate"); });
 $("btnClearMine").addEventListener("click", () => { delete S.mine[`${S.from}/${S.to}`]; save(); closeSheets(); render(); });
 $("btnHomeCcy").addEventListener("click", () => openPicker("any", (c) => { S.home = c; save(); renderRateSheet(); render(); }));
