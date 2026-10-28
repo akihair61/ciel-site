@@ -6,7 +6,7 @@
 
 | 項目 | 結果 | 根拠 |
 | --- | --- | --- |
-| Node.js | v22.22.0。`node --test` と型注釈の除去(`.ts` 直接実行)が動作 | `node --test test/*.test.ts` で 28/28 通過 |
+| Node.js | v22.22.0。`node --test` と型注釈の除去(`.ts` 直接実行)が動作 | `node --test test/*.test.ts` で 36/36 通過(2026-10-28) |
 | TypeScript | 6.0.2。`erasableSyntaxOnly`, `rewriteRelativeImportExtensions` が利用可 | `tsc --noEmit` 通過、`dist/` 生成 |
 | `Intl.NumberFormat` に 10 進文字列を渡す | 期待どおり(`"1234.50"` → `฿1,234.50`) | `money.test.ts` |
 | Playwright + Chromium | 同梱版で起動可 | `apps/web` を実際に操作してスクリーンショット取得 |
@@ -22,7 +22,7 @@
 | Vision OCR | 値札 OCR に Vision を使用 | `RecognizeTextRequest`(新 API)と `VNRecognizeTextRequest` の対応 OS、日本語/タイ語認識の精度 | developer.apple.com/documentation/vision |
 | Frankfurter | ECB 参考レート、日次 | エンドポイント(`/latest`, `/{date}`, `/{start}..{end}`)、利用規約、レート制限、公開時刻。`providers.ts` は `/latest?from=&to=` を前提に実装 | https://www.frankfurter.app/docs/ ・ https://data.ecb.europa.eu/help/api/data |
 | open.er-api.com | 無料・日次・出典表示必須 | 商用利用可否、更新頻度、レート制限、`time_next_update_unix` の意味。`providers.ts` は `/v6/latest/{BASE}` の `result/base_code/rates/time_last_update_unix` を前提 | https://www.exchangerate-api.com/docs/free |
-| Coinbase `GET /v2/exchange-rates?currency=USD` | 鍵なし・CORS 可・数分ごと更新の為替レート(アプリの「ライブ」ソース) | 利用規約での商用利用可否、レート制限、観測時刻が返らない点(受信時刻で代用している) | https://docs.cdp.coinbase.com/ (要検証) |
+| Coinbase `GET /v2/exchange-rates?currency=USD` | 鍵なし・CORS 可・数分ごと更新の為替レート(最も頻繁に更新される参考レート。「Live」とは呼ばない) | 利用規約での商用利用可否、レート制限。観測時刻が返らないため `observedAt = null` とし UI は「観測時刻不明・取得 N 秒前」 | https://docs.cdp.coinbase.com/ (要検証) |
 | Wise Platform API | 送金・交換のパートナー候補 | サンドボックス取得条件、KYC 分担、対応国(日本・タイ) | https://docs.wise.com/api-reference |
 | Bank of Thailand | 両替・送金の許認可 | Payment Systems Act、Foreign Exchange Business license の要件 | https://www.bot.or.th/ (仕様書記載 URL) |
 | ISO 4217 小数桁 | JPY 0 / KWD 3 等 | `currencies.ts` の 43 通貨を ISO list one と突合 | https://www.iso.org/iso-4217-currency-codes.html |

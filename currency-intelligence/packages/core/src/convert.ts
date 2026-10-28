@@ -28,7 +28,9 @@ export interface ConversionResult {
   readonly quoteId: string;
   readonly source: string;
   readonly rateKind: RateQuote["rateKind"];
-  readonly observedAt: string;
+  /** null when the provider published no observation time (see RateQuote.observedAt). */
+  readonly observedAt: string | null;
+  readonly receivedAt: string;
   readonly currencyScale: number;
   readonly roundingMode: RoundingMode;
   readonly spread: Money;
@@ -80,6 +82,7 @@ export function convert(amount: Money, quote: RateQuote, opts: ConversionOptions
     source: quote.source,
     rateKind: quote.rateKind,
     observedAt: quote.observedAt,
+    receivedAt: quote.receivedAt,
     currencyScale: gross.scale,
     roundingMode: opts.rounding,
     spread,

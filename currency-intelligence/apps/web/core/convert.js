@@ -46,6 +46,7 @@ export function convert(amount, quote, opts) {
         source: quote.source,
         rateKind: quote.rateKind,
         observedAt: quote.observedAt,
+        receivedAt: quote.receivedAt,
         currencyScale: gross.scale,
         roundingMode: opts.rounding,
         spread,

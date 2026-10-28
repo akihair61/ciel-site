@@ -72,6 +72,7 @@
       </div>
       <div id="txList" class="txlist"></div>
       <div class="homeempty" id="txEmpty">No transactions yet. Add cash, then record what you spend.</div>
+      <p class="notice">Balances here are cash you recorded by hand on this device. They are not a bank, card or exchange account balance.</p>
     </div>
     <div class="homeglow"></div>
   </section>
@@ -140,6 +141,7 @@
         <button class="cta" id="btnWAdd" type="button">Add cash</button>
         <button class="cta white" id="btnWSpend" type="button">Record a spend</button>
       </div>
+      <p class="notice">Cards show cash you recorded by hand on this device, not an actual financial account balance.</p>
     </div>
   </section>
 
@@ -181,13 +183,13 @@
       <div class="slot" id="slot"><svg class="mark small"><use href="#logo"/></svg><span id="slotLabel">GENERATING...</span><i>×</i></div>
       <div class="paperwrap" id="paperwrap">
         <article class="paper" id="paper">
-          <div class="paperhead"><span class="logo"><svg class="mark small"><use href="#logo"/></svg>Currency Intelligence</span><span class="eyebrow">EXCHANGE RECEIPT</span></div>
+          <div class="paperhead"><span class="logo"><svg class="mark small"><use href="#logo"/></svg>Currency Intelligence</span><span class="eyebrow" id="rEyebrow">EXCHANGE RECEIPT</span></div>
           <div class="stampwrap">
             <div class="flags2"><span class="flag" id="rFlagFrom"></span><span class="flag" id="rFlagTo"></span><i class="mini"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></i></div>
             <span class="stamp" id="stamp">COMPLETED</span>
           </div>
           <div class="rcenter">
-            <small>You converted</small>
+            <small id="rWhat">You converted</small>
             <div class="rbig num" id="rBig"></div>
             <div class="rfor" id="rFor"></div>
             <div class="rdate" id="rDate"></div>
@@ -195,13 +197,14 @@
           <div class="dash"></div>
           <dl class="rrows" id="rRows"></dl>
           <div class="dash"></div>
-          <div class="eyebrow small">NEW BALANCES</div>
+          <div class="eyebrow small" id="rBalsHead">NEW BALANCES</div>
           <dl class="rrows" id="rBals"></dl>
           <div class="eyebrow small">RATE SOURCE</div>
           <dl class="rrows" id="rProv"></dl>
           <svg class="barcode" id="barcode" viewBox="0 0 200 40" preserveAspectRatio="none"></svg>
           <div class="rref" id="rRef"></div>
-          <div class="rthanks">Thank you for exchanging with Currency Intelligence<br><span>This receipt is a note kept on your device, not a statement from an exchange or card issuer.</span></div>
+          <p class="rkind" id="rKindNote"></p>
+          <div class="rthanks">Currency Intelligence<br><span>A note kept on your device (record or simulation), not a statement from an exchange, bank or card issuer.</span></div>
         </article>
       </div>
     </div>
@@ -228,13 +231,15 @@
   <div class="sheetbox">
     <h2>Converted</h2>
     <p class="sheetsub" id="doneRate"></p>
+    <p class="simtag"><i></i>Simulation · no balance changed, no money moved</p>
     <div class="tiles">
       <div class="tile"><small><span class="flag" id="dFlagFrom"></span><span id="dFromLbl"></span></small><b class="num neg" id="dFromAmt"></b></div>
       <svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg>
       <div class="tile"><small><span class="flag" id="dFlagTo"></span><span id="dToLbl"></span></small><b class="num pos" id="dToAmt"></b></div>
     </div>
     <dl class="bals" id="doneBals"></dl>
-    <button class="listbtn" id="btnReceipt" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>Generate receipt</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnReceipt" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>Simulation note (receipt)</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnRecordReal" type="button"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg><span>Record as a real exchange</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="cta" id="btnDone" type="button">Done</button>
     <button class="textbtn" id="btnMore" type="button">Convert more</button>
   </div>
@@ -311,6 +316,53 @@
     <div class="mine">
       <div class="minehead"><b>Home currency</b><span>Used for the "≈" amounts and this week's spend.</span></div>
       <button class="curpill" id="btnHomeCcy" type="button"><span class="flag" id="homeCcyFlag"></span><b id="homeCcyCode">JPY</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+    </div>
+    <div class="mine">
+      <div class="minehead"><b>Motion</b><span>"Auto" follows your device's Reduce Motion setting. "Off" shows every result in one short step.</span></div>
+      <div class="chips" id="motionChips"><button type="button" data-v="auto">Auto</button><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div>
+      <p class="sub" id="motionNote"></p>
+    </div>
+    <div class="mine">
+      <div class="minehead"><b>Your data</b><span>Everything stays on this device (one backup copy is kept). Export a JSON file to move it to another device or browser; import replaces what is here after you confirm.</span></div>
+      <div class="two">
+        <button class="cta small" id="btnExport" type="button">Export JSON</button>
+        <button class="cta white small" id="btnImport" type="button">Import JSON</button>
+      </div>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+      <p class="sub" id="dataNote"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ More (quick menu) ============ -->
+<div class="sheet" id="sheetMore" hidden>
+  <div class="sheetbox">
+    <div class="sheethead"><h2>More</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <button class="listbtn" id="btnMoreSplit" type="button"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 20a5 5 0 0 1 10 0M11 20a5 5 0 0 1 10 0"/></svg><span>Split a bill</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreHistory" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>Conversion notes</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreCards" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg><span>Cards</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreSettings" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.6h5l.3-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg><span>Rate, motion &amp; data</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+  </div>
+</div>
+
+<!-- ============ Split a bill (F13) ============ -->
+<div class="sheet" id="sheetSplit" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>Split a bill</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="fieldrow">
+      <button class="curpill" id="splCur" type="button"><span class="flag" id="splFlag"></span><b id="splCode">THB</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+      <input id="splTotal" class="bigin num" type="text" inputmode="decimal" placeholder="0" autocomplete="off" aria-label="Total">
+    </div>
+    <div class="splrow"><span>People</span><div class="chips" id="splPeople"></div></div>
+    <div class="addrow"><input id="splName" class="search2" type="text" placeholder="Add a name" autocomplete="off" maxlength="20"><button class="cta white small" id="splAddPerson" type="button">Add</button></div>
+    <div class="splrow"><span>Split</span><div class="chips" id="splMode"><button type="button" data-v="equal" class="on">Equally</button><button type="button" data-v="weight">By weight</button></div></div>
+    <div class="weights" id="splWeights" hidden></div>
+    <div class="splrow"><span>Who paid</span><div class="chips" id="splPayer"></div></div>
+    <div class="splres" id="splRes"></div>
+    <p class="sub" id="splNote">Shares always add up to the total. Rounding leftovers go to the first people in the list, one minor unit each.</p>
+    <div class="two">
+      <button class="cta small" id="btnSplitShare" type="button">Share summary</button>
+      <button class="cta white small" id="btnSplitSpend" type="button">Record payer's spend</button>
     </div>
   </div>
 </div>

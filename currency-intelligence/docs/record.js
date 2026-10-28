@@ -1,0 +1,56 @@
+const { chromium } = require('playwright');
+const http = require('http'), fs = require('fs'), path = require('path');
+(async () => {
+  const root = process.argv[2]; const out = process.argv[3];
+  const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmanifest':'application/manifest+json','.svg':'image/svg+xml'};
+  const srv = http.createServer((req,res)=>{ let p = decodeURIComponent(req.url.split('?')[0]); if(p==='/') p='/index.html'; fs.readFile(path.join(root,p),(e,d)=>{ if(e){res.writeHead(404);res.end();return;} res.writeHead(200,{'content-type':types[path.extname(p)]||'application/octet-stream'}); res.end(d); }); });
+  await new Promise(r=>srv.listen(8765,r));
+  const b = await chromium.launch(); const errs=[];
+  const ctx = await b.newContext({viewport:{width:393,height:852}, deviceScaleFactor:1, locale:'ja-JP', recordVideo:{dir:out+'/video', size:{width:393,height:852}}, hasTouch:false});
+  await ctx.route('https://open.er-api.com/**', r => r.fulfill({status:200, contentType:'application/json', body: JSON.stringify({result:'success', time_last_update_unix: Math.floor(Date.now()/1000)-3600, time_next_update_unix: Math.floor(Date.now()/1000)+82800, base_code:'USD', rates:{USD:1,JPY:150.12,THB:33.47,EUR:0.9201,KRW:1378.5,TWD:32.18,VND:25410,KWD:0.3066,AUD:1.512}})}));
+  await ctx.route('https://api.frankfurter.app/**', r => { const u=r.request().url(); if(u.includes('..')){ const rates={}; const d=new Date(Date.now()-30*864e5); for(let i=0;i<30;i++){ rates[new Date(d.getTime()+i*864e5).toISOString().slice(0,10)]={THB: 0.219+Math.sin(i/4)*0.004+i*0.0001, JPY: 4.46+Math.cos(i/5)*0.05}; } r.fulfill({status:200, contentType:'application/json', body: JSON.stringify({amount:1, base:'JPY', rates})}); } else r.abort(); });
+  const page = await ctx.newPage();
+  page.on('pageerror', e=>errs.push('pageerror: '+e.message+' @ '+(e.stack||'').split('\n').slice(0,4).join(' | '))); page.on('console', m=>{ if(m.type()==='error') errs.push('console: '+m.text()); });
+  const shot = (n) => page.screenshot({path:`${out}/a-${n}.png`});
+  await page.goto('http://localhost:8765/');
+  await page.waitForTimeout(450); await shot('01-burst');
+  await page.waitForTimeout(500); await shot('02-pieces');
+  await page.waitForTimeout(700); await shot('03-bands');
+  await page.waitForTimeout(1500); await shot('04-onboard');
+  await page.waitForTimeout(800);
+  await page.click('#btnStartDemo'); await page.waitForTimeout(350); await shot('05-leaving');
+  await page.waitForTimeout(700); await shot('06-home-in');
+  await page.waitForTimeout(1200); await shot('07-home');
+  await page.click('#ticker button[data-c=JPY]'); await page.waitForTimeout(250); await shot('08-ticker-tween');
+  await page.waitForTimeout(900);
+  await page.click('#ticker button[data-c=THB]'); await page.waitForTimeout(1000);
+  await page.click('a[data-tab=wallet]'); await page.waitForTimeout(200); await shot('09-wallet-in');
+  await page.waitForTimeout(1200); await shot('10-wallet');
+  // drag cards
+  const box = await page.locator('#carousel').boundingBox();
+  await page.mouse.move(box.x+box.width*0.7, box.y+box.height/2); await page.mouse.down();
+  for (let i=1;i<=12;i++){ await page.mouse.move(box.x+box.width*0.7 - i*18, box.y+box.height/2); await page.waitForTimeout(30); }
+  await shot('11-drag'); await page.mouse.up(); await page.waitForTimeout(900); await shot('12-after-drag');
+  console.log('wallet sel after drag:', await page.textContent('#wBal'));
+  await page.click('#dots i:nth-child(1)'); await page.waitForTimeout(800);
+  await page.click('#btnWAdd'); await page.waitForTimeout(700); await shot('12b-addcash-empty'); await page.type('#addAmt','5000',{delay:120}); await page.click('#acCols button[data-col=red]'); await page.waitForTimeout(400); await shot('12c-addcash'); await page.click('#btnAddGo');
+  await page.waitForTimeout(1800); await shot('13-progress');
+  await page.waitForTimeout(6200); await shot('14-progress-done');
+  await page.waitForTimeout(600); await page.click('#btnPDone'); await page.waitForTimeout(1200);
+  await page.click('a[data-tab=convert]'); await page.waitForTimeout(900);
+  for (const k of ['5','6','8','0']) { await page.click('[data-k="'+k+'"]'); await page.waitForTimeout(260); }
+  await page.waitForTimeout(600); await shot('15-convert');
+  await page.click('#btnSwap'); await page.waitForTimeout(800); await page.click('#btnSwap'); await page.waitForTimeout(800);
+  await page.click('#btnConvert'); await page.waitForTimeout(350); await shot('16-cta-morph');
+  await page.waitForTimeout(1100); await shot('17-sheet');
+  await page.waitForTimeout(500);
+  await page.click('#btnReceipt'); await page.waitForTimeout(1200); await shot('18-generating');
+  await page.waitForTimeout(1500); await shot('19-printing');
+  await page.waitForTimeout(1200); await shot('20-stamp');
+  await page.waitForTimeout(1500); await shot('21-receipt-done');
+  await page.waitForTimeout(800);
+  await page.click('#btnReceiptDone'); await page.waitForTimeout(1500);
+  console.log('errors:', errs.length? errs.join('\n') : 'none');
+  await ctx.close(); await b.close(); srv.close();
+  const vids = fs.readdirSync(out+'/video'); console.log('video:', vids.join(','));
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -116,3 +116,18 @@ test("property: A→B→A round trip error stays within 1 minor unit of B's scal
     assert.ok(diff.minor <= 1n, `round trip drift ${diff.toString()} for ${a.toString()}`);
   }
 });
+
+test("observedAt may be null: age falls back to receivedAt, cross is marked estimated (Q-02)", () => {
+  const unknown: RateQuote = { ...q("USD", "JPY", "150"), observedAt: null, receivedAt: "2026-10-28T03:00:00Z", quoteId: "cb:USDJPY" };
+  validateQuote(unknown);
+  const s = staleness(unknown, Date.parse("2026-10-28T03:00:30Z"), 45_000);
+  assert.equal(s.basis, "receivedAt");
+  assert.equal(s.status, "fresh");
+  assert.equal(s.ageMs, 30_000);
+  const known = q("USD", "THB", "33.5", { observedAt: "2026-10-28T03:00:00Z", receivedAt: "2026-10-28T03:00:00Z", confidence: "confirmed" });
+  const x = cross(unknown, known, { toleranceMs: 60_000 });
+  assert.equal(x.observedAt, null);
+  assert.equal(x.confidence, "estimated");
+  assert.ok(x.notes!.some((n) => /observation time unknown/.test(n)));
+  assert.equal(invert(unknown).observedAt, null);
+});

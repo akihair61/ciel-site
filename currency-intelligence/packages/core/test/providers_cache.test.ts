@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { FrankfurterProvider, MockRateProvider, OpenErApiProvider, type FetchLike } from "../src/providers.ts";
 import { RateCache } from "../src/cache.ts";
 
-const fakeFetch = (payload: unknown, ok = true, status = 200): FetchLike => async () => ({ ok, status, json: async () => payload });
+const fakeFetch = (payload: unknown, ok = true, status = 200): FetchLike => async () => ({ ok, status, text: async () => (typeof payload === "string" ? payload : JSON.stringify(payload)) });
 
 test("FrankfurterProvider maps payload to indicative daily quotes", async () => {
   const p = new FrankfurterProvider({
@@ -85,6 +85,20 @@ test("CoinbaseProvider maps the exchange-rates payload to intraday quotes", asyn
   const jpy = quotes.find((q) => q.quote === "JPY")!;
   assert.equal(jpy.rate, "150.23");
   assert.equal(jpy.granularity, "intraday");
-  assert.equal(jpy.observedAt, "2026-10-28T03:00:00.000Z");
+  assert.equal(jpy.observedAt, null); // Coinbase publishes no observation time
+  assert.equal(jpy.receivedAt, "2026-10-28T03:00:00.000Z");
   await assert.rejects(new CoinbaseProvider({ fetch: fakeFetch({ data: { currency: "EUR", rates: {} } }) }).fetchLatest("USD", ["JPY"]));
+});
+
+test("providers keep full decimal precision from the wire (Q-01)", async () => {
+  const raw = '{"amount":1,"base":"USD","date":"2026-10-28","rates":{"JPY":150.123456789012345678,"THB":33.5}}';
+  const [jpy] = await new FrankfurterProvider({ fetch: fakeFetch(raw) }).fetchLatest("USD", ["JPY"]);
+  assert.equal(jpy.rate, "150.123456789012345678");
+  assert.notEqual(String(JSON.parse(raw).rates.JPY), jpy.rate); // JSON.parse would have lost digits
+  const cb = '{"data":{"currency":"USD","rates":{"JPY":"150.000000000000000001","VND":"25410.5"}}}';
+  const { CoinbaseProvider } = await import("../src/providers.ts");
+  const q = await new CoinbaseProvider({ fetch: fakeFetch(cb) }).fetchLatest("USD", ["JPY", "VND"]);
+  assert.equal(q.find((x) => x.quote === "JPY")!.rate, "150.000000000000000001");
+  // malformed bodies surface as RateError, not as a thrown SyntaxError
+  await assert.rejects(new FrankfurterProvider({ fetch: fakeFetch("{not json") }).fetchLatest("USD", ["JPY"]), /PROVIDER_JSON|invalid JSON|expected|unexpected/);
 });

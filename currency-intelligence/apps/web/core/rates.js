@@ -24,7 +24,8 @@ export function validateQuote(q) {
     const r = parseDec(q.rate);
     if (r.m <= 0n)
         throw new RateError("RATE_NON_POSITIVE", `rate must be > 0, got ${q.rate}`);
-    parseIso(q.observedAt);
+    if (q.observedAt !== null)
+        parseIso(q.observedAt);
     parseIso(q.receivedAt);
     if (q.expiresAt)
         parseIso(q.expiresAt);
@@ -39,10 +40,15 @@ export function validateQuote(q) {
  * expired : past expiresAt (provider says do not use) — UI must refuse to call it a rate
  */
 export function staleness(q, nowMs, ttlMs) {
-    const ageMs = Math.max(0, nowMs - parseIso(q.observedAt));
+    const basis = q.observedAt === null ? "receivedAt" : "observedAt";
+    const ageMs = Math.max(0, nowMs - parseIso(q.observedAt ?? q.receivedAt));
     if (q.expiresAt && nowMs > parseIso(q.expiresAt))
-        return { status: "expired", ageMs, ttlMs };
-    return { status: ageMs <= ttlMs ? "fresh" : "stale", ageMs, ttlMs };
+        return { status: "expired", ageMs, ttlMs, basis };
+    return { status: ageMs <= ttlMs ? "fresh" : "stale", ageMs, ttlMs, basis };
+}
+/** Time the quote's age should be measured from: observedAt when known, else receivedAt. */
+export function quoteTimeMs(q) {
+    return parseIso(q.observedAt ?? q.receivedAt);
 }
 function invertDec(d) {
     return decToShortString(divDec({ m: 1n, e: 0 }, d, DERIVED_RATE_FRACTION_DIGITS, "HALF_EVEN"));
@@ -82,12 +88,15 @@ export function cross(cToX, cToY, opts) {
         throw new RateError("RATE_CROSS_BASE", `bases differ: ${cToX.base} vs ${cToY.base}`);
     if (cToX.quote === cToY.quote)
         throw new RateError("RATE_SAME_CURRENCY", "cannot cross a currency with itself");
-    const tX = parseIso(cToX.observedAt);
-    const tY = parseIso(cToY.observedAt);
+    const timeKnown = cToX.observedAt !== null && cToY.observedAt !== null;
+    const tX = parseIso(cToX.observedAt ?? cToX.receivedAt);
+    const tY = parseIso(cToY.observedAt ?? cToY.receivedAt);
     const skew = Math.abs(tX - tY);
-    const outOfTolerance = skew > opts.toleranceMs;
+    const outOfTolerance = !timeKnown || skew > opts.toleranceMs;
     const notes = [`cross via ${cToX.base}`];
-    if (outOfTolerance)
+    if (!timeKnown)
+        notes.push("observation time unknown for at least one leg; marked estimated");
+    else if (outOfTolerance)
         notes.push(`observation skew ${skew}ms exceeds tolerance ${opts.toleranceMs}ms`);
     const rate = decToShortString(divDec(parseDec(cToY.rate), parseDec(cToX.rate), DERIVED_RATE_FRACTION_DIGITS, "HALF_EVEN"));
     const kinds = new Set([cToX.rateKind, cToY.rateKind]);
@@ -99,7 +108,7 @@ export function cross(cToX, cToY, opts) {
         quote: cToY.quote,
         rate,
         source: cToX.source === cToY.source ? cToX.source : `${cToX.source}+${cToY.source}`,
-        observedAt: new Date(Math.min(tX, tY)).toISOString(),
+        observedAt: timeKnown ? new Date(Math.min(tX, tY)).toISOString() : null,
         receivedAt: new Date(Math.max(parseIso(cToX.receivedAt), parseIso(cToY.receivedAt))).toISOString(),
         expiresAt: earliest(cToX.expiresAt, cToY.expiresAt),
         rateKind,

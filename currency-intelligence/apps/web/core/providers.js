@@ -1,6 +1,41 @@
-import { numberToDecString } from "./dec.js";
+import { asObject, numText, parseJsonPreservingNumbers, JsonError } from "./json.js";
 import { isKnownCurrency } from "./currencies.js";
 import { RateError, validateQuote } from "./rates.js";
+/** Max accepted body size per provider response. */
+export const MAX_PAYLOAD_BYTES = 2 * 1024 * 1024;
+async function readJson(id, res) {
+    let text;
+    try {
+        text = await res.text();
+    }
+    catch (e) {
+        throw new RateError("PROVIDER_BODY", `${id}: could not read body: ${e.message}`);
+    }
+    let v;
+    try {
+        v = parseJsonPreservingNumbers(text, { maxBytes: MAX_PAYLOAD_BYTES });
+    }
+    catch (e) {
+        throw new RateError("PROVIDER_JSON", `${id}: ${e instanceof JsonError ? e.message : "invalid JSON"}`);
+    }
+    const obj = asObject(v);
+    if (!obj)
+        throw new RateError("PROVIDER_SHAPE", `${id}: payload is not an object`);
+    return obj;
+}
+/** Iterate a rates object, yielding [currency, decimalText] for entries that are numeric. Non-numeric entries are skipped. */
+function rateEntries(rates) {
+    const obj = asObject(rates);
+    if (!obj)
+        return [];
+    const out = [];
+    for (const [k, v] of Object.entries(obj)) {
+        const t = numText(v);
+        if (t !== null)
+            out.push([k, t]);
+    }
+    return out;
+}
 /** Deterministic provider for tests and offline demos. */
 export class MockRateProvider {
     id = "mock";
@@ -55,19 +90,20 @@ export class FrankfurterProvider {
         const res = await this.deps.fetch(url, { signal: opts?.signal });
         if (!res.ok)
             throw new RateError("PROVIDER_HTTP", `${this.id} HTTP ${res.status}`);
-        const j = (await res.json());
-        if (!j || typeof j !== "object" || !j.rates || j.base !== base)
+        const j = await readJson(this.id, res);
+        const date = typeof j.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(j.date) ? j.date : null;
+        if (j.base !== base || !asObject(j.rates) || !date)
             throw new RateError("PROVIDER_SHAPE", `${this.id}: unexpected payload`);
         const now = (opts?.now ?? new Date()).toISOString();
         // ECB publishes around 16:00 CET; the API exposes only the date. We record the date at 00:00Z and say so.
-        const observedAt = `${j.date}T00:00:00Z`;
-        return Object.entries(j.rates)
-            .filter(([q]) => isKnownCurrency(q))
+        const observedAt = `${date}T00:00:00Z`;
+        return rateEntries(j.rates)
+            .filter(([q]) => q !== base && isKnownCurrency(q))
             .map(([q, r]) => validateQuote({
-            quoteId: `${this.id}:${base}${q}:${j.date}`,
+            quoteId: `${this.id}:${base}${q}:${date}`,
             base,
             quote: q,
-            rate: numberToDecString(r),
+            rate: r,
             source: this.id,
             observedAt,
             receivedAt: now,
@@ -96,20 +132,23 @@ export class OpenErApiProvider {
         const res = await this.deps.fetch(`${this.baseUrl}/latest/${encodeURIComponent(base)}`, { signal: opts?.signal });
         if (!res.ok)
             throw new RateError("PROVIDER_HTTP", `${this.id} HTTP ${res.status}`);
-        const j = (await res.json());
-        if (!j || j.result !== "success" || j.base_code !== base || !j.rates)
+        const j = await readJson(this.id, res);
+        const lastUnix = numText(j.time_last_update_unix);
+        const nextUnix = numText(j.time_next_update_unix);
+        if (j.result !== "success" || j.base_code !== base || !asObject(j.rates) || lastUnix === null || !/^\d+$/.test(lastUnix)) {
             throw new RateError("PROVIDER_SHAPE", `${this.id}: unexpected payload`);
+        }
         const now = (opts?.now ?? new Date()).toISOString();
-        const observedAt = new Date(j.time_last_update_unix * 1000).toISOString();
-        const expiresAt = j.time_next_update_unix ? new Date(j.time_next_update_unix * 1000).toISOString() : undefined;
+        const observedAt = new Date(Number(lastUnix) * 1000).toISOString();
+        const expiresAt = nextUnix !== null && /^\d+$/.test(nextUnix) ? new Date(Number(nextUnix) * 1000).toISOString() : undefined;
         const want = new Set(symbols);
-        return Object.entries(j.rates)
+        return rateEntries(j.rates)
             .filter(([q]) => q !== base && want.has(q) && isKnownCurrency(q))
             .map(([q, r]) => validateQuote({
-            quoteId: `${this.id}:${base}${q}:${j.time_last_update_unix}`,
+            quoteId: `${this.id}:${base}${q}:${lastUnix}`,
             base,
             quote: q,
-            rate: numberToDecString(r),
+            rate: r,
             source: this.id,
             observedAt,
             receivedAt: now,
@@ -122,12 +161,14 @@ export class OpenErApiProvider {
 }
 /**
  * Coinbase public exchange-rates endpoint (no key, CORS enabled). Fiat rates
- * refresh every few minutes, so this is the app's "live" source. Still an
- * indicative rate, not a tradable quote; terms are 要検証 in docs/TECH_VALIDATION.md.
+ * refresh every few minutes. The payload carries NO observation timestamp, so
+ * observedAt is null and the UI must say "取得N秒前・観測時刻不明", never "Live"
+ * (spec 02 Q-02, ADR-0003). Still an indicative rate, not a tradable quote;
+ * terms are 要検証 in docs/TECH_VALIDATION.md.
  */
 export class CoinbaseProvider {
     id = "coinbase";
-    description = "Coinbase exchange rates (refreshed every few minutes, indicative)";
+    description = "Coinbase exchange rates (refreshed every few minutes, indicative; no observation time published)";
     granularity = "intraday";
     baseUrl;
     deps;
@@ -139,25 +180,26 @@ export class CoinbaseProvider {
         const res = await this.deps.fetch(`${this.baseUrl}/exchange-rates?currency=${encodeURIComponent(base)}`, { signal: opts?.signal });
         if (!res.ok)
             throw new RateError("PROVIDER_HTTP", `${this.id} HTTP ${res.status}`);
-        const j = (await res.json());
-        if (!j || !j.data || j.data.currency !== base || !j.data.rates)
+        const j = await readJson(this.id, res);
+        const data = asObject(j.data);
+        if (!data || data.currency !== base || !asObject(data.rates))
             throw new RateError("PROVIDER_SHAPE", `${this.id}: unexpected payload`);
         const now = (opts?.now ?? new Date()).toISOString();
         const want = new Set(symbols);
-        return Object.entries(j.data.rates)
+        return rateEntries(data.rates)
             .filter(([q]) => q !== base && want.has(q) && isKnownCurrency(q))
             .map(([q, r]) => validateQuote({
             quoteId: `${this.id}:${base}${q}:${now}`,
             base,
             quote: q,
-            rate: typeof r === "string" ? numberToDecString(Number(r)) : numberToDecString(r),
+            rate: r,
             source: this.id,
-            observedAt: now, // the endpoint carries no timestamp; the fetch time is the best available
+            observedAt: null, // the endpoint carries no timestamp; do not pretend receivedAt is one
             receivedAt: now,
             rateKind: "indicative",
             confidence: "estimated",
             granularity: "intraday",
-            notes: ["Coinbase does not publish an observation time; receivedAt is used"],
+            notes: ["Coinbase does not publish an observation time; age is measured from receivedAt"],
         }));
     }
 }

@@ -46,8 +46,13 @@ export function splitExact(total, shares) {
     };
 }
 /**
- * Settle a set of payments against the agreed shares with the minimum-ish
- * number of transfers (greedy largest debtor → largest creditor). Deterministic.
+ * Propose transfers that settle the payments against the agreed shares.
+ *
+ * Greedy: largest debtor pays largest creditor, repeat. This *reduces* the
+ * number of transfers (never more than debtors + creditors − 1) but is NOT
+ * guaranteed to be the theoretical minimum, which is NP-hard in general.
+ * UI wording must therefore be "精算回数を減らす提案", never "最少回数".
+ * Deterministic: ties broken by participant id.
  */
 export function settle(shares, payments) {
     if (shares.length === 0)

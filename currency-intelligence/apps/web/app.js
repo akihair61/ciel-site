@@ -1,10 +1,13 @@
 // Currency Intelligence — web client. Money math lives in ./core (packages/core); this file renders and animates.
 import {
   Money, MoneyError, CURRENCIES, currency, convert, invert, cross, realizedRate, spreadPercent,
-  parseDec, RateCache, OpenErApiProvider, FrankfurterProvider, CoinbaseProvider,
+  parseDec, RateCache, OpenErApiProvider, FrankfurterProvider, CoinbaseProvider, splitEqual, splitByWeight, settle,
 } from "./core/index.js";
 
-const STORE_KEY = "ci.v3";
+const SCHEMA_VERSION = 4;
+const STORE_KEY = "ci.v4";
+const BACKUP_KEY = "ci.v4.bak"; // previous good copy, written just before every save
+const LEGACY_KEYS = ["ci.v3"]; // read once for migration; never deleted (user data)
 const TTL_MS = 6 * 60 * 60 * 1000;
 const CROSS_TOLERANCE_MS = 36 * 60 * 60 * 1000;
 const PIVOT = "USD";
@@ -12,8 +15,11 @@ const ROUNDING = "HALF_EVEN";
 const PERIOD_DAYS = { "1D": 1, "1W": 7, "1M": 30, "3M": 91, "1Y": 365 };
 const LIVE_POLL_MS = 60_000;
 let SERIES_DAYS = 30;
-// Motion is the product here: the OS "reduce motion" setting is deliberately not honoured (it hid every animation for users who have it on).
-const REDUCED = false;
+// Motion: the OS "Reduce Motion" setting is honoured by default (spec 02 Q-03, ADR-0003). The user can override it in Settings
+// (S.motion = "auto" | "on" | "off"). When reduced, every sequence collapses to its final state in one short step.
+const motionMq = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false, addEventListener() {} };
+const reduced = () => S.motion === "off" || (S.motion !== "on" && motionMq.matches);
+function applyMotion() { document.body.classList.toggle("reduced", reduced()); }
 
 const FLAG_CC = { JPY:"JP", THB:"TH", USD:"US", EUR:"EU", GBP:"GB", KRW:"KR", TWD:"TW", CNY:"CN", HKD:"HK", SGD:"SG", MYR:"MY", IDR:"ID", PHP:"PH", VND:"VN", LAK:"LA", KHR:"KH", MMK:"MM", INR:"IN", AUD:"AU", NZD:"NZ", CAD:"CA", CHF:"CH", SEK:"SE", NOK:"NO", DKK:"DK", CZK:"CZ", PLN:"PL", HUF:"HU", ISK:"IS", TRY:"TR", AED:"AE", SAR:"SA", KWD:"KW", BHD:"BH", OMR:"OM", JOD:"JO", MXN:"MX", BRL:"BR", CLP:"CL", ZAR:"ZA", EGP:"EG", LKR:"LK", NPR:"NP" };
 const flag = (code) => { const cc = FLAG_CC[code]; return cc ? [...cc].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("") : "¤"; };
@@ -26,10 +32,72 @@ const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
-function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M" }; }
-function load() { try { const r = localStorage.getItem(STORE_KEY); if (r) return { ...defaults(), ...JSON.parse(r) }; } catch {} return defaults(); }
-function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch {} }
+function defaults() { return { schemaVersion: SCHEMA_VERSION, onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M", motion: "auto", migrations: [], split: null }; }
+const DEC_RE = /^-?\d+(\.\d+)?$/;
+/** Shape check for stored / imported state. Returns { ok, errors }. Never throws. */
+function validateState(d) {
+  const errors = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return { ok: false, errors: ["not an object"] };
+  if (d.schemaVersion !== undefined && (typeof d.schemaVersion !== "number" || d.schemaVersion > SCHEMA_VERSION)) errors.push(`schema v${d.schemaVersion} is newer than this app (v${SCHEMA_VERSION})`);
+  if (d.balances !== undefined) { if (typeof d.balances !== "object" || Array.isArray(d.balances)) errors.push("balances must be an object"); else for (const [c, v] of Object.entries(d.balances)) { if (!CURRENCIES.has(c)) errors.push(`unknown currency ${c}`); else if (typeof v !== "string" || !DEC_RE.test(v)) errors.push(`balance ${c} is not a decimal string`); } }
+  for (const k of ["ledger", "history"]) if (d[k] !== undefined && (!Array.isArray(d[k]) || d[k].some((e) => !e || typeof e !== "object" || typeof e.at !== "string"))) errors.push(`${k} must be a list of entries with "at"`);
+  if (Array.isArray(d.ledger)) for (const e of d.ledger) { if ((e.kind === "spend" || e.kind === "add") && (typeof e.amount !== "string" || !DEC_RE.test(e.amount) || !CURRENCIES.has(e.ccy))) { errors.push("a ledger entry has a bad amount or currency"); break; } }
+  if (d.mine !== undefined && (typeof d.mine !== "object" || Array.isArray(d.mine))) errors.push("mine must be an object");
+  for (const k of ["home", "sel", "from", "to"]) if (d[k] !== undefined && !CURRENCIES.has(d[k])) errors.push(`${k} is not a known currency`);
+  if (d.motion !== undefined && !["auto", "on", "off"].includes(d.motion)) errors.push("motion must be auto/on/off");
+  return { ok: errors.length === 0, errors };
+}
+/** v3 → v4: conversions made before v4 changed balances; they are kept, marked legacy, and never reinterpreted. */
+function migrate(raw) {
+  const d = { ...raw }; const from = typeof d.schemaVersion === "number" ? d.schemaVersion : 3;
+  if (from < 4) {
+    d.history = (Array.isArray(d.history) ? d.history : []).map((h) => (h && typeof h === "object" && !h.kind ? { ...h, kind: "legacy_convert" } : h));
+    d.ledger = (Array.isArray(d.ledger) ? d.ledger : []).map((e) => (e && e.kind === "convert" && !e.legacy ? { ...e, legacy: true } : e));
+    d.motion = d.motion || "auto";
+    d.migrations = [...(Array.isArray(d.migrations) ? d.migrations : []), { from, to: 4, at: new Date().toISOString(), note: "existing conversions marked legacy (they changed balances); new Convert is a simulation" }];
+    d.schemaVersion = 4;
+  }
+  return d;
+}
+function readKey(k) { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch { return undefined; } } // undefined = present but unreadable
+let loadNote = "";
+function load() {
+  const cur = readKey(STORE_KEY);
+  if (cur && typeof cur === "object") return { ...defaults(), ...migrate(cur) };
+  if (cur === undefined) {
+    const bak = readKey(BACKUP_KEY);
+    if (bak && typeof bak === "object") { loadNote = "Saved data was unreadable. Restored the last backup."; return { ...defaults(), ...migrate(bak) }; }
+    loadNote = "Saved data was unreadable. Starting fresh; the old data was left in place."; return defaults();
+  }
+  for (const k of LEGACY_KEYS) { const old = readKey(k); if (old && typeof old === "object") { loadNote = "Upgraded your data to v4. Earlier conversions are marked legacy."; return { ...defaults(), ...migrate({ ...old, schemaVersion: 3 }) }; } }
+  return defaults();
+}
+let saveWarned = false;
+/** One JSON write per save: a multi-leg change (e.g. exchange record) lands whole or not at all. The previous copy becomes the backup first. */
+function save() {
+  try {
+    const prev = localStorage.getItem(STORE_KEY); const next = JSON.stringify(S);
+    if (prev === next) return;
+    if (prev !== null) localStorage.setItem(BACKUP_KEY, prev);
+    localStorage.setItem(STORE_KEY, next);
+  } catch { if (!saveWarned) { saveWarned = true; toast("Could not save: storage is full or blocked"); } }
+}
+function exportState() {
+  const exportedAt = new Date().toISOString();
+  const text = JSON.stringify({ app: "currency-intelligence", schemaVersion: SCHEMA_VERSION, exportedAt, data: S }, null, 2);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = `currency-intelligence-${exportedAt.slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast("Exported");
+}
+async function importStateFile(file) {
+  let obj; try { obj = JSON.parse(await file.text()); } catch { toast("Not a JSON file"); return; }
+  const data = obj && obj.app === "currency-intelligence" && obj.data ? obj.data : obj;
+  const v = validateState(data); if (!v.ok) { toast("Import rejected: " + v.errors[0]); return; }
+  const mig = migrate(data);
+  if (!confirm(`Replace the data on this device with this file?\n${Object.keys(mig.balances || {}).length} balances · ${(mig.ledger || []).length} transactions · ${(mig.history || []).length} conversions\nThe current data is kept as a backup.`)) return;
+  S = { ...defaults(), ...mig }; save(); applyMotion(); closeSheets(); render(); toast("Imported");
+}
 let S = load();
+if (loadNote) save(); // persist a migration or recovery right away (and create the backup slot)
 const store = { async get(key) { return S.rateCache && S.rateCache.key === key ? S.rateCache.quotes : undefined; }, async set(key, quotes) { S.rateCache = { key, quotes }; save(); } };
 const f = (u, i) => fetch(u, i);
 const liveStore = { async get(key) { return S.liveCache && S.liveCache.key === key ? S.liveCache.quotes : undefined; }, async set(key, quotes) { S.liveCache = { key, quotes }; save(); } };
@@ -41,12 +109,12 @@ let rate = { status: "loading", source: "", error: "" };
 
 function embeddedQuotes() {
   const now = new Date().toISOString();
-  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["Reference snapshot shipped with the app; replaced once online"] }));
+  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["Sample snapshot shipped with the app (not current); replaced once online"] }));
 }
 let lastRateShown = null; // for the tick flash
 function recordTick() {
   const q = marketQuote(S.from, S.to); if (!q || q.source !== "coinbase") return;
-  const key = `${S.from}/${S.to}`; const arr = S.ticks[key] || []; const t = Date.parse(q.observedAt);
+  const key = `${S.from}/${S.to}`; const arr = S.ticks[key] || []; const t = Date.parse(q.receivedAt); // Coinbase publishes no observation time
   if (arr.length && t - arr[arr.length - 1].t < 20_000) return;
   arr.push({ t, rate: Number(q.rate) });
   const cutoff = Date.now() - 24 * 3600e3; S.ticks[key] = arr.filter((p) => p.t >= cutoff).slice(-1500); save();
@@ -67,13 +135,12 @@ async function loadRates(poll = false) {
   for (const cache of caches) {
     try {
       const r = await cache.resolve(PIVOT, symbols);
-      const live = r.source === "coinbase";
-      applyRates(r.quotes, r.source, live ? (r.status === "fresh" ? "live" : "stale") : r.status);
-      if (r.revalidation) { const fresh = await r.revalidation; if (fresh) applyRates(fresh, r.source, live ? "live" : "fresh"); }
+      applyRates(r.quotes, r.source, r.status);
+      if (r.revalidation) { const fresh = await r.revalidation; if (fresh) applyRates(fresh, r.source, "fresh"); }
       if (!poll) loadSeries(); return;
     } catch (e) { lastErr = e; }
   }
-  if (!poll || !pivot.length) { pivot = embeddedQuotes(); rate = { status: "embedded", source: "embedded", error: lastErr ? String(lastErr.message || lastErr) : "" }; render(); }
+  if (!poll || !pivot.length) { pivot = embeddedQuotes(); rate = { status: "sample", source: "embedded", error: lastErr ? String(lastErr.message || lastErr) : "" }; render(); }
 }
 setInterval(() => { if (document.visibilityState === "visible") loadRates(true); }, LIVE_POLL_MS);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") loadRates(true); });
@@ -98,7 +165,7 @@ async function loadSeries() {
   } catch {
     const local = S.series[key];
     if (local && local.length >= 2) series = local;
-    else { const q = marketQuote(S.from, S.to); if (q) { const today = q.observedAt.slice(0, 10); const arr = (S.series[key] || []).filter((p) => p.date !== today); arr.push({ date: today, rate: Number(q.rate) }); S.series[key] = arr.slice(-SERIES_DAYS); save(); series = arr.length >= 2 ? arr : null; } }
+    else { const q = marketQuote(S.from, S.to); if (q) { const today = (q.observedAt || q.receivedAt).slice(0, 10); const arr = (S.series[key] || []).filter((p) => p.date !== today); arr.push({ date: today, rate: Number(q.rate) }); S.series[key] = arr.slice(-SERIES_DAYS); save(); series = arr.length >= 2 ? arr : null; } }
     renderRate();
   }
 }
@@ -134,9 +201,12 @@ function balance(code) { const b = S.balances[code]; if (b === undefined) return
 function setBalance(code, m) { S.balances[code] = m.toDecimalString(); }
 function parseAmt(txt, code) { const t = txt.trim().replace(/,/g, ""); if (!t) return null; try { const m = Money.of(t, code, "DOWN"); return m.isPositive() ? m : null; } catch { return null; } }
 function ago(iso) { const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000)); return s < 60 ? `${s}s ago` : s < 3600 ? `${Math.floor(s / 60)}m ago` : `${Math.floor(s / 3600)}h ago`; }
-function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "coinbase") return `Live · Coinbase · ${ago(q.observedAt)}`; if (q.source === "embedded") return `Built-in reference · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB reference rate · ${dateJa(q.observedAt)}`; return `Reference rate · ${dateJa(q.observedAt)}`; }
+// Wording rule (spec 02 Q-02): never "Live". A rate without a published observation time says so and shows the fetch age instead.
+function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "coinbase") return `Coinbase · fetched ${ago(q.receivedAt)} · observation time not published`; if (q.source === "embedded") return `Sample rate · ${dateJa(q.observedAt)} · not current`; if (q.source === "frankfurter") return `ECB reference · daily · ${dateJa(q.observedAt)}`; return `Reference rate · daily · ${dateJa(q.observedAt)}`; }
+const STATUS_TEXT = { fresh: "Fresh", stale: "Stale · older than its refresh window", offline: "Offline · last saved rate", sample: "Sample · shipped with the app, not current", loading: "Loading", error: "Unavailable" };
+function statusSuffix() { return rate.status === "stale" ? " · stale" : rate.status === "offline" ? " · offline, last saved" : rate.source !== "embedded" && rate.status === "sample" ? " · sample" : ""; }
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
-const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? 0 : ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, reduced() ? 0 : ms));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
 
@@ -146,7 +216,7 @@ function tweenMoney(el, money, { duration = 450, instant = false, ease = easeOut
   const target = Number(money.toDecimalString()); const ccy = money.currency;
   const prev = tw.get(el);
   if (prev && prev.raf) cancelAnimationFrame(prev.raf);
-  if (instant || REDUCED || !prev || prev.ccy !== ccy && prev.value === 0 || prev.value === target) {
+  if (instant || reduced() || !prev || prev.ccy !== ccy && prev.value === 0 || prev.value === target) {
     el.textContent = fmt(money); tw.set(el, { value: target, ccy, raf: 0 }); return;
   }
   const from = prev.value; const t0 = performance.now();
@@ -160,7 +230,7 @@ function tweenMoney(el, money, { duration = 450, instant = false, ease = easeOut
 function tweenSeed(el, money) { tw.set(el, { value: Number(money.toDecimalString()), ccy: money.currency, raf: 0 }); }
 /** Digit scramble (reference card number change). */
 function scramble(el, finalText, duration = 420) {
-  if (REDUCED) { el.textContent = finalText; return; }
+  if (reduced()) { el.textContent = finalText; return; }
   const t0 = performance.now(); const chars = [...finalText];
   const step = (now) => {
     const t = Math.min(1, (now - t0) / duration); const settled = Math.floor(t * chars.length);
@@ -182,7 +252,7 @@ function show(name, how = "auto") {
   document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === name));
   if (tabs) requestAnimationFrame(moveTabHl);
   const el = $("s-" + name);
-  if (!REDUCED && current && current !== name) {
+  if (!reduced() && current && current !== name) {
     if (name === "convert" || name === "addcash") el.classList.add("push");
     else if (name === "home" || name === "wallet") { el.classList.add("enter"); setTimeout(() => el.classList.remove("enter"), 1200); }
     else el.classList.add("fadein");
@@ -257,20 +327,20 @@ function renderPair(instant = false) {
   const cta = $("btnConvert"); const txt = $("ctaText");
   cta.disabled = amount.isZero() || !aq;
   const label = amount.isZero() ? "Enter an amount" : !aq ? "No rate available" : `Convert ${fmt(amount)}`;
-  if (label !== lastCta && !instant && !REDUCED && lastCta) { txt.classList.add("swapping"); setTimeout(() => { txt.textContent = label; txt.classList.remove("swapping"); }, 150); }
+  if (label !== lastCta && !instant && !reduced() && lastCta) { txt.classList.add("swapping"); setTimeout(() => { txt.textContent = label; txt.classList.remove("swapping"); }, 150); }
   else txt.textContent = label;
   lastCta = label;
 }
 function sparkPath(pts, w, h) { const vals = pts.map((p) => p.rate); const min = Math.min(...vals), max = Math.max(...vals); const span = max - min || 1; return pts.map((p, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - 3 - ((p.rate - min) / span) * (h - 6)}`).join(" "); }
 let lastSpark = "";
-function renderRateSub() { const aq = activeQuote(); if (!aq) return; const mk = marketQuote(S.from, S.to); let sub = sourceLabel(aq.quote); if (aq.mine && mk && mk.source === "coinbase") sub = `Your rate · live mid ${rateStr(mk.rate)} · ${ago(mk.observedAt)}`; if (rate.status === "stale" || rate.status === "offline") sub += " · stale"; $("rateSub").textContent = sub; }
+function renderRateSub() { const aq = activeQuote(); if (!aq) return; const mk = marketQuote(S.from, S.to); let sub = sourceLabel(aq.quote); if (aq.mine && mk && mk.source === "coinbase") sub = `Your rate · market mid ${rateStr(mk.rate)} · fetched ${ago(mk.receivedAt)}`; sub += statusSuffix(); $("rateSub").textContent = sub; }
 function renderRate() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   const dot = $("rateDot"); const chip = $("rateChip"); const sp = $("spark");
   if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? "Loading rate…" : "No rate for this pair"; dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
   $("rateMain").textContent = `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`;
   renderRateSub();
-  dot.className = "dot " + (rate.status === "fresh" || rate.status === "live" ? "" : rate.status === "error" ? "error" : "stale") + (rate.status === "live" ? " live" : "");
+  dot.className = "dot " + (rate.status === "fresh" ? "" : rate.status === "error" ? "error" : "stale") + (rate.status === "fresh" && rate.source === "coinbase" ? " polling" : "");
   if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "▼" : "▲"} ${sp2.replace("-", "")}% vs mid`; chip.className = "chip " + (worse ? "red" : "green"); }
   else if (series && series.length >= 2) { const a = series[0].rate, b = series[series.length - 1].rate; const ch = ((b - a) / a) * 100; chip.textContent = `${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch).toFixed(2)}%`; chip.className = "chip " + (ch >= 0 ? "green" : "red"); }
   else { chip.textContent = aq.quote.confidence === "estimated" ? "Reference" : "Confirmed"; chip.className = "chip grey"; }
@@ -285,16 +355,21 @@ function renderRateSheet() {
   $("rhMain").textContent = aq ? `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}` : "—";
   $("rhSub").textContent = aq ? `${sourceLabel(aq.quote)}${mk && aq.mine ? ` · mid ${rateStr(mk.rate)}` : ""}` : "";
   const big = $("bigSpark"); const legend = $("sparkLegend");
-  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = S.period === "1D" ? `<span>${esc(series[0].date)}</span><span>Live ticks collected while the app is open (about 1 per minute)</span><span>${esc(series[series.length - 1].date)}</span>` : `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
-  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = S.period === "1D" ? `<span></span><span>Collecting live ticks… keep the app open a few minutes</span><span></span>` : `<span></span><span>History loads when online (daily)</span><span></span>`; }
+  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = S.period === "1D" ? `<span>${esc(series[0].date)}</span><span>Ticks collected while the app is open (fetched about once a minute; provider publishes no observation time)</span><span>${esc(series[series.length - 1].date)}</span>` : `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
+  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = S.period === "1D" ? `<span></span><span>Collecting ticks… keep the app open a few minutes</span><span></span>` : `<span></span><span>History loads when online (daily)</span><span></span>`; }
   const q = aq ? aq.quote : null;
-  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Built-in reference snapshot" : q.source === "coinbase" ? "Coinbase exchange rates (indicative, refreshed about every minute while open)" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(q.observedAt)], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
+  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Sample snapshot shipped with the app (not current)" : q.source === "coinbase" ? "Coinbase exchange rates (indicative; refreshed about once a minute while open; no observation time published)" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Freshness", STATUS_TEXT[rate.status] || rate.status], ["Observed", q.observedAt ? dateTime(q.observedAt) : "Not published by provider; age is counted from the fetch"], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
   if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["Note", "Observation times differ, treated as estimated"]);
+  if (q && q.notes?.some((n) => n.includes("observation time unknown"))) rows.push(["Note", "Cross rate from legs without observation time, treated as estimated"]);
   $("provRows").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("lblPaid").textContent = `You paid (${S.from})`; $("lblGot").textContent = `You got (${S.to})`;
   const m = S.mine[`${S.from}/${S.to}`]; $("inPaid").value = m ? m.paid : ""; $("inGot").value = m ? m.received : "";
   $("mineNote").textContent = m ? `Set ${dateTime(m.at)}. The chip shows the gap to the market mid rate.` : "Paid ¥100,000 and got ฿22,500? Enter 100000 and 22500.";
   $("homeCcyFlag").textContent = flag(S.home); $("homeCcyCode").textContent = S.home;
+  $("motionChips").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === (S.motion || "auto")));
+  $("motionNote").textContent = motionMq.matches ? "Your device asks for reduced motion." : "Your device allows full motion.";
+  let bytes = 0; try { bytes = (localStorage.getItem(STORE_KEY) || "").length; } catch {}
+  $("dataNote").textContent = `Schema v${S.schemaVersion} · ${Object.keys(S.balances).length} balances · ${S.ledger.length} transactions · ${S.history.length} conversions · ${(bytes / 1024).toFixed(1)} KB on this device`;
   stagger($("sheetRate").querySelector(".sheetbox"));
 }
 function stagger(box) { [...box.children].forEach((c, i) => c.style.setProperty("--i", i)); }
@@ -336,10 +411,10 @@ function renderHome(entering = false) {
     const g = document.createElement("div"); g.className = "txgroup"; g.innerHTML = `<span>${esc(label)}</span><b>${dayTotal.isZero() && !miss ? "" : "−" + esc(fmt(dayTotal)) + (miss ? " +?" : "")}</b>`; list.appendChild(g);
     for (const e of items) {
       const el = document.createElement("div"); el.className = "tx";
-      const m = e.kind === "convert" ? null : Money.of(e.amount, e.ccy); const sub = m && e.ccy !== S.home ? toCcy(m, S.home) : null;
+      const m = e.kind === "convert" || e.kind === "exchange" ? null : Money.of(e.amount, e.ccy); const sub = m && e.ccy !== S.home ? toCcy(m, S.home) : null;
       if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || c[1])}</b><span>${c[1]}</span></div><div class="a">${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
       else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>Cash added</b><span>${esc(e.note || "")}</span></div><div class="a pos">+${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
-      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>Conversion ${esc(e.from)} → ${esc(e.to)}</b><span>Currency conversion</span></div><div class="a">${esc(e.fromText)}<span class="pos">↳ ${esc(e.toText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
+      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>${e.kind === "exchange" ? "Exchange recorded" : "Conversion"} ${esc(e.from)} → ${esc(e.to)}</b><span>${e.kind === "exchange" ? "You recorded a real exchange" : "Legacy (pre-v4): changed balances"}</span></div><div class="a">${esc(e.fromText)}<span class="pos">↳ ${esc(e.toText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
       list.appendChild(el);
     }
     list.lastElementChild.classList.add(items.length === 1 ? "only" : "last");
@@ -354,7 +429,7 @@ function layoutCards(animated = true) {
   const els = $("carousel").children;
   for (let i = 0; i < els.length; i++) {
     const el = els[i]; const off = i - car.idx - car.drag; const a = Math.abs(off);
-    el.style.transition = animated && !car.dragging && !REDUCED ? "transform .5s cubic-bezier(.2,.9,.25,1.05), opacity .3s" : "none";
+    el.style.transition = animated && !car.dragging && !reduced() ? "transform .5s cubic-bezier(.2,.9,.25,1.05), opacity .3s" : "none";
     el.style.transform = `translate(-50%,-50%) translateX(${off * 74}%) rotateY(${-off * 48}deg) translateZ(${-a * 80}px) scale(${1 - Math.min(1, a) * 0.1})`;
     el.style.zIndex = String(20 - Math.round(a * 10)); el.style.opacity = a > 1.8 ? "0" : "1";
     el.classList.toggle("on", Math.round(car.idx + car.drag) === i);
@@ -401,7 +476,7 @@ stage.addEventListener("pointermove", (e) => {
   const j = car.drag > 0 ? Math.min(car.ccys.length - 1, car.idx + 1) : Math.max(0, car.idx - 1);
   const a = Number((balance(car.ccys[car.idx]) || Money.zero(car.ccys[car.idx])).toDecimalString()); const b = Number((balance(car.ccys[j]) || Money.zero(car.ccys[j])).toDecimalString());
   const p = Math.min(1, Math.abs(car.drag)); const ccy = p > 0.5 ? car.ccys[j] : car.ccys[car.idx];
-  if (!REDUCED) $("wBal").textContent = fmtNum(a + (b - a) * p, ccy);
+  if (!reduced()) $("wBal").textContent = fmtNum(a + (b - a) * p, ccy);
 });
 const endDrag = () => { if (!car.dragging) return; car.dragging = false; const target = Math.round(car.idx + car.drag); selectCard(target); };
 stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", endDrag);
@@ -415,38 +490,56 @@ let lastTx = null;
 async function doConvert() {
   const amount = inputMoney(); const aq = activeQuote(); if (amount.isZero() || !aq) return;
   const cta = $("btnConvert");
-  if (!REDUCED && !cta.classList.contains("loading")) {
+  if (!reduced() && !cta.classList.contains("loading")) {
     cta.style.width = cta.offsetWidth + "px"; await new Promise((r) => requestAnimationFrame(r)); cta.classList.add("loading"); await wait(1050);
   }
+  // Convert is a SIMULATION (spec 02 Q-04): nothing below touches balances or the transaction ledger.
+  // "Record as a real exchange" on the result sheet is the explicit action that does.
   const r = convert(amount, aq.quote, { rounding: ROUNDING });
   const bf = balance(S.from), bt = balance(S.to);
-  const newFrom = bf ? bf.subtract(amount) : null; const newTo = (bt || Money.zero(S.to)).add(r.convertedAmount);
-  if (newFrom) setBalance(S.from, newFrom); setBalance(S.to, newTo);
-  const ref = "EXC-" + Math.random().toString(36).slice(2, 7).toUpperCase() + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+  const ref = "SIM-" + Math.random().toString(36).slice(2, 7).toUpperCase() + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
   const at = new Date().toISOString();
-  const tx = { at, ref, from: S.from, to: S.to, fromAmt: amount.toDecimalString(), toAmt: r.convertedAmount.toDecimalString(), fromText: fmt(amount), toText: fmt(r.convertedAmount), rate: aq.quote.rate, rateText: `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`, source: sourceLabel(aq.quote), sourceId: aq.quote.source, rateKind: aq.quote.rateKind, confidence: aq.quote.confidence, observedAt: aq.quote.observedAt, mine: aq.mine, rounding: ROUNDING, balFrom: newFrom ? fmt(newFrom) : null, balTo: fmt(newTo) };
+  const tx = { kind: "simulation", at, ref, from: S.from, to: S.to, fromAmt: amount.toDecimalString(), toAmt: r.convertedAmount.toDecimalString(), fromText: fmt(amount), toText: fmt(r.convertedAmount), rate: aq.quote.rate, rateText: `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`, source: sourceLabel(aq.quote), sourceId: aq.quote.source, rateKind: aq.quote.rateKind, confidence: aq.quote.confidence, observedAt: aq.quote.observedAt, receivedAt: aq.quote.receivedAt, mine: aq.mine, rounding: ROUNDING, balFrom: bf ? fmt(bf) : null, balTo: bt ? fmt(bt) : null };
   S.history.unshift(tx); S.history = S.history.slice(0, 100);
-  S.ledger.unshift({ kind: "convert", at, ref, from: S.from, to: S.to, fromText: tx.fromText, toText: tx.toText, toAmt: tx.toAmt, rateText: tx.rateText }); S.ledger = S.ledger.slice(0, 500);
   save(); lastTx = tx; buf = ""; renderPair(true);
   $("doneRate").textContent = tx.rateText + (tx.mine ? " (your rate)" : "");
   $("dFlagFrom").textContent = flag(tx.from); $("dFromLbl").textContent = `From ${tx.from}`; $("dFromAmt").textContent = "−" + tx.fromText;
   $("dFlagTo").textContent = flag(tx.to); $("dToLbl").textContent = `To ${tx.to}`; $("dToAmt").textContent = "+" + tx.toText;
-  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "Not set"], [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} balance</dt><dd>${esc(v)}</dd>`).join("");
+  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "Not set"], [tx.to, tx.balTo ?? "Not set"]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} balance (unchanged)</dt><dd>${esc(v)}</dd>`).join("");
   stagger($("sheetDone").querySelector(".sheetbox"));
   $("sheetDone").hidden = false;
   setTimeout(() => { cta.classList.remove("loading"); cta.style.width = ""; }, 300);
+}
+/** The explicit "real exchange" action: both legs and both balances are written in ONE save (one localStorage write). */
+function recordExchange(sim) {
+  if (!sim || sim.kind !== "simulation") return null;
+  const amount = Money.of(sim.fromAmt, sim.from), got = Money.of(sim.toAmt, sim.to);
+  const newFrom = (balance(sim.from) || Money.zero(sim.from)).subtract(amount); const newTo = (balance(sim.to) || Money.zero(sim.to)).add(got);
+  if (!confirm(`Record this as a real exchange you made?\n−${sim.fromText} from ${sim.from} cash\n+${sim.toText} to ${sim.to} cash\nThis changes the balances recorded on this device.`)) return null;
+  const at = new Date().toISOString(); const ref = sim.ref.replace(/^SIM-/, "EXC-");
+  const tx = { ...sim, kind: "exchange", at, ref, simRef: sim.ref, balFrom: fmt(newFrom), balTo: fmt(newTo) };
+  setBalance(sim.from, newFrom); setBalance(sim.to, newTo);
+  S.history.unshift(tx); S.history = S.history.slice(0, 100);
+  S.ledger.unshift({ kind: "exchange", at, ref, from: sim.from, to: sim.to, fromAmt: sim.fromAmt, toAmt: sim.toAmt, fromText: sim.fromText, toText: sim.toText, rateText: sim.rateText }); S.ledger = S.ledger.slice(0, 500);
+  save(); lastTx = tx; render(); return tx;
 }
 function barcodeFor(ref) { let h = 2166136261; const bars = []; for (let i = 0; i < 120; i++) { h ^= ref.charCodeAt(i % ref.length) + i; h = Math.imul(h, 16777619) >>> 0; bars.push(h & 1); } let x = 0, out = ""; for (const b of bars) { const w = 1 + ((x * 7) % 3) * 0.4; if (b) out += `<rect x="${x.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="40"/>`; x += w + 0.4; } return out; }
 
 // ---------- receipt: generating → printing → done → stamp → buttons ----------
 let printToken = 0;
 async function showReceipt(tx) {
+  const kind = tx.kind || "legacy_convert"; const sim = kind === "simulation";
+  $("rEyebrow").textContent = kind === "exchange" ? "EXCHANGE RECORD" : sim ? "SIMULATION NOTE" : "LEGACY CONVERSION";
+  $("stamp").textContent = kind === "exchange" ? "RECORDED" : sim ? "SIMULATED" : "LEGACY"; $("stamp").classList.toggle("sim", sim);
+  $("rWhat").textContent = sim ? "You would get" : "You converted";
+  $("rBalsHead").textContent = sim ? "BALANCES (UNCHANGED)" : "NEW BALANCES";
+  $("rKindNote").textContent = kind === "exchange" ? "A record you entered of a real exchange. Balances on this device were updated." : sim ? "A simulation at the rate shown. No balance changed and no money moved." : "Made before v4, when Convert changed balances. Kept as it was.";
   $("rFlagFrom").textContent = flag(tx.from); $("rFlagTo").textContent = flag(tx.to);
   $("rBig").textContent = tx.toText; $("rFor").textContent = `for ${tx.fromText}`;
   $("rDate").textContent = dateTime(tx.at).replace(", ", " · ").replace(/(\d{4}),? /, "$1 · ");
-  $("rRows").innerHTML = [["You paid", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], ["You got", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["Exchange rate", esc(tx.rateText), ""], ["Fee", tx.mine ? "Included in your rate" : "Not included (reference rate)", tx.mine ? "green" : ""], ["Reference", esc(tx.ref), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
-  $("rBals").innerHTML = [...(tx.balFrom ? [[tx.from, tx.balFrom]] : []), [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c}</dt><dd>${esc(v)}</dd>`).join("");
-  $("rProv").innerHTML = [["Source", tx.source], ["Type", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(tx.observedAt)], ["Rounding", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("rRows").innerHTML = [[sim ? "You'd pay" : "You paid", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], [sim ? "You'd get" : "You got", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["Exchange rate", esc(tx.rateText), ""], ["Fee", tx.mine ? "Included in your rate" : "Not included (reference rate)", tx.mine ? "green" : ""], ["Reference", esc(tx.ref), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
+  $("rBals").innerHTML = [...(tx.balFrom ? [[tx.from, tx.balFrom]] : []), ...(tx.balTo ? [[tx.to, tx.balTo]] : [])].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c}</dt><dd>${esc(v)}</dd>`).join("") || `<dt>—</dt><dd>No balances recorded</dd>`;
+  $("rProv").innerHTML = [["Source", tx.source], ["Type", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", tx.observedAt ? dateTime(tx.observedAt) : "Not published by provider"], ...(tx.receivedAt ? [["Fetched", dateTime(tx.receivedAt)]] : []), ["Rounding", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("barcode").innerHTML = barcodeFor(tx.ref); $("rRef").textContent = tx.ref; lastTx = tx;
   const token = ++printToken;
   const slot = $("slot"), label = $("slotLabel"), wrap = $("paperwrap"), stamp = $("stamp"), actions = $("rActions");
@@ -454,7 +547,7 @@ async function showReceipt(tx) {
   label.textContent = "GENERATING...";
   wrap.classList.add("printing"); wrap.style.setProperty("--h", "0px");
   show("receipt");
-  if (REDUCED) { wrap.classList.remove("printing"); slot.classList.add("gone"); stamp.classList.add("in"); actions.classList.add("in"); return; }
+  if (reduced()) { wrap.classList.remove("printing"); slot.classList.add("gone"); stamp.classList.add("in"); actions.classList.add("in"); return; }
   // Reference timing (30fps analysis): GENERATING 2.0s → PRINTING 0.85s (slow start, fast finish) → DONE + slot retract 0.5s → pause 1.2s → stamp and buttons together.
   await wait(2000); if (token !== printToken) return;
   label.textContent = "PRINTING...";
@@ -505,17 +598,17 @@ function runProgress(title, vis, done) {
   steps.forEach((s) => (s.className = "step")); lines.forEach((l) => (l.className = ""));
   const labels = ["Recording your cash", "Converting to home currency", "Securing your wallet"]; let i = -1, pct = 0;
   const tick = () => {
-    pct = Math.min(100, pct + (REDUCED ? 50 : 1 + Math.round(Math.random() * 3)));
+    pct = Math.min(100, pct + (reduced() ? 50 : 1 + Math.round(Math.random() * 3)));
     $("pPct").textContent = pct + "%";
     const stage = Math.min(2, Math.floor(pct / 34));
     if (stage !== i || pct === 100) { for (let k = 0; k < 3; k++) { steps[k].className = "step " + (k < stage || pct === 100 ? "done" : k === stage ? "active" : ""); if (k < 2) lines[k].className = k < stage || pct === 100 ? "done" : ""; } i = stage; }
     $("pLabel").textContent = pct === 100 ? "All set" : labels[stage];
-    if (pct < 100) setTimeout(tick, REDUCED ? 10 : 45 + Math.random() * 50);
+    if (pct < 100) setTimeout(tick, reduced() ? 10 : 45 + Math.random() * 50);
     else {
       // Reference: steps fade out (0.45s), the card alone for ~1.5s, then a hard background switch with title and buttons popping in.
       $("pDoneTitle").textContent = done.title; $("pDoneSub").textContent = done.sub;
-      setTimeout(() => p.classList.add("fading"), REDUCED ? 0 : 450);
-      setTimeout(() => { p.classList.remove("fading"); p.classList.add("done"); }, REDUCED ? 0 : 450 + 450 + 1500);
+      setTimeout(() => p.classList.add("fading"), reduced() ? 0 : 450);
+      setTimeout(() => { p.classList.remove("fading"); p.classList.add("done"); }, reduced() ? 0 : 450 + 450 + 1500);
     }
   };
   tick();
@@ -544,7 +637,8 @@ $("addCur").addEventListener("click", () => openPicker("any", (c) => { addCcy = 
 $("spCur").addEventListener("click", () => openPicker("any", (c) => { spCcy = c; $("spFlag").textContent = flag(c); $("spCode").textContent = c; }));
 
 // ---------- sheets ----------
-function closeSheets() { for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend"]) $(id).hidden = true; }
+const SHEETS = ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend", "sheetMore", "sheetSplit"];
+function closeSheets() { for (const id of SHEETS) $(id).hidden = true; }
 function openPicker(which, onPick) {
   $("pickTitle").textContent = which === "from" ? "Convert from" : which === "to" ? "Convert to" : "Choose currency";
   const list = $("pickList"); const search = $("pickSearch");
@@ -567,6 +661,59 @@ function openPicker(which, onPick) {
   search.value = ""; search.oninput = draw; draw(); stagger($("sheetPick").querySelector(".sheetbox")); $("sheetPick").hidden = false; setTimeout(() => search.focus(), 50);
 }
 
+// ---------- split a bill (F13) ----------
+// Pure UI over packages/core split.ts: shares always sum to the total; the settlement is a proposal that REDUCES the number
+// of transfers (greedy), never claimed to be the minimum (spec 02 Q-05). Nothing here touches balances or the ledger.
+const spl = { ccy: "THB", total: "", people: ["Me", "A", "B"], mode: "equal", weights: {}, payer: "Me" };
+function splState() { return { ...spl, weights: { ...spl.weights } }; }
+function openSplit() {
+  const saved = S.split; if (saved && Array.isArray(saved.people) && saved.people.length) Object.assign(spl, saved, { weights: { ...(saved.weights || {}) } }); else spl.ccy = S.sel || spl.ccy;
+  if (!CURRENCIES.has(spl.ccy)) spl.ccy = S.sel; if (!spl.people.includes(spl.payer)) spl.payer = spl.people[0];
+  $("splTotal").value = spl.total; $("splName").value = ""; renderSplit(); stagger($("sheetSplit").querySelector(".sheetbox")); $("sheetSplit").hidden = false; setTimeout(() => $("splTotal").focus(), 60);
+}
+function splitCompute() {
+  const total = parseAmt(spl.total, spl.ccy); if (!total || spl.people.length === 0) return null;
+  const parts = spl.people.map((id) => ({ id }));
+  let res;
+  try {
+    if (spl.mode === "weight") { const w = spl.people.map((p) => Math.max(0, Math.floor(Number(spl.weights[p] ?? 1)) || 0)); if (w.every((x) => x === 0)) return { error: "Give at least one person a weight above 0" }; res = splitByWeight(total, parts, w); }
+    else res = splitEqual(total, parts);
+    const transfers = settle(res.shares, [{ payerId: spl.payer, amount: total }]);
+    return { total, res, transfers };
+  } catch (e) { return { error: e.message }; }
+}
+function renderSplit() {
+  $("splFlag").textContent = flag(spl.ccy); $("splCode").textContent = spl.ccy;
+  $("splPeople").innerHTML = spl.people.map((p) => `<button type="button" data-p="${esc(p)}" class="on">${esc(p)}<span class="x" aria-label="Remove">×</span></button>`).join("");
+  $("splMode").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === spl.mode));
+  $("splWeights").hidden = spl.mode !== "weight";
+  $("splWeights").innerHTML = spl.people.map((p) => `<label>${esc(p)}<input type="number" min="0" step="1" inputmode="numeric" data-w="${esc(p)}" value="${esc(spl.weights[p] ?? 1)}"></label>`).join("");
+  $("splPayer").innerHTML = spl.people.map((p) => `<button type="button" data-payer="${esc(p)}" class="${p === spl.payer ? "on" : ""}">${esc(p)}</button>`).join("");
+  const out = splitCompute(); const box = $("splRes");
+  if (!out) { box.innerHTML = `<div class="empty">Enter a total to see each share.</div>`; return; }
+  if (out.error) { box.innerHTML = `<div class="empty">${esc(out.error)}</div>`; return; }
+  const absorbed = new Set(out.res.roundingAbsorbedBy);
+  box.innerHTML = `<h3>Shares · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>+rounding</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("")
+    + `<h3>Proposal to reduce transfers</h3>` + (out.transfers.length ? out.transfers.map((t) => `<div class="line"><span>${esc(t.from)} → ${esc(t.to)}</span><b>${esc(fmt(t.amount))}</b></div>`).join("") : `<div class="empty">Nothing to settle: the payer's share equals the total.</div>`);
+  S.split = splState(); save();
+}
+function splitText() {
+  const out = splitCompute(); if (!out || out.error) return null;
+  const lines = [`Split ${fmt(out.total)} (${spl.mode === "weight" ? "by weight" : "equally"}), paid by ${spl.payer}`, ...out.res.shares.map((s) => `  ${s.participantId}: ${fmt(s.amount)}`), "Proposal to reduce transfers (not guaranteed minimal):", ...(out.transfers.length ? out.transfers.map((t) => `  ${t.from} → ${t.to} ${fmt(t.amount)}`) : ["  nothing to settle"])];
+  return lines.join("\n");
+}
+$("splTotal").addEventListener("input", () => { spl.total = $("splTotal").value; renderSplit(); });
+$("splCur").addEventListener("click", () => openPicker("any", (c) => { spl.ccy = c; renderSplit(); $("sheetSplit").hidden = false; }));
+$("splAddPerson").addEventListener("click", () => { const n = $("splName").value.trim(); if (!n) return; if (spl.people.includes(n)) { toast("Already in the list"); return; } if (spl.people.length >= 20) { toast("Up to 20 people"); return; } spl.people.push(n); $("splName").value = ""; renderSplit(); });
+$("splName").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("splAddPerson").click(); } });
+$("splPeople").addEventListener("click", (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; if (spl.people.length <= 1) { toast("Keep at least one person"); return; } spl.people = spl.people.filter((p) => p !== b.dataset.p); delete spl.weights[b.dataset.p]; if (spl.payer === b.dataset.p) spl.payer = spl.people[0]; renderSplit(); });
+$("splMode").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; spl.mode = b.dataset.v; renderSplit(); });
+$("splWeights").addEventListener("input", (e) => { const i = e.target.closest("input[data-w]"); if (!i) return; spl.weights[i.dataset.w] = i.value; const out = splitCompute(); const box = $("splRes"); if (out && !out.error) { renderSplitResultOnly(out); } else if (out) box.innerHTML = `<div class="empty">${esc(out.error)}</div>`; });
+function renderSplitResultOnly(out) { const absorbed = new Set(out.res.roundingAbsorbedBy); $("splRes").innerHTML = `<h3>Shares · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>+rounding</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("") + `<h3>Proposal to reduce transfers</h3>` + (out.transfers.length ? out.transfers.map((t) => `<div class="line"><span>${esc(t.from)} → ${esc(t.to)}</span><b>${esc(fmt(t.amount))}</b></div>`).join("") : `<div class="empty">Nothing to settle.</div>`); S.split = splState(); save(); }
+$("splPayer").addEventListener("click", (e) => { const b = e.target.closest("button[data-payer]"); if (!b) return; spl.payer = b.dataset.payer; renderSplit(); });
+$("btnSplitShare").addEventListener("click", async () => { const text = splitText(); if (!text) { toast("Enter a total first"); return; } if (navigator.share) { try { await navigator.share({ title: "Split", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
+$("btnSplitSpend").addEventListener("click", () => { const out = splitCompute(); if (!out || out.error) { toast("Enter a total first"); return; } closeSheets(); openSpend(spl.ccy); $("spAmt").value = out.total.toDecimalString(); $("spNote").value = `Split: ${spl.people.join(", ")}`; });
+
 // ---------- onboarding ----------
 async function leaveOnboarding(demo) {
   S.onboarded = true; booting = false;
@@ -579,7 +726,7 @@ async function leaveOnboarding(demo) {
   }
   save();
   const ob = $("s-onboard");
-  if (REDUCED) { ob.classList.remove("play", "still"); location.hash = "home"; route(); return; }
+  if (reduced()) { ob.classList.remove("play", "still"); ob.hidden = true; location.hash = "home"; route(); return; }
   ob.classList.add("leaving"); await wait(550);
   location.hash = "home"; route(); // home enters underneath while the onboarding blurs out on top
   await wait(650);
@@ -612,26 +759,36 @@ $("btnMore").addEventListener("click", closeSheets);
 $("btnReceipt").addEventListener("click", async () => { if (!lastTx) return closeSheets(); $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); showReceipt(lastTx); });
 $("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
 $("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
-$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
+$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.kind === "exchange" ? "Exchange record" : lastTx.kind === "simulation" ? "Simulation (no money moved)" : "Legacy conversion"}\n${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
 const openRate = () => { renderRateSheet(); $("sheetRate").hidden = false; };
 $("periods").addEventListener("click", async (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; S.period = b.dataset.p; save(); $("periods").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); await loadSeries(); renderRateSheet(); });
 $("rateRow").addEventListener("click", openRate); $("btnRates").addEventListener("click", openRate); $("btnRatesHome").addEventListener("click", openRate); $("btnTabRate").addEventListener("click", openRate);
 $("btnHistory").addEventListener("click", () => { renderHistory(); stagger($("sheetHistory").querySelector(".sheetbox")); $("sheetHistory").hidden = false; });
-$("btnHistClear").addEventListener("click", () => { S.history = []; save(); renderHistory(); });
+$("btnHistClear").addEventListener("click", () => { if (!S.history.length || !confirm(`Delete ${S.history.length} conversion notes? Recorded exchanges stay in Transactions and balances are not affected.`)) return; S.history = []; save(); renderHistory(); });
 document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
-for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend"]) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
+for (const id of SHEETS) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
 $("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast("Enter both amounts"); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast("Converting at your rate"); });
 $("btnClearMine").addEventListener("click", () => { delete S.mine[`${S.from}/${S.to}`]; save(); closeSheets(); render(); });
 $("btnHomeCcy").addEventListener("click", () => openPicker("any", (c) => { S.home = c; save(); renderRateSheet(); render(); }));
+$("btnRecordReal").addEventListener("click", async () => { const tx = recordExchange(lastTx); if (!tx) return; $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); toast("Exchange recorded"); showReceipt(tx); });
+$("motionChips").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; S.motion = b.dataset.v; save(); applyMotion(); renderRateSheet(); });
+motionMq.addEventListener("change", applyMotion);
+$("btnExport").addEventListener("click", exportState);
+$("btnImport").addEventListener("click", () => { $("importFile").value = ""; $("importFile").click(); });
+$("importFile").addEventListener("change", () => { const f = $("importFile").files[0]; if (f) importStateFile(f); });
 $("ticker").addEventListener("click", (e) => { const b = e.target.closest("button[data-c]"); if (b) { S.sel = b.dataset.c; save(); renderHome(); } });
 $("miniCards").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.id === "mcAdd") openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderHome(); openAdd(c); }); else { S.sel = b.dataset.c; save(); renderHome(); } });
-$("qAdd").addEventListener("click", () => openAdd(S.sel)); $("qSpend").addEventListener("click", () => openSpend(S.sel)); $("qConvert").addEventListener("click", () => { S.to = S.sel === S.home ? S.to : S.sel; S.from = S.home === S.sel ? S.from : S.home; save(); go("convert"); loadSeries(); }); $("qMore").addEventListener("click", () => go("wallet"));
-$("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: REDUCED ? "auto" : "smooth" }); });
+$("qAdd").addEventListener("click", () => openAdd(S.sel)); $("qSpend").addEventListener("click", () => openSpend(S.sel)); $("qConvert").addEventListener("click", () => { S.to = S.sel === S.home ? S.to : S.sel; S.from = S.home === S.sel ? S.from : S.home; save(); go("convert"); loadSeries(); }); $("qMore").addEventListener("click", () => { stagger($("sheetMore").querySelector(".sheetbox")); $("sheetMore").hidden = false; });
+$("btnMoreSplit").addEventListener("click", () => { closeSheets(); openSplit(); });
+$("btnMoreHistory").addEventListener("click", () => { closeSheets(); $("btnHistory").click(); });
+$("btnMoreCards").addEventListener("click", () => { closeSheets(); go("wallet"); });
+$("btnMoreSettings").addEventListener("click", () => { closeSheets(); openRate(); });
+$("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: reduced() ? "auto" : "smooth" }); });
 $("btnSearch").addEventListener("click", () => openPicker("any", (c) => { S.sel = c; if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); save(); renderHome(); }));
 $("btnBell").addEventListener("click", () => toast("No notifications yet"));
 $("btnWAdd").addEventListener("click", () => openAdd(S.sel)); $("btnWSpend").addEventListener("click", () => openSpend(S.sel));
 $("btnWalletAdd").addEventListener("click", () => openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderWallet(); openAdd(c); }));
-function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)}</div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
+function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)} <small class="kind">${h.kind === "exchange" ? "recorded" : h.kind === "simulation" ? "simulation" : "legacy"}</small></div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2200); }
 window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
@@ -639,8 +796,10 @@ window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").qu
 // ---------- boot ----------
 // Splash plays on every cold open (as in the reference). Returning users skip the copy and land on home after the bands.
 buildBurst();
+applyMotion();
 const ob = $("s-onboard"); ob.classList.add("play"); if (S.onboarded) ob.classList.add("auto");
 route();
-if (S.onboarded) setTimeout(() => leaveOnboarding(false), 2150);
+if (S.onboarded) { if (reduced()) leaveOnboarding(false); else setTimeout(() => leaveOnboarding(false), 2150); }
+if (loadNote) setTimeout(() => toast(loadNote), reduced() ? 300 : 3200);
 loadRates();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js").catch(() => {});

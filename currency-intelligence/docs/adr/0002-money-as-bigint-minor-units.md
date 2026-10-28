@@ -11,6 +11,7 @@
 - `Money` は `{ currency, minor: bigint }`。小数桁は ISO 4217 の通貨メタデータから取る(JPY 0、THB 2、KWD 3)。
 - 10 進小数は自前の `Dec = { m: bigint, e: number }`(値 = m × 10^-e)で扱う。外部ライブラリは入れない。
 - レートは常に **文字列**(`"0.22333"`)で保持・転送する。API の JSON `number` は受け取った瞬間に `numberToDecString()` で文字列化し、以降は `number` を使わない。
+  - 補足(2026-10-28, ADR-0003 §5): `res.json()` の時点で double になっていたため、現在は自前の JSON パーサ(`json.ts`)で数値トークンを文字列のまま取り出す。`numberToDecString()` は UI の表示用途にのみ残る。
 - 丸めは 7 モード(`HALF_UP / HALF_DOWN / HALF_EVEN / UP / DOWN / CEILING / FLOOR`)を `roundDiv()` 一か所で実装し、**呼び出し側が必ず指定**する。暗黙の丸めはしない(`Money.of("1.5","JPY")` は例外)。
 - 丸めは換算結果に対して 1 回だけ(gross に対して)。手数料は発行者の請求と同じく個別に丸めて合算する。
 - 配分(割り勘)は最大剰余法。同点は先頭のインデックス優先で決定的。

@@ -79,3 +79,20 @@ test("settle produces transfers that zero every balance", () => {
   }
   for (const v of bal.values()) assert.equal(v, 0n);
 });
+
+test("settle: proposal reduces transfers (≤ debtors + creditors − 1), balances net to zero, never claimed minimal", () => {
+  const ccy = "THB";
+  const shares = ["A", "B", "C", "D", "E"].map((id, i) => ({ participantId: id, amount: Money.of(String(100 + i * 37) + ".25", ccy) }));
+  const total = Money.sum(shares.map((s) => s.amount), ccy);
+  const payments = [{ payerId: "A", amount: total.subtract(Money.of("50", ccy)) }, { payerId: "C", amount: Money.of("50", ccy) }];
+  const transfers = settle(shares, payments);
+  const net = new Map<string, bigint>();
+  for (const s of shares) net.set(s.participantId, (net.get(s.participantId) ?? 0n) - s.amount.minor);
+  for (const p of payments) net.set(p.payerId, (net.get(p.payerId) ?? 0n) + p.amount.minor);
+  for (const t of transfers) { net.set(t.from, net.get(t.from)! + t.amount.minor); net.set(t.to, net.get(t.to)! - t.amount.minor); assert.ok(t.amount.isPositive()); }
+  for (const [, v] of net) assert.equal(v, 0n);
+  const debtors = [...net.keys()].filter((k) => shares.find((s) => s.participantId === k)!.amount.minor > (payments.find((p) => p.payerId === k)?.amount.minor ?? 0n)).length;
+  const creditors = shares.length - debtors;
+  assert.ok(transfers.length <= debtors + creditors - 1);
+  assert.deepEqual(settle(shares, payments), transfers); // deterministic
+});

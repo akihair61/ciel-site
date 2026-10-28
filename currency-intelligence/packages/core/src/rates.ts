@@ -27,7 +27,12 @@ export interface RateQuote {
   readonly ask?: string;
   readonly mid?: string;
   readonly source: string; // provider id, e.g. "frankfurter", "open-er-api", "user"
-  readonly observedAt: string; // ISO 8601 UTC, when the provider says the rate was valid
+  /**
+   * ISO 8601 UTC, when the provider says the rate was valid. `null` when the
+   * provider publishes no observation time (e.g. Coinbase); the UI must then
+   * say "観測時刻不明" and never present receivedAt as the observation time.
+   */
+  readonly observedAt: string | null;
   readonly receivedAt: string; // ISO 8601 UTC, when we got it
   readonly expiresAt?: string; // ISO 8601 UTC
   readonly rateKind: RateKind;
@@ -63,7 +68,7 @@ export function validateQuote(q: RateQuote): RateQuote {
   if (q.base === q.quote) throw new RateError("RATE_SAME_CURRENCY", `base and quote are both ${q.base}`);
   const r = parseDec(q.rate);
   if (r.m <= 0n) throw new RateError("RATE_NON_POSITIVE", `rate must be > 0, got ${q.rate}`);
-  parseIso(q.observedAt);
+  if (q.observedAt !== null) parseIso(q.observedAt);
   parseIso(q.receivedAt);
   if (q.expiresAt) parseIso(q.expiresAt);
   if (q.bid && q.ask && cmpDec(parseDec(q.bid), parseDec(q.ask)) > 0) {
@@ -78,6 +83,8 @@ export interface StalenessReport {
   readonly status: Staleness;
   readonly ageMs: number;
   readonly ttlMs: number;
+  /** Which timestamp the age was measured from. "receivedAt" means the observation time is unknown. */
+  readonly basis: "observedAt" | "receivedAt";
 }
 
 /**
@@ -86,9 +93,15 @@ export interface StalenessReport {
  * expired : past expiresAt (provider says do not use) — UI must refuse to call it a rate
  */
 export function staleness(q: RateQuote, nowMs: number, ttlMs: number): StalenessReport {
-  const ageMs = Math.max(0, nowMs - parseIso(q.observedAt));
-  if (q.expiresAt && nowMs > parseIso(q.expiresAt)) return { status: "expired", ageMs, ttlMs };
-  return { status: ageMs <= ttlMs ? "fresh" : "stale", ageMs, ttlMs };
+  const basis = q.observedAt === null ? "receivedAt" : "observedAt";
+  const ageMs = Math.max(0, nowMs - parseIso(q.observedAt ?? q.receivedAt));
+  if (q.expiresAt && nowMs > parseIso(q.expiresAt)) return { status: "expired", ageMs, ttlMs, basis };
+  return { status: ageMs <= ttlMs ? "fresh" : "stale", ageMs, ttlMs, basis };
+}
+
+/** Time the quote's age should be measured from: observedAt when known, else receivedAt. */
+export function quoteTimeMs(q: RateQuote): number {
+  return parseIso(q.observedAt ?? q.receivedAt);
 }
 
 function invertDec(d: Dec): string {
@@ -134,12 +147,14 @@ export function cross(cToX: RateQuote, cToY: RateQuote, opts: CrossOptions): Rat
   validateQuote(cToY);
   if (cToX.base !== cToY.base) throw new RateError("RATE_CROSS_BASE", `bases differ: ${cToX.base} vs ${cToY.base}`);
   if (cToX.quote === cToY.quote) throw new RateError("RATE_SAME_CURRENCY", "cannot cross a currency with itself");
-  const tX = parseIso(cToX.observedAt);
-  const tY = parseIso(cToY.observedAt);
+  const timeKnown = cToX.observedAt !== null && cToY.observedAt !== null;
+  const tX = parseIso(cToX.observedAt ?? cToX.receivedAt);
+  const tY = parseIso(cToY.observedAt ?? cToY.receivedAt);
   const skew = Math.abs(tX - tY);
-  const outOfTolerance = skew > opts.toleranceMs;
+  const outOfTolerance = !timeKnown || skew > opts.toleranceMs;
   const notes: string[] = [`cross via ${cToX.base}`];
-  if (outOfTolerance) notes.push(`observation skew ${skew}ms exceeds tolerance ${opts.toleranceMs}ms`);
+  if (!timeKnown) notes.push("observation time unknown for at least one leg; marked estimated");
+  else if (outOfTolerance) notes.push(`observation skew ${skew}ms exceeds tolerance ${opts.toleranceMs}ms`);
   const rate = decToShortString(divDec(parseDec(cToY.rate), parseDec(cToX.rate), DERIVED_RATE_FRACTION_DIGITS, "HALF_EVEN"));
   const kinds = new Set<RateKind>([cToX.rateKind, cToY.rateKind]);
   const rateKind: RateKind = kinds.size === 1 ? cToX.rateKind : "indicative";
@@ -151,7 +166,7 @@ export function cross(cToX: RateQuote, cToY: RateQuote, opts: CrossOptions): Rat
     quote: cToY.quote,
     rate,
     source: cToX.source === cToY.source ? cToX.source : `${cToX.source}+${cToY.source}`,
-    observedAt: new Date(Math.min(tX, tY)).toISOString(),
+    observedAt: timeKnown ? new Date(Math.min(tX, tY)).toISOString() : null,
     receivedAt: new Date(Math.max(parseIso(cToX.receivedAt), parseIso(cToY.receivedAt))).toISOString(),
     expiresAt: earliest(cToX.expiresAt, cToY.expiresAt),
     rateKind,
