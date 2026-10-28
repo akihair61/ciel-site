@@ -60,3 +60,12 @@ cd ../../apps/web && node build.mjs
 node /path/to/record.js apps/web out/   # 画面と動画
 node /path/to/verify_p1.js              # 28 項目
 ```
+
+## 6. iOS(Phase 3)の確認(2026-10-28, GitHub Actions macOS ランナー)
+
+| 項目 | 結果 | 根拠 |
+| --- | --- | --- |
+| `swift test`(ios/CoreMoney) | 11 件 / 11 通過(初回は 1 件失敗 → Import の封筒判定のバグを修正) | ワークフロー `ios-currency-intelligence` のジョブ `CoreMoney swift test` |
+| `xcodebuild`(iOS Simulator, Debug, 署名なし) | BUILD SUCCEEDED(Xcode 16 系、macos-15) | ジョブ `xcodebuild (iOS Simulator)` |
+| シミュレータ起動 | `simctl install / launch` 後にスクリーンショット取得 | `docs/screenshots/ios/ios-home.png`(CI がコミット) |
+| 未実施 | XCUITest による画面操作、実機、TestFlight | — |
