@@ -17,7 +17,7 @@ const FLAG_CC = { JPY:"JP", THB:"TH", USD:"US", EUR:"EU", GBP:"GB", KRW:"KR", TW
 const flag = (code) => { const cc = FLAG_CC[code]; return cc ? [...cc].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("") : "¤"; };
 const CARD_GRAD = { JPY:"linear-gradient(135deg,#E8505B,#8E2B5A)", THB:"linear-gradient(135deg,#3F7BFF,#1D3FB8)", USD:"linear-gradient(135deg,#2E9E6B,#114D3C)", EUR:"linear-gradient(135deg,#4C6FFF,#2A2F8F)", KRW:"linear-gradient(135deg,#6B7CFF,#3B2A8F)", TWD:"linear-gradient(135deg,#1FA5B8,#154E78)", VND:"linear-gradient(135deg,#E0433C,#7A1E1E)", GBP:"linear-gradient(135deg,#5B5BD6,#1E1E5A)", AUD:"linear-gradient(135deg,#F2A541,#B8541E)", SGD:"linear-gradient(135deg,#E64C4C,#5A1E2E)" };
 const grad = (c) => CARD_GRAD[c] || "linear-gradient(135deg,#5BA7FF,#3B5BDB 60%,#2A3F9E)";
-const CATS = [["food","食事","var(--c-food)","🍜"],["transport","交通","var(--c-transport)","🚕"],["shop","買い物","var(--c-shop)","🛍️"],["stay","宿","var(--c-stay)","🏨"],["fun","娯楽","var(--c-fun)","🎟️"],["other","その他","var(--c-other)","•"]];
+const CATS = [["food","Food","var(--c-food)","🍜"],["transport","Transport","var(--c-transport)","🚕"],["shop","Shopping","var(--c-shop)","🛍️"],["stay","Stay","var(--c-stay)","🏨"],["fun","Fun","var(--c-fun)","🎟️"],["other","Other","var(--c-other)","•"]];
 const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
@@ -35,7 +35,7 @@ let rate = { status: "loading", source: "", error: "" };
 
 function embeddedQuotes() {
   const now = new Date().toISOString();
-  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["アプリに同梱された参考値。通信できると置き換わります"] }));
+  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["Reference snapshot shipped with the app; replaced once online"] }));
 }
 async function loadRates() {
   const symbols = [...CURRENCIES.keys()].filter((c) => c !== PIVOT);
@@ -94,11 +94,12 @@ const fmt = (m) => m.format("en-US");
 function fmtNum(v, ccy) { const sc = currency(ccy).scale; return new Intl.NumberFormat("en-US", { style: "currency", currency: ccy, currencyDisplay: "narrowSymbol", minimumFractionDigits: sc, maximumFractionDigits: sc }).format(v); }
 function groupDigits(s) { const [i, fr] = s.split("."); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (fr !== undefined ? "." + fr : ""); }
 function rateStr(r) { const n = Number(r); return n >= 100 ? n.toFixed(2) : n >= 1 ? n.toFixed(4) : n.toFixed(5); }
-function dateJa(iso) { return new Date(iso).toLocaleDateString("ja-JP", { month: "short", day: "numeric" }); }
+function dateJa(iso) { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
+function dateTime(iso) { return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
 function balance(code) { const b = S.balances[code]; if (b === undefined) return null; try { return Money.of(b, code); } catch { return null; } }
 function setBalance(code, m) { S.balances[code] = m.toDecimalString(); }
 function parseAmt(txt, code) { const t = txt.trim().replace(/,/g, ""); if (!t) return null; try { const m = Money.of(t, code, "DOWN"); return m.isPositive() ? m : null; } catch { return null; } }
-function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "自分レート"; if (q.source === "embedded") return `同梱の参考値 · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB参考レート · ${dateJa(q.observedAt)}`; return `参考レート · ${dateJa(q.observedAt)}`; }
+function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "embedded") return `Built-in reference · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB reference rate · ${dateJa(q.observedAt)}`; return `Reference rate · ${dateJa(q.observedAt)}`; }
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
 const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? 0 : ms));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
@@ -139,7 +140,7 @@ const SCREENS = ["onboard", "home", "convert", "wallet", "receipt"];
 let current = null;
 function show(name, how = "auto") {
   for (const s of SCREENS) { const el = $("s-" + s); if (el.classList.contains("leaving")) continue; el.hidden = s !== name; el.classList.remove("push", "fadein", "enter", "blurout"); }
-  document.body.classList.toggle("night", name === "home" || name === "onboard");
+  document.body.classList.toggle("night", name === "onboard");
   const tabs = ["home", "convert", "wallet"].includes(name);
   $("tabbar").hidden = !tabs;
   for (const s of SCREENS) $("s-" + s).classList.toggle("has-tabs", tabs && s === name);
@@ -179,25 +180,48 @@ function key(k) {
   renderPair();
 }
 
+
+// ---------- amount digits: each typed digit slides in from the right (reference behaviour) ----------
+let lastDigits = null; // {ccy, text}
+function renderDigits(el, sym, text, scale, instant) {
+  const ccy = S.from;
+  if (!text) {
+    if (lastDigits && lastDigits.ccy === ccy && lastDigits.text && !instant) {
+      el.className = "amt num placeholder";
+      el.innerHTML = `<span class="sym">${esc(sym)}</span><span class="d out">${esc(lastDigits.text)}</span><span class="d in">0</span>`;
+    } else { el.className = "amt num placeholder"; el.innerHTML = `<span class="sym">${esc(sym)}</span><span class="d">0</span>`; }
+    lastDigits = { ccy, text: "" }; return;
+  }
+  const shown = groupDigits(text);
+  const prev = lastDigits && lastDigits.ccy === ccy ? lastDigits.text : null;
+  el.className = "amt num input";
+  let html = `<span class="sym">${esc(sym)}</span>`;
+  const chars = [...shown];
+  const grew = prev !== null && !instant && text.length > prev.length && text.startsWith(prev);
+  chars.forEach((c, i) => { const isNew = grew && i >= chars.length - (text.length - prev.length); html += `<span class="d${isNew ? " in" : ""}">${esc(c)}</span>`; });
+  if (prev === "" && !instant) html = `<span class="sym">${esc(sym)}</span><span class="d out">0</span>` + html.slice(html.indexOf("</span>") + 7);
+  el.innerHTML = html;
+  lastDigits = { ccy, text };
+}
 // ---------- render: convert ----------
 let lastCta = "";
 function renderPair(instant = false) {
   $("flagFrom").textContent = flag(S.from); $("codeFrom").textContent = S.from;
   $("flagTo").textContent = flag(S.to); $("codeTo").textContent = S.to;
   const bf = balance(S.from), bt = balance(S.to);
-  $("balFrom").textContent = bf ? `残高 ${fmt(bf)}` : "残高 未設定";
-  $("balTo").textContent = bt ? `残高 ${fmt(bt)}` : "";
+  $("balFrom").textContent = bf ? `Balance ${fmt(bf)}` : "No balance";
+  $("balTo").textContent = bt ? `Balance ${fmt(bt)}` : "";
   $("btnMax").hidden = !bf || !bf.isPositive();
   const amount = inputMoney(); const sym = currency(S.from).symbol;
-  const a = $("amtFrom"); a.className = "amt num " + (buf ? "input" : "placeholder"); a.textContent = buf ? sym + groupDigits(buf) : fmt(Money.zero(S.from));
+  renderDigits($("amtFrom"), sym, buf, currency(S.from).scale, instant);
   const aq = activeQuote(); const t = $("amtTo");
   if (aq && !amount.isZero()) {
-    try { const out = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount; t.className = "amt num " + (aq.mine ? "mine" : "input"); tweenMoney(t, out, { instant }); }
+    try { const out = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount; t.className = "amt num input"; tweenMoney(t, out, { instant }); }
     catch { t.textContent = "—"; t.className = "amt num placeholder"; }
   } else { t.className = "amt num placeholder"; tweenMoney(t, Money.zero(S.to), { instant: true }); }
   const cta = $("btnConvert"); const txt = $("ctaText");
   cta.disabled = amount.isZero() || !aq;
-  const label = amount.isZero() ? "金額を入れてください" : !aq ? "レートがありません" : `Convert ${fmt(amount)}`;
+  const label = amount.isZero() ? "Enter an amount" : !aq ? "No rate available" : `Convert ${fmt(amount)}`;
   if (label !== lastCta && !instant && !REDUCED && lastCta) { txt.classList.add("swapping"); setTimeout(() => { txt.textContent = label; txt.classList.remove("swapping"); }, 150); }
   else txt.textContent = label;
   lastCta = label;
@@ -207,14 +231,14 @@ let lastSpark = "";
 function renderRate() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   const dot = $("rateDot"); const chip = $("rateChip"); const sp = $("spark");
-  if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? "レート取得中…" : "この通貨ペアのレートがありません"; dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
+  if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? "Loading rate…" : "No rate for this pair"; dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
   $("rateMain").textContent = `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`;
-  let sub = sourceLabel(aq.quote); if (rate.status === "stale" || rate.status === "offline") sub += " · 古い";
+  let sub = sourceLabel(aq.quote); if (rate.status === "stale" || rate.status === "offline") sub += " · stale";
   $("rateSub").textContent = sub;
   dot.className = "dot " + (rate.status === "fresh" ? "" : rate.status === "error" ? "error" : "stale");
-  if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "−" : "+"}${sp2.replace("-", "")}% vs 市場`; chip.className = "chip " + (worse ? "red" : "green"); }
+  if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "▼" : "▲"} ${sp2.replace("-", "")}% vs mid`; chip.className = "chip " + (worse ? "red" : "green"); }
   else if (series && series.length >= 2) { const a = series[0].rate, b = series[series.length - 1].rate; const ch = ((b - a) / a) * 100; chip.textContent = `${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch).toFixed(2)}%`; chip.className = "chip " + (ch >= 0 ? "green" : "red"); }
-  else { chip.textContent = aq.quote.confidence === "estimated" ? "参考" : "確定"; chip.className = "chip grey"; }
+  else { chip.textContent = aq.quote.confidence === "estimated" ? "Reference" : "Confirmed"; chip.className = "chip grey"; }
   let html, cls;
   if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; cls = "spark " + (up ? "" : "down"); html = `<path d="${sparkPath(series, 100, 32)}"/>`; }
   else { cls = "spark flat"; html = `<path d="M0,16 L100,16" stroke-dasharray="3 3"/>`; }
@@ -223,17 +247,17 @@ function renderRate() {
 function renderRateSheet() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   $("rhMain").textContent = aq ? `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}` : "—";
-  $("rhSub").textContent = aq ? `${sourceLabel(aq.quote)}${mk && aq.mine ? ` · 市場 ${rateStr(mk.rate)}` : ""}` : "";
+  $("rhSub").textContent = aq ? `${sourceLabel(aq.quote)}${mk && aq.mine ? ` · mid ${rateStr(mk.rate)}` : ""}` : "";
   const big = $("bigSpark"); const legend = $("sparkLegend");
-  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS}日 · 日次参考レート。リアルタイムではありません</span><span>${esc(series[series.length - 1].date)}</span>`; }
-  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = `<span></span><span>履歴は通信できる環境で取得されます(日次)</span><span></span>`; }
+  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
+  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = `<span></span><span>History loads when online (daily)</span><span></span>`; }
   const q = aq ? aq.quote : null;
-  const rows = q ? [["出典", q.source === "user" ? "あなたの両替レシート" : q.source === "embedded" ? "アプリ同梱の参考値" : `${q.source}(${providers.find((p) => p.id === q.source)?.description || ""})`], ["種別", `${q.rateKind} · ${q.confidence === "confirmed" ? "確定" : "推定"}`], ["観測", new Date(q.observedAt).toLocaleString("ja-JP")], ["取得", new Date(q.receivedAt).toLocaleString("ja-JP")], ["期限", q.expiresAt ? new Date(q.expiresAt).toLocaleString("ja-JP") : "提供元の明示なし"], ["計算", q.derivedFrom ? `USD経由のクロスレート · 丸め ${ROUNDING}` : `丸め ${ROUNDING}`]] : [["状態", "レート未取得"]];
-  if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["注意", "2つの観測時刻がずれているため推定扱い"]);
+  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Built-in reference snapshot" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(q.observedAt)], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
+  if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["Note", "Observation times differ, treated as estimated"]);
   $("provRows").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
-  $("lblPaid").textContent = `払った(${S.from})`; $("lblGot").textContent = `受け取った(${S.to})`;
+  $("lblPaid").textContent = `You paid (${S.from})`; $("lblGot").textContent = `You got (${S.to})`;
   const m = S.mine[`${S.from}/${S.to}`]; $("inPaid").value = m ? m.paid : ""; $("inGot").value = m ? m.received : "";
-  $("mineNote").textContent = m ? `設定日時 ${new Date(m.at).toLocaleString("ja-JP")}。市場中値との差はチップに表示されます。` : "両替所で 10万円 → 22,500バーツ なら、100000 と 22500。";
+  $("mineNote").textContent = m ? `Set ${dateTime(m.at)}. The chip shows the gap to the market mid rate.` : "Paid ¥100,000 and got ฿22,500? Enter 100000 and 22500.";
   $("homeCcyFlag").textContent = flag(S.home); $("homeCcyCode").textContent = S.home;
   stagger($("sheetRate").querySelector(".sheetbox"));
 }
@@ -256,7 +280,7 @@ function renderHome(entering = false) {
   if (entering) { tweenSeed(hb, Money.zero(S.sel).add(Money.fromMinor(sel.minor * 6n / 10n, S.sel))); tweenMoney(hb, sel, { duration: 800, ease: easeOutQuad }); }
   else tweenMoney(hb, sel, { duration: 750, ease: easeOutQuad });
   const h = S.sel === S.home ? null : toCcy(sel, S.home);
-  $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? "(自分レート)" : ""}` : S.sel === S.home ? "基準通貨" : "基準通貨への換算レートがありません";
+  $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? " at your rate" : ""}` : S.sel === S.home ? "Home currency" : "No rate to home currency";
   $("miniCards").innerHTML = ccys.map((c) => `<button type="button" class="mc ${c === S.sel ? "on" : ""}" data-c="${c}" style="background:${grad(c)}">${flag(c)}</button>`).join("") + `<button type="button" class="mc add" id="mcAdd" aria-label="通貨を追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
   const w = weekSpend();
   tweenMoney($("weekTotal"), w.total, { instant: !entering && tw.get($("weekTotal")) === undefined });
@@ -264,24 +288,25 @@ function renderHome(entering = false) {
   const parts = Object.entries(w.byCat).sort((a, b) => b[1].compareTo(a[1]));
   const tot = Number(w.total.toDecimalString()) || 1;
   $("catBar").innerHTML = parts.length ? parts.map(([id, m]) => `<i style="width:${Math.max(2, (Number(m.toDecimalString()) / tot) * 100)}%;background:${catOf(id)[2]}"></i>`).join("") : `<i style="width:100%;background:var(--box)"></i>`;
-  $("catLegend").innerHTML = parts.length ? parts.map(([id, m]) => `<span style="--c:${catOf(id)[2]}">${catOf(id)[1]} <b>${esc(fmt(m))}</b></span>`).join("") : `<span style="--c:var(--faint)">支払いを記録すると内訳が出ます</span>`;
+  $("catLegend").innerHTML = parts.length ? parts.map(([id, m]) => `<span style="--c:${catOf(id)[2]}">${catOf(id)[1]} <b>${esc(fmt(m))}</b></span>`).join("") : `<span style="--c:var(--faint)">Record a spend to see the breakdown</span>`;
   const list = $("txList"); list.innerHTML = ""; $("txEmpty").hidden = S.ledger.length > 0;
   const groups = new Map();
   for (const e of S.ledger.slice(0, 40)) { const k = new Date(e.at).toDateString(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
   const today = new Date().toDateString(), yest = new Date(Date.now() - 864e5).toDateString();
   for (const [k, items] of groups) {
-    const label = k === today ? "今日" : k === yest ? "昨日" : new Date(items[0].at).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+    const label = k === today ? "Today" : k === yest ? "Yesterday" : new Date(items[0].at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     let dayTotal = Money.zero(S.home); let miss = false;
     for (const e of items) { if (e.kind !== "spend") continue; const m = toCcy(Money.of(e.amount, e.ccy), S.home); if (m) dayTotal = dayTotal.add(m); else miss = true; }
     const g = document.createElement("div"); g.className = "txgroup"; g.innerHTML = `<span>${esc(label)}</span><b>${dayTotal.isZero() && !miss ? "" : "−" + esc(fmt(dayTotal)) + (miss ? " +?" : "")}</b>`; list.appendChild(g);
     for (const e of items) {
       const el = document.createElement("div"); el.className = "tx";
       const m = e.kind === "convert" ? null : Money.of(e.amount, e.ccy); const sub = m && e.ccy !== S.home ? toCcy(m, S.home) : null;
-      if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || c[1])}</b><span>${c[1]} · ${e.ccy} 現金</span></div><div class="a">−${esc(fmt(m))}${sub ? `<span>≈ ${esc(fmt(sub))}</span>` : ""}</div>`; }
-      else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>現金を追加</b><span>${esc(e.note || "")} · ${e.ccy}</span></div><div class="a pos">+${esc(fmt(m))}${sub ? `<span>≈ ${esc(fmt(sub))}</span>` : ""}</div>`; }
-      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>両替 ${esc(e.from)} → ${esc(e.to)}</b><span>${esc(e.rateText)}</span></div><div class="a pos">+${esc(e.toText)}<span>−${esc(e.fromText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
+      if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || c[1])}</b><span>${c[1]}</span></div><div class="a">${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
+      else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>Cash added</b><span>${esc(e.note || "")}</span></div><div class="a pos">+${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
+      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>Conversion ${esc(e.from)} → ${esc(e.to)}</b><span>Currency conversion</span></div><div class="a">${esc(e.fromText)}<span class="pos">↳ ${esc(e.toText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
       list.appendChild(el);
     }
+    list.lastElementChild.classList.add(items.length === 1 ? "only" : "last");
   }
   [...$("s-home").querySelector(".sky").children].forEach((c, i) => c.style.setProperty("--i", i));
   [...$("s-home").querySelector(".homebody").children].forEach((c, i) => c.style.setProperty("--i", i + 6));
@@ -314,7 +339,7 @@ function walletInfo(animated = true) {
   let spent = Money.zero(S.sel), added = Money.zero(S.sel), got = Money.zero(S.sel);
   for (const e of S.ledger) { if (e.kind === "spend" && e.ccy === S.sel && Date.parse(e.at) >= since) spent = spent.add(Money.of(e.amount, e.ccy)); if (e.kind === "add" && e.ccy === S.sel) added = added.add(Money.of(e.amount, e.ccy)); if (e.kind === "convert" && e.to === S.sel) got = got.add(Money.of(e.toAmt, e.to)); }
   const m = S.mine[`${S.home}/${S.sel}`];
-  $("wRows").innerHTML = [["残高", fmt(b)], ["今週の支出", fmt(spent)], ["追加した現金", fmt(added)], ["両替で得た額", fmt(got)], ["自分レート", m ? `1 ${S.home} = ${rateStr(Number(m.received) / Number(m.paid))} ${S.sel}` : "未設定"]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("wRows").innerHTML = [["Balance", fmt(b)], ["Spent this week", fmt(spent)], ["Cash added", fmt(added)], ["From conversions", fmt(got)], ["Your rate", m ? `1 ${S.home} = ${rateStr(Number(m.received) / Number(m.paid))} ${S.sel}` : "Not set"]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
 }
 function renderWallet(entering = false) {
   buildCards();
@@ -367,10 +392,10 @@ async function doConvert() {
   S.history.unshift(tx); S.history = S.history.slice(0, 100);
   S.ledger.unshift({ kind: "convert", at, ref, from: S.from, to: S.to, fromText: tx.fromText, toText: tx.toText, toAmt: tx.toAmt, rateText: tx.rateText }); S.ledger = S.ledger.slice(0, 500);
   save(); lastTx = tx; buf = ""; renderPair(true);
-  $("doneRate").textContent = tx.rateText + (tx.mine ? "(自分レート)" : "");
+  $("doneRate").textContent = tx.rateText + (tx.mine ? " (your rate)" : "");
   $("dFlagFrom").textContent = flag(tx.from); $("dFromLbl").textContent = `From ${tx.from}`; $("dFromAmt").textContent = "−" + tx.fromText;
   $("dFlagTo").textContent = flag(tx.to); $("dToLbl").textContent = `To ${tx.to}`; $("dToAmt").textContent = "+" + tx.toText;
-  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "未設定"], [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} 残高</dt><dd>${esc(v)}</dd>`).join("");
+  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "Not set"], [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} balance</dt><dd>${esc(v)}</dd>`).join("");
   stagger($("sheetDone").querySelector(".sheetbox"));
   $("sheetDone").hidden = false;
   setTimeout(() => { cta.classList.remove("loading"); cta.style.width = ""; }, 300);
@@ -382,20 +407,21 @@ let printToken = 0;
 async function showReceipt(tx) {
   $("rFlagFrom").textContent = flag(tx.from); $("rFlagTo").textContent = flag(tx.to);
   $("rBig").textContent = tx.toText; $("rFor").textContent = `for ${tx.fromText}`;
-  $("rDate").textContent = new Date(tx.at).toLocaleString("ja-JP", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  $("rRows").innerHTML = [["払った", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], ["受け取った", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["レート", esc(tx.rateText), ""], ["手数料", tx.mine ? "自分レートに込み" : "参考レートのため未反映", ""], ["参照", esc(tx.ref), ""], ...(tx.balFrom ? [[`${tx.from} 残高`, esc(tx.balFrom), ""]] : []), [`${tx.to} 残高`, esc(tx.balTo), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
-  $("rProv").innerHTML = [["出典", tx.source], ["種別", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "確定" : "推定"}`], ["観測", new Date(tx.observedAt).toLocaleString("ja-JP")], ["丸め", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("rDate").textContent = dateTime(tx.at).replace(", ", " · ").replace(/(\d{4}),? /, "$1 · ");
+  $("rRows").innerHTML = [["You paid", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], ["You got", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["Exchange rate", esc(tx.rateText), ""], ["Fee", tx.mine ? "Included in your rate" : "Not included (reference rate)", tx.mine ? "green" : ""], ["Reference", esc(tx.ref), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
+  $("rBals").innerHTML = [...(tx.balFrom ? [[tx.from, tx.balFrom]] : []), [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c}</dt><dd>${esc(v)}</dd>`).join("");
+  $("rProv").innerHTML = [["Source", tx.source], ["Type", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(tx.observedAt)], ["Rounding", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("barcode").innerHTML = barcodeFor(tx.ref); $("rRef").textContent = tx.ref; lastTx = tx;
   const token = ++printToken;
   const slot = $("slot"), label = $("slotLabel"), wrap = $("paperwrap"), stamp = $("stamp"), actions = $("rActions");
   slot.classList.remove("gone"); slot.classList.add("busy"); stamp.classList.remove("in"); actions.classList.remove("in");
-  label.textContent = "GENERATING…";
+  label.textContent = "GENERATING...";
   wrap.classList.add("printing"); wrap.style.setProperty("--h", "0px");
   show("receipt");
   if (REDUCED) { wrap.classList.remove("printing"); slot.classList.add("gone"); stamp.classList.add("in"); actions.classList.add("in"); return; }
   // Reference timing (30fps analysis): GENERATING 2.0s → PRINTING 0.85s (slow start, fast finish) → DONE + slot retract 0.5s → pause 1.2s → stamp and buttons together.
   await wait(2000); if (token !== printToken) return;
-  label.textContent = "PRINTING…";
+  label.textContent = "PRINTING...";
   await wait(250); if (token !== printToken) return;
   const full = $("paper").offsetHeight + 16; const dur = 850; const t0 = performance.now();
   // slow linear feed → accelerate → short decelerate (shape of the reference motion curve)
@@ -414,21 +440,21 @@ function openAdd(ccy) { addCcy = ccy || S.sel; $("addFlag").textContent = flag(a
 function openSpend(ccy) {
   spCcy = ccy || S.sel; $("spFlag").textContent = flag(spCcy); $("spCode").textContent = spCcy; $("spAmt").value = ""; $("spNote").value = "";
   $("spCat").innerHTML = CATS.map((c) => `<button type="button" data-v="${c[0]}" class="${c[0] === spCat ? "on" : ""}" style="--c:${c[2]}">${c[1]}</button>`).join("");
-  const b = balance(spCcy); $("spHint").textContent = b ? `${spCcy} の残高 ${fmt(b)} から引きます` : `${spCcy} の残高は未設定です。記録はできますが残高はマイナスになります`;
+  const b = balance(spCcy); $("spHint").textContent = b ? `Taken from your ${spCcy} balance of ${fmt(b)}` : `No ${spCcy} balance yet; recording still works and the balance goes negative`;
   stagger($("sheetSpend").querySelector(".sheetbox")); $("sheetSpend").hidden = false; setTimeout(() => $("spAmt").focus(), 60);
 }
 function runProgress(title, vis, done) {
-  const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = "少しだけお待ちください";
+  const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = "This only takes a moment";
   $("pVis").style.background = vis.grad; $("pVis").innerHTML = `<div class="cv"><small>${esc(vis.small)}</small>${esc(vis.big)}</div>`;
   const steps = [...$("pSteps").querySelectorAll(".step")], lines = [...$("pSteps").querySelectorAll("em")];
   steps.forEach((s) => (s.className = "step")); lines.forEach((l) => (l.className = ""));
-  const labels = ["記録しています", "換算しています", "保存しています"]; let i = -1, pct = 0;
+  const labels = ["Recording your cash", "Converting to home currency", "Securing your wallet"]; let i = -1, pct = 0;
   const tick = () => {
     pct = Math.min(100, pct + (REDUCED ? 50 : 1 + Math.round(Math.random() * 3)));
     $("pPct").textContent = pct + "%";
     const stage = Math.min(2, Math.floor(pct / 34));
     if (stage !== i || pct === 100) { for (let k = 0; k < 3; k++) { steps[k].className = "step " + (k < stage || pct === 100 ? "done" : k === stage ? "active" : ""); if (k < 2) lines[k].className = k < stage || pct === 100 ? "done" : ""; } i = stage; }
-    $("pLabel").textContent = pct === 100 ? "完了" : labels[stage];
+    $("pLabel").textContent = pct === 100 ? "All set" : labels[stage];
     if (pct < 100) setTimeout(tick, REDUCED ? 10 : 45 + Math.random() * 50);
     else {
       // Reference: steps fade out (0.45s), the card alone for ~1.5s, then a hard background switch with title and buttons popping in.
@@ -440,17 +466,17 @@ function runProgress(title, vis, done) {
   tick();
 }
 $("btnAddGo").addEventListener("click", () => {
-  const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast("金額を入れてください"); return; }
-  const src = $("addSource").querySelector(".on")?.dataset.v || "その他";
+  const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast("Enter an amount"); return; }
+  const src = $("addSource").querySelector(".on")?.dataset.v || "Other";
   setBalance(addCcy, (balance(addCcy) || Money.zero(addCcy)).add(m));
   S.ledger.unshift({ kind: "add", at: new Date().toISOString(), ccy: addCcy, amount: m.toDecimalString(), note: src }); S.sel = addCcy; save(); closeSheets();
-  runProgress("追加しています", { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m) }, { title: "追加しました", sub: `${addCcy} の残高 ${fmt(balance(addCcy))}` });
+  runProgress("Adding your cash", { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m) }, { title: "Cash added", sub: `${addCcy} ${fmt(m)} is ready to use · balance ${fmt(balance(addCcy))}` });
 });
 $("btnSpendGo").addEventListener("click", () => {
-  const m = parseAmt($("spAmt").value, spCcy); if (!m) { toast("金額を入れてください"); return; }
+  const m = parseAmt($("spAmt").value, spCcy); if (!m) { toast("Enter an amount"); return; }
   setBalance(spCcy, (balance(spCcy) || Money.zero(spCcy)).subtract(m));
   S.ledger.unshift({ kind: "spend", at: new Date().toISOString(), ccy: spCcy, amount: m.toDecimalString(), cat: spCat, note: $("spNote").value.trim() }); S.ledger = S.ledger.slice(0, 500); save(); closeSheets(); render();
-  const h = toCcy(m, S.home); toast(`−${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""} を記録`);
+  const h = toCcy(m, S.home); toast(`Recorded −${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""}`);
   if ($("s-home").hidden && $("s-wallet").hidden) go("home");
 });
 const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done", "fading"); };
@@ -464,7 +490,7 @@ $("spCur").addEventListener("click", () => openPicker("any", (c) => { spCcy = c;
 // ---------- sheets ----------
 function closeSheets() { for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetAdd", "sheetSpend"]) $(id).hidden = true; }
 function openPicker(which, onPick) {
-  $("pickTitle").textContent = which === "from" ? "払う通貨" : which === "to" ? "受け取る通貨" : "通貨を選ぶ";
+  $("pickTitle").textContent = which === "from" ? "Convert from" : which === "to" ? "Convert to" : "Choose currency";
   const list = $("pickList"); const search = $("pickSearch");
   const cur = which === "from" ? S.from : which === "to" ? S.to : null;
   const draw = () => {
@@ -472,7 +498,7 @@ function openPicker(which, onPick) {
     for (const c of CURRENCIES.values()) {
       if (q && !(c.code.toLowerCase().includes(q) || c.name.ja.includes(q) || c.name.en.toLowerCase().includes(q))) continue;
       const li = document.createElement("li"); if (cur === c.code) li.className = "on";
-      li.innerHTML = `<button type="button"><span class="flag">${flag(c.code)}</span><span class="code">${c.code}</span><span class="name">${esc(c.name.ja)}</span></button>`;
+      const bal = balance(c.code); li.innerHTML = `<button type="button"><span class="flag">${flag(c.code)}</span><span><span class="code">${c.code}</span><span class="name2">${esc(c.name.en)}</span></span><span class="name">${bal ? esc(fmt(bal)) : ""}</span></button>`;
       li.querySelector("button").addEventListener("click", () => {
         $("sheetPick").hidden = true;
         if (which === "from") { if (c.code === S.to) S.to = S.from; S.from = c.code; buf = ""; save(); render(); loadSeries(); }
@@ -492,7 +518,7 @@ async function leaveOnboarding(demo) {
     S.home = "JPY"; S.sel = "THB"; S.from = "JPY"; S.to = "THB";
     S.balances = { JPY: "48000", THB: "9870.00", USD: "120.00" }; S.mine = { "JPY/THB": { paid: "100000", received: "22500", at: new Date(Date.now() - 2 * 864e5).toISOString() } };
     const t = (h) => new Date(Date.now() - h * 3600e3).toISOString();
-    S.ledger = [{ kind: "spend", at: t(2), ccy: "THB", amount: "180.00", cat: "food", note: "ガパオライス" }, { kind: "spend", at: t(5), ccy: "THB", amount: "95.00", cat: "transport", note: "BTS" }, { kind: "spend", at: t(26), ccy: "THB", amount: "1250.00", cat: "shop", note: "ターミナル21" }, { kind: "spend", at: t(30), ccy: "THB", amount: "320.00", cat: "food", note: "ソンブーン" }, { kind: "spend", at: t(52), ccy: "USD", amount: "80.00", cat: "stay", note: "ホステル" }, { kind: "add", at: t(50), ccy: "THB", amount: "22500.00", note: "両替所" }];
+    S.ledger = [{ kind: "spend", at: t(2), ccy: "THB", amount: "180.00", cat: "food", note: "Pad kra pao" }, { kind: "spend", at: t(5), ccy: "THB", amount: "95.00", cat: "transport", note: "BTS Skytrain" }, { kind: "spend", at: t(26), ccy: "THB", amount: "1250.00", cat: "shop", note: "Terminal 21" }, { kind: "spend", at: t(30), ccy: "THB", amount: "320.00", cat: "food", note: "Somboon Seafood" }, { kind: "spend", at: t(52), ccy: "USD", amount: "80.00", cat: "stay", note: "Hostel" }, { kind: "add", at: t(50), ccy: "THB", amount: "22500.00", note: "Exchange booth" }];
     S.history = [];
   }
   save();
@@ -517,12 +543,11 @@ window.addEventListener("keydown", (e) => { if (e.target.tagName === "INPUT" || 
 $("btnFrom").addEventListener("click", () => openPicker("from"));
 $("btnTo").addEventListener("click", () => openPicker("to"));
 $("btnSwap").addEventListener("click", () => {
-  const amount = inputMoney(); const aq = activeQuote(); let next = "";
-  if (aq && !amount.isZero()) { try { next = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount.toDecimalString(); } catch {} }
   const sw = $("btnSwap"); sw.classList.toggle("turn");
-  [S.from, S.to] = [S.to, S.from]; buf = next.replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1"); save();
-  $("amtFrom").classList.remove("flip"); void $("amtFrom").offsetWidth; $("amtFrom").classList.add("flip");
-  tweenSeed($("amtTo"), amount); renderPair(); renderRate(); loadSeries();
+  [S.from, S.to] = [S.to, S.from];
+  if (currency(S.from).scale === 0) buf = buf.split(".")[0]; else { const fr = buf.split(".")[1]; if (fr && fr.length > currency(S.from).scale) buf = buf.split(".")[0] + "." + fr.slice(0, currency(S.from).scale); }
+  save();
+  renderPair(true); renderRate(); loadSeries();
 });
 $("btnMax").addEventListener("click", () => { const b = balance(S.from); if (b) { buf = b.toDecimalString().replace(/\.0+$/, ""); renderPair(); } });
 $("btnConvert").addEventListener("click", doConvert);
@@ -531,14 +556,14 @@ $("btnMore").addEventListener("click", closeSheets);
 $("btnReceipt").addEventListener("click", async () => { if (!lastTx) return closeSheets(); $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); showReceipt(lastTx); });
 $("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
 $("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
-$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("コピーしました"); } catch { toast("共有できませんでした"); } });
+$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
 const openRate = () => { renderRateSheet(); $("sheetRate").hidden = false; };
 $("rateRow").addEventListener("click", openRate); $("btnRates").addEventListener("click", openRate); $("btnRatesHome").addEventListener("click", openRate); $("btnTabRate").addEventListener("click", openRate);
 $("btnHistory").addEventListener("click", () => { renderHistory(); stagger($("sheetHistory").querySelector(".sheetbox")); $("sheetHistory").hidden = false; });
 $("btnHistClear").addEventListener("click", () => { S.history = []; save(); renderHistory(); });
 document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
 for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetAdd", "sheetSpend"]) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
-$("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast("2つの金額を正しく入れてください"); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast("自分レートで換算します"); });
+$("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast("Enter both amounts"); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast("Converting at your rate"); });
 $("btnClearMine").addEventListener("click", () => { delete S.mine[`${S.from}/${S.to}`]; save(); closeSheets(); render(); });
 $("btnHomeCcy").addEventListener("click", () => openPicker("any", (c) => { S.home = c; save(); renderRateSheet(); render(); }));
 $("ticker").addEventListener("click", (e) => { const b = e.target.closest("button[data-c]"); if (b) { S.sel = b.dataset.c; save(); renderHome(); } });
@@ -546,10 +571,10 @@ $("miniCards").addEventListener("click", (e) => { const b = e.target.closest("bu
 $("qAdd").addEventListener("click", () => openAdd(S.sel)); $("qSpend").addEventListener("click", () => openSpend(S.sel)); $("qConvert").addEventListener("click", () => { S.to = S.sel === S.home ? S.to : S.sel; S.from = S.home === S.sel ? S.from : S.home; save(); go("convert"); loadSeries(); }); $("qMore").addEventListener("click", () => go("wallet"));
 $("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: REDUCED ? "auto" : "smooth" }); });
 $("btnSearch").addEventListener("click", () => openPicker("any", (c) => { S.sel = c; if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); save(); renderHome(); }));
-$("btnBell").addEventListener("click", () => toast("お知らせはまだありません"));
+$("btnBell").addEventListener("click", () => toast("No notifications yet"));
 $("btnWAdd").addEventListener("click", () => openAdd(S.sel)); $("btnWSpend").addEventListener("click", () => openSpend(S.sel));
 $("btnWalletAdd").addEventListener("click", () => openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderWallet(); openAdd(c); }));
-function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)}</div><div class="t">${new Date(h.at).toLocaleString("ja-JP")}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
+function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)}</div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2200); }
 window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
