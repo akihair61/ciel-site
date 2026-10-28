@@ -82,10 +82,16 @@ function save() {
     localStorage.setItem(STORE_KEY, next);
   } catch { if (!saveWarned) { saveWarned = true; toast("Could not save: storage is full or blocked"); } }
 }
-function exportState() {
+async function exportState() {
   const exportedAt = new Date().toISOString();
   const text = JSON.stringify({ app: "currency-intelligence", schemaVersion: SCHEMA_VERSION, exportedAt, data: S }, null, 2);
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = `currency-intelligence-${exportedAt.slice(0, 10)}.json`;
+  const filename = `currency-intelligence-${exportedAt.slice(0, 10)}.json`;
+  // Inside the claude.ai artifact viewer a plain download link does nothing; the viewer offers the file through its own confirmation instead.
+  if (window.claude && typeof window.claude.use === "function") {
+    const dl = await window.claude.use("downloads");
+    if (dl) { try { await dl.save({ filename, data: text }); toast("Exported"); } catch (e) { toast(e && e.code === "declined" ? "Export cancelled" : "Export unavailable here"); } return; }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = filename;
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast("Exported");
 }
 async function importStateFile(file) {
