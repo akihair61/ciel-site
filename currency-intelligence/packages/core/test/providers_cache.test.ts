@@ -76,3 +76,15 @@ test("RateCache: fresh hit, stale-while-revalidate, offline fallback", async () 
   const empty = new RateCache(provider, { ttlMs: 1000, now });
   await assert.rejects(empty.resolve("JPY", ["THB"])); // no cache and network down → error surfaces
 });
+
+test("CoinbaseProvider maps the exchange-rates payload to intraday quotes", async () => {
+  const { CoinbaseProvider } = await import("../src/providers.ts");
+  const p = new CoinbaseProvider({ fetch: fakeFetch({ data: { currency: "USD", rates: { JPY: "150.23", THB: "33.41", BTC: "0.0000142", XYZ: "1" } } }) });
+  const quotes = await p.fetchLatest("USD", ["JPY", "THB", "BTC"], { now: new Date("2026-10-28T03:00:00Z") });
+  assert.equal(quotes.length, 2); // BTC is not a known fiat currency here, XYZ not requested
+  const jpy = quotes.find((q) => q.quote === "JPY")!;
+  assert.equal(jpy.rate, "150.23");
+  assert.equal(jpy.granularity, "intraday");
+  assert.equal(jpy.observedAt, "2026-10-28T03:00:00.000Z");
+  await assert.rejects(new CoinbaseProvider({ fetch: fakeFetch({ data: { currency: "EUR", rates: {} } }) }).fetchLatest("USD", ["JPY"]));
+});

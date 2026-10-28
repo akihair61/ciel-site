@@ -1,7 +1,7 @@
 // Currency Intelligence — web client. Money math lives in ./core (packages/core); this file renders and animates.
 import {
   Money, MoneyError, CURRENCIES, currency, convert, invert, cross, realizedRate, spreadPercent,
-  parseDec, RateCache, OpenErApiProvider, FrankfurterProvider,
+  parseDec, RateCache, OpenErApiProvider, FrankfurterProvider, CoinbaseProvider,
 } from "./core/index.js";
 
 const STORE_KEY = "ci.v3";
@@ -9,7 +9,8 @@ const TTL_MS = 6 * 60 * 60 * 1000;
 const CROSS_TOLERANCE_MS = 36 * 60 * 60 * 1000;
 const PIVOT = "USD";
 const ROUNDING = "HALF_EVEN";
-const PERIOD_DAYS = { "1W": 7, "1M": 30, "3M": 91, "1Y": 365 };
+const PERIOD_DAYS = { "1D": 1, "1W": 7, "1M": 30, "3M": 91, "1Y": 365 };
+const LIVE_POLL_MS = 60_000;
 let SERIES_DAYS = 30;
 // Motion is the product here: the OS "reduce motion" setting is deliberately not honoured (it hid every animation for users who have it on).
 const REDUCED = false;
@@ -25,14 +26,16 @@ const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
-function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, series: {}, cardColor: {}, period: "1M" }; }
+function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M" }; }
 function load() { try { const r = localStorage.getItem(STORE_KEY); if (r) return { ...defaults(), ...JSON.parse(r) }; } catch {} return defaults(); }
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch {} }
 let S = load();
 const store = { async get(key) { return S.rateCache && S.rateCache.key === key ? S.rateCache.quotes : undefined; }, async set(key, quotes) { S.rateCache = { key, quotes }; save(); } };
 const f = (u, i) => fetch(u, i);
-const providers = [new OpenErApiProvider({ fetch: f }), new FrankfurterProvider({ fetch: f })];
-const caches = providers.map((p) => new RateCache(p, { ttlMs: TTL_MS, store }));
+const liveStore = { async get(key) { return S.liveCache && S.liveCache.key === key ? S.liveCache.quotes : undefined; }, async set(key, quotes) { S.liveCache = { key, quotes }; save(); } };
+const liveProvider = new CoinbaseProvider({ fetch: f });
+const providers = [liveProvider, new OpenErApiProvider({ fetch: f }), new FrankfurterProvider({ fetch: f })];
+const caches = [new RateCache(liveProvider, { ttlMs: LIVE_POLL_MS * 0.75, store: liveStore }), ...providers.slice(1).map((p) => new RateCache(p, { ttlMs: TTL_MS, store }))];
 let pivot = [];
 let rate = { status: "loading", source: "", error: "" };
 
@@ -40,22 +43,49 @@ function embeddedQuotes() {
   const now = new Date().toISOString();
   return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["Reference snapshot shipped with the app; replaced once online"] }));
 }
-async function loadRates() {
+let lastRateShown = null; // for the tick flash
+function recordTick() {
+  const q = marketQuote(S.from, S.to); if (!q || q.source !== "coinbase") return;
+  const key = `${S.from}/${S.to}`; const arr = S.ticks[key] || []; const t = Date.parse(q.observedAt);
+  if (arr.length && t - arr[arr.length - 1].t < 20_000) return;
+  arr.push({ t, rate: Number(q.rate) });
+  const cutoff = Date.now() - 24 * 3600e3; S.ticks[key] = arr.filter((p) => p.t >= cutoff).slice(-1500); save();
+}
+function applyRates(quotes, source, status) {
+  pivot = quotes; rate = { status, source, error: "" };
+  recordTick();
+  const q = marketQuote(S.from, S.to); const shown = q ? q.rate : null;
+  if (lastRateShown !== null && shown !== null && shown !== lastRateShown) {
+    const up = Number(shown) > Number(lastRateShown); const el = $("rateMain"); el.classList.remove("up", "down"); void el.offsetWidth; el.classList.add(up ? "up" : "down"); setTimeout(() => el.classList.remove("up", "down"), 900);
+  }
+  lastRateShown = shown;
+  render(); if (S.period === "1D") { buildTickSeries(); renderRate(); }
+}
+async function loadRates(poll = false) {
   const symbols = [...CURRENCIES.keys()].filter((c) => c !== PIVOT);
   let lastErr = null;
   for (const cache of caches) {
     try {
       const r = await cache.resolve(PIVOT, symbols);
-      pivot = r.quotes; rate = { status: r.status, source: r.source, error: r.error || "" }; render();
-      if (r.revalidation) { const fresh = await r.revalidation; if (fresh) { pivot = fresh; rate = { status: "fresh", source: r.source, error: "" }; render(); } }
-      loadSeries(); return;
+      const live = r.source === "coinbase";
+      applyRates(r.quotes, r.source, live ? (r.status === "fresh" ? "live" : "stale") : r.status);
+      if (r.revalidation) { const fresh = await r.revalidation; if (fresh) applyRates(fresh, r.source, live ? "live" : "fresh"); }
+      if (!poll) loadSeries(); return;
     } catch (e) { lastErr = e; }
   }
-  pivot = embeddedQuotes(); rate = { status: "embedded", source: "embedded", error: lastErr ? String(lastErr.message || lastErr) : "" }; render();
+  if (!poll || !pivot.length) { pivot = embeddedQuotes(); rate = { status: "embedded", source: "embedded", error: lastErr ? String(lastErr.message || lastErr) : "" }; render(); }
+}
+setInterval(() => { if (document.visibilityState === "visible") loadRates(true); }, LIVE_POLL_MS);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") loadRates(true); });
+setInterval(() => { if (rate.source === "coinbase" && !$("s-convert").hidden) renderRateSub(); }, 10_000);
+function buildTickSeries() {
+  const arr = S.ticks[`${S.from}/${S.to}`] || [];
+  series = arr.length >= 2 ? arr.map((p) => ({ date: new Date(p.t).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }), rate: p.rate })) : null;
 }
 let series = null;
 async function loadSeries() {
   SERIES_DAYS = PERIOD_DAYS[S.period] || 30;
+  if (S.period === "1D") { buildTickSeries(); renderRate(); return; }
   const key = `${S.from}/${S.to}/${S.period}`; series = null; renderRate();
   const end = new Date(); const start = new Date(end.getTime() - SERIES_DAYS * 864e5); const d = (x) => x.toISOString().slice(0, 10);
   try {
@@ -103,7 +133,8 @@ function dateTime(iso) { return new Date(iso).toLocaleString("en-US", { month: "
 function balance(code) { const b = S.balances[code]; if (b === undefined) return null; try { return Money.of(b, code); } catch { return null; } }
 function setBalance(code, m) { S.balances[code] = m.toDecimalString(); }
 function parseAmt(txt, code) { const t = txt.trim().replace(/,/g, ""); if (!t) return null; try { const m = Money.of(t, code, "DOWN"); return m.isPositive() ? m : null; } catch { return null; } }
-function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "embedded") return `Built-in reference · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB reference rate · ${dateJa(q.observedAt)}`; return `Reference rate · ${dateJa(q.observedAt)}`; }
+function ago(iso) { const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000)); return s < 60 ? `${s}s ago` : s < 3600 ? `${Math.floor(s / 60)}m ago` : `${Math.floor(s / 3600)}h ago`; }
+function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "coinbase") return `Live · Coinbase · ${ago(q.observedAt)}`; if (q.source === "embedded") return `Built-in reference · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB reference rate · ${dateJa(q.observedAt)}`; return `Reference rate · ${dateJa(q.observedAt)}`; }
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
 const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? 0 : ms));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
@@ -232,14 +263,14 @@ function renderPair(instant = false) {
 }
 function sparkPath(pts, w, h) { const vals = pts.map((p) => p.rate); const min = Math.min(...vals), max = Math.max(...vals); const span = max - min || 1; return pts.map((p, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - 3 - ((p.rate - min) / span) * (h - 6)}`).join(" "); }
 let lastSpark = "";
+function renderRateSub() { const aq = activeQuote(); if (!aq) return; const mk = marketQuote(S.from, S.to); let sub = sourceLabel(aq.quote); if (aq.mine && mk && mk.source === "coinbase") sub = `Your rate · live mid ${rateStr(mk.rate)} · ${ago(mk.observedAt)}`; if (rate.status === "stale" || rate.status === "offline") sub += " · stale"; $("rateSub").textContent = sub; }
 function renderRate() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   const dot = $("rateDot"); const chip = $("rateChip"); const sp = $("spark");
   if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? "Loading rate…" : "No rate for this pair"; dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
   $("rateMain").textContent = `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`;
-  let sub = sourceLabel(aq.quote); if (rate.status === "stale" || rate.status === "offline") sub += " · stale";
-  $("rateSub").textContent = sub;
-  dot.className = "dot " + (rate.status === "fresh" ? "" : rate.status === "error" ? "error" : "stale");
+  renderRateSub();
+  dot.className = "dot " + (rate.status === "fresh" || rate.status === "live" ? "" : rate.status === "error" ? "error" : "stale") + (rate.status === "live" ? " live" : "");
   if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "▼" : "▲"} ${sp2.replace("-", "")}% vs mid`; chip.className = "chip " + (worse ? "red" : "green"); }
   else if (series && series.length >= 2) { const a = series[0].rate, b = series[series.length - 1].rate; const ch = ((b - a) / a) * 100; chip.textContent = `${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch).toFixed(2)}%`; chip.className = "chip " + (ch >= 0 ? "green" : "red"); }
   else { chip.textContent = aq.quote.confidence === "estimated" ? "Reference" : "Confirmed"; chip.className = "chip grey"; }
@@ -254,10 +285,10 @@ function renderRateSheet() {
   $("rhMain").textContent = aq ? `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}` : "—";
   $("rhSub").textContent = aq ? `${sourceLabel(aq.quote)}${mk && aq.mine ? ` · mid ${rateStr(mk.rate)}` : ""}` : "";
   const big = $("bigSpark"); const legend = $("sparkLegend");
-  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
-  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = `<span></span><span>History loads when online (daily)</span><span></span>`; }
+  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = S.period === "1D" ? `<span>${esc(series[0].date)}</span><span>Live ticks collected while the app is open (about 1 per minute)</span><span>${esc(series[series.length - 1].date)}</span>` : `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
+  else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = S.period === "1D" ? `<span></span><span>Collecting live ticks… keep the app open a few minutes</span><span></span>` : `<span></span><span>History loads when online (daily)</span><span></span>`; }
   const q = aq ? aq.quote : null;
-  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Built-in reference snapshot" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(q.observedAt)], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
+  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Built-in reference snapshot" : q.source === "coinbase" ? "Coinbase exchange rates (indicative, refreshed about every minute while open)" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", dateTime(q.observedAt)], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
   if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["Note", "Observation times differ, treated as estimated"]);
   $("provRows").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("lblPaid").textContent = `You paid (${S.from})`; $("lblGot").textContent = `You got (${S.to})`;

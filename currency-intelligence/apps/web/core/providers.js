@@ -120,4 +120,45 @@ export class OpenErApiProvider {
         }));
     }
 }
+/**
+ * Coinbase public exchange-rates endpoint (no key, CORS enabled). Fiat rates
+ * refresh every few minutes, so this is the app's "live" source. Still an
+ * indicative rate, not a tradable quote; terms are 要検証 in docs/TECH_VALIDATION.md.
+ */
+export class CoinbaseProvider {
+    id = "coinbase";
+    description = "Coinbase exchange rates (refreshed every few minutes, indicative)";
+    granularity = "intraday";
+    baseUrl;
+    deps;
+    constructor(deps) {
+        this.deps = deps;
+        this.baseUrl = deps.baseUrl ?? "https://api.coinbase.com/v2";
+    }
+    async fetchLatest(base, symbols, opts) {
+        const res = await this.deps.fetch(`${this.baseUrl}/exchange-rates?currency=${encodeURIComponent(base)}`, { signal: opts?.signal });
+        if (!res.ok)
+            throw new RateError("PROVIDER_HTTP", `${this.id} HTTP ${res.status}`);
+        const j = (await res.json());
+        if (!j || !j.data || j.data.currency !== base || !j.data.rates)
+            throw new RateError("PROVIDER_SHAPE", `${this.id}: unexpected payload`);
+        const now = (opts?.now ?? new Date()).toISOString();
+        const want = new Set(symbols);
+        return Object.entries(j.data.rates)
+            .filter(([q]) => q !== base && want.has(q) && isKnownCurrency(q))
+            .map(([q, r]) => validateQuote({
+            quoteId: `${this.id}:${base}${q}:${now}`,
+            base,
+            quote: q,
+            rate: typeof r === "string" ? numberToDecString(Number(r)) : numberToDecString(r),
+            source: this.id,
+            observedAt: now, // the endpoint carries no timestamp; the fetch time is the best available
+            receivedAt: now,
+            rateKind: "indicative",
+            confidence: "estimated",
+            granularity: "intraday",
+            notes: ["Coinbase does not publish an observation time; receivedAt is used"],
+        }));
+    }
+}
 //# sourceMappingURL=providers.js.map

@@ -31,7 +31,7 @@ node build.mjs      # packages/core/dist → apps/web/core
 python3 -m http.server 8765   # http://localhost:8765/
 ```
 
-GitHub Pages などに `apps/web` をそのまま置けば動く。レートは open.er-api.com(主)と api.frankfurter.app(副)から取得し、取得できない時は端末内に保存した前回レートを「古いレート」と明示して使う。
+GitHub Pages などに `apps/web` をそのまま置けば動く(手順は [DEPLOY.md](DEPLOY.md))。レートは Coinbase(1分ごと、ライブ表示)→ open.er-api.com → api.frankfurter.app の順に取得し、取得できない時は端末内に保存した前回レートを「stale」と明示して使う。チャートは 1D がライブのティック、1W〜1Y が Frankfurter の日次。
 
 ## 設計の要点
 
