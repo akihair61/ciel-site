@@ -27,7 +27,8 @@
 | F12 | レシート認識 | P3 | ⬜ | — | — | ⬜ | |
 | F13 | グループ割り勘 | P3 | ✅ | ✅ | ✅ | ⬜ | **今回 UI 追加**: ホーム MORE → Split a bill。人数(最大 20)、均等/重み、支払者、各人の分担(丸め差の割当を表示)、「精算回数を減らす提案」(最少とは言わない)、共有テキスト、支払者の支出として記録へ連携。残高・台帳は変更しない。計算は `split.ts`(不変条件テスト 4 件) |
 | F14 | 世界の物価情報 | P3 | ⬜ | — | — | ⬜ | ライセンス済みデータなし |
-| F15 | ホーム/ロック画面/Watch | P3 | ⬜ | — | — | ⬜ | iOS 必要(B-01) |
+| F15 | ホーム/ロック画面/Watch | P3 | ⬜ | — | — | ⬜ | iOS アプリ本体の後(下記 iOS 行) |
+| iOS | SwiftUI アプリ(Phase 3) | P3 | ✅ | ⬜ | ⬜ | ⬜ | `ios/CoreMoney`(Money / RateQuote(observedAt null 可・invert / cross)/ Coinbase プロバイダ / Web と同じ schema v4 の状態ストア(バックアップ・原子的書込・Export/Import)/ テスト 2 ファイル)と `ios/CurrencyIntelligence`(Xcode 16 形式の手書き project.pbxproj + XcodeGen 用 project.yml。Home / Cards / Convert(シミュレーション)/ 結果シート / 実両替記録 / レシート / レート詳細 / 設定: Motion・Export・Import)。**この環境に Swift がないため未コンパイル・未テスト**。Mac での手順は `ios/README_MAC.md`、Claude Code 用の依頼文は `ios/MAC_TASK.md` |
 | F16 | マルチ通貨残高 | P4 | 🔒 | — | — | ⬜ | B-05。着手しない |
 | F17 | 外貨交換 | P4 | 🔒 | — | — | ⬜ | B-05。アプリ内の「実両替記録」は利用者が外で行った両替の **手動記録** であり、交換の実行ではない |
 | F18 | 国内・海外送金 | P4 | 🔒 | — | — | ⬜ | B-05 |

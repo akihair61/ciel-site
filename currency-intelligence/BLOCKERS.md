@@ -4,7 +4,7 @@
 
 | ID | 内容 | 影響 | 必要なアクション | 状態 |
 | --- | --- | --- | --- | --- |
-| B-01 | 実行環境が Linux コンテナで **Xcode / Swift ツールチェーンがない**。SwiftUI アプリも `ios/CoreMoney` も **ビルド・テスト未実施**。 | iOS 成果物(STEP 2 の SwiftUI アプリ、WidgetKit、Vision 等)を検証付きで納品できない | macOS + Xcode のある環境で作業する(ローカル、または macOS の CI ランナー)。それまで Shared Core は TypeScript を正本とし、Swift 版は鏡として保守 | 未解決 |
+| B-01 | 作業セッションは Linux コンテナで **Xcode / Swift ツールチェーンがない**(オーナーの Mac には届かない)。`ios/CoreMoney` と SwiftUI アプリ `ios/CurrencyIntelligence` は **作成済み・ビルド/テスト未実施**。 | iOS 成果物を検証付きで納品できない | オーナーが Mac で `ios/README_MAC.md` の手順(`swift test`、`xcodebuild`)を実行。コンパイルエラーの修正は Mac 上の Claude Code に `ios/MAC_TASK.md` を貼って依頼 | 未解決(手順書あり) |
 | B-02 | コンテナから **外部 Web に到達できない**(developer.apple.com、docs.wise.com、frankfurter、ECB など全部 403 / 名前解決不可)。npm レジストリのみ可。 | 仕様書が求める「公式ドキュメントで現行 API を確認」ができない。`docs/TECH_VALIDATION.md` の項目は多くが **要検証** | セッションのネットワーク許可に `developer.apple.com`, `api.frankfurter.app`, `open.er-api.com`, `data-api.ecb.europa.eu`, `docs.wise.com` を追加する。または人が確認して結果を TECH_VALIDATION に記入 | 未解決 |
 | B-03 | レート API の**商用利用条件が未確認**。open.er-api.com は出典表示が必要とされているが、SLA・再配布・更新頻度の正確な条件は要確認。Frankfurter(ECB)は参考レート用途のみ。 | 商用公開時にライセンス違反のリスク | 各 API の利用規約を確認し、必要なら有料プラン(例: ExchangeRate-API 有料、または他社ライブレート)を契約 | 未解決 |
 | B-04 | F08 両替所レート、F09 ATM 手数料、F10 カード手数料は **正式提供データの契約がない**。 | 「不明」表示以外ができない。自動取得(スクレイピング)は規約上やらない | 提携先・データ提供契約の方針決定 | 未解決 |
@@ -28,5 +28,5 @@
 | Q-06 ストレージの原子性・移行・Export/Import | schemaVersion 4、`.bak`、Export/Import | 修正・試験済み |
 | Phase 2 F13 割り勘 UI | ホーム MORE → Split a bill | 作成・ブラウザ試験済み |
 | Phase 2 F11 旅行・予算(スナップショット)、F01 ピン・ja/en/th、F02 定義、F03 12 通貨一覧 | ホーム MORE → Trips & budget / All rates、ピッカーの ★、レート詳細の定義文、設定の Language | 作成・ブラウザ試験済み(`docs/verify_p2.js` 20 項目) |
-| Phase 3 iOS | B-01(macOS/Xcode なし) | 未着手 |
+| Phase 3 iOS | SwiftUI アプリ + CoreMoney 拡張を作成。ビルド・試験は Mac で(`ios/README_MAC.md`) | 作成済み・未ビルド |
 | 外部 API の実疎通 | B-02(この環境から api.coinbase.com / open.er-api.com / api.frankfurter.app は 403) | 未解決。プロバイダはテストのフェイク応答でのみ検証 |

@@ -3,7 +3,7 @@
 AI Currency & Global Money Super App の実装リポジトリ(作業ブランチ)。
 元仕様: `Claude_AI_Currency_SuperApp_Master_Spec_JA_2026.pdf`(2026-10-28版)。要約は [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)。
 
-## 現在の状態(SPEC 02 Phase 0・1・2 完了、Phase 3 iOS は未着手)
+## 現在の状態(SPEC 02 Phase 0・1・2 完了、Phase 3 iOS は作成済み・Mac でのビルド待ち)
 
 報告の区別: **作成** = 書いた / **ビルド** = この環境で通った / **試験** = 自動テストかブラウザ自動操作で確認 / **本番有効** = 利用者が使える配信。現時点で本番有効なものは **ない**(独立リポジトリ・Pages はオーナー操作待ち。`docs/MIGRATION_PLAN.md`)。
 
@@ -16,8 +16,8 @@ AI Currency & Global Money Super App の実装リポジトリ(作業ブランチ
 | 現物監査・回帰基準 / 分離計画 | `docs/BASELINE.md`, `docs/MIGRATION_PLAN.md` | 作成済み(分離は未実行) |
 | 計算エンジン(Shared Core) | `packages/core` (TypeScript, 依存ゼロ) | **作成・ビルド・試験済み: 36 テスト通過**。数値を double に通さない JSON パーサ(Q-01)、観測時刻 null 対応(Q-02) |
 | Web クライアント(PWA) | `apps/web` | **作成・ビルド・ブラウザ試験済み**(Playwright: 参照フロー録画 + 28 項目の自動確認)。オンボーディング → ホーム → 財布 → Convert(**シミュレーション**)→ 結果シート →「Record as a real exchange」で実両替記録 → レシート(記録控え/シミュレーション控え)。割り勘(F13)、旅行と予算(F11、記録時レートのスナップショット)、ピン留めと All rates(F01/F03)、UI 言語 en/ja/th。設定: 自分レート、ホーム通貨、Language、Motion(Auto/On/Off)、Export/Import JSON。localStorage は schema v4 + バックアップ |
-| iOS Shared Core | `ios/CoreMoney` (Swift Package) | **未ビルド**(この環境に Xcode / Swift なし) |
-| SwiftUI アプリ | — | 未着手(macOS 環境が必要。BLOCKERS B-01) |
+| iOS Shared Core | `ios/CoreMoney` (Swift Package) | **作成済み・未ビルド**(この環境に Swift なし)。Web と同じ schema v4 の状態ストア、Coinbase、invert/cross、テスト 2 ファイル |
+| SwiftUI アプリ | `ios/CurrencyIntelligence` | **作成済み・未ビルド**。Mac での手順は `ios/README_MAC.md`、Claude Code 用依頼文は `ios/MAC_TASK.md` |
 
 ## 動かす
 
