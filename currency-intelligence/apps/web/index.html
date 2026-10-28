@@ -20,12 +20,20 @@
   <defs>
     <linearGradient id="g-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5BA7FF"/><stop offset="1" stop-color="#7B4DFF"/></linearGradient>
     <symbol id="logo" viewBox="0 0 48 48"><path d="M4 12h18l6 8H10zM26 20h18l-6 8H32zM20 28h16l-8 12z" fill="url(#g-logo)"/></symbol>
+    <symbol id="p1" viewBox="0 0 48 48"><path d="M4 12h18l6 8H10z" fill="url(#g-logo)"/></symbol>
+    <symbol id="p2" viewBox="0 0 48 48"><path d="M26 20h18l-6 8H32z" fill="url(#g-logo)"/></symbol>
+    <symbol id="p3" viewBox="0 0 48 48"><path d="M20 28h16l-8 12z" fill="url(#g-logo)"/></symbol>
   </defs>
 </svg>
 <div id="app">
 
-  <!-- ============ Onboarding ============ -->
+  <!-- ============ Onboarding / splash ============ -->
   <section class="screen onboard" id="s-onboard" hidden>
+    <div class="splashwhite"></div>
+    <svg class="burst" id="burst" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="pieces"><svg class="pc pc1"><use href="#p1"/></svg><svg class="pc pc2"><use href="#p2"/></svg><svg class="pc pc3"><use href="#p3"/></svg></div>
+    <div class="diagline"></div>
+    <div class="bands"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
     <div class="onb-logo"><svg class="mark"><use href="#logo"/></svg></div>
     <div class="onb-copy">
       <h1>旅のお金を、<br>ひとつの画面に。</h1>
@@ -43,7 +51,7 @@
         <button class="round glass" id="btnRatesHome" type="button" aria-label="レート"><svg viewBox="0 0 24 24"><path d="M4 16l5-6 4 4 7-8"/></svg></button>
         <button class="round glass" id="btnBell" type="button" aria-label="お知らせ"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
       </div>
-      <div class="ticker" id="ticker"></div>
+      <div class="ticker" id="ticker"><i class="tkhl" id="tkhl"></i></div>
       <div class="bigbal num" id="homeBal"></div>
       <div class="bigsub" id="homeSub"></div>
       <div class="minicards" id="miniCards"></div>
@@ -55,7 +63,7 @@
       </div>
     </div>
     <div class="homebody">
-      <div class="txcard">
+      <div class="txcard" id="txcard">
         <div class="txhead"><b>Transactions</b><button class="link" id="btnAllTx" type="button">すべて</button></div>
         <small>今週の支出</small>
         <div class="weekbig num" id="weekTotal"></div>
@@ -106,7 +114,7 @@
       <button type="button" data-k=".">.</button><button type="button" data-k="0">0</button>
       <button type="button" data-k="⌫" aria-label="1文字消す"><svg viewBox="0 0 24 24"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7Z"/><path d="m12 9 5 5M17 9l-5 5"/></svg></button>
     </div>
-    <button class="cta" id="btnConvert" type="button"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg><span id="ctaText">金額を入れてください</span></button>
+    <div class="ctawrap"><button class="cta" id="btnConvert" type="button"><svg class="ico" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg><span id="ctaText">金額を入れてください</span><svg class="spin" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1-6.4 2.6"/></svg></button></div>
   </section>
 
   <!-- ============ Wallet (cards) ============ -->
@@ -117,7 +125,7 @@
         <h1>財布</h1>
         <button class="round glass2" id="btnWalletAdd" type="button" aria-label="通貨を追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       </header>
-      <div class="carousel" id="carousel"></div>
+      <div class="stage3d" id="carousel"></div>
       <div class="dots" id="dots"></div>
       <div class="wbal num" id="wBal"></div>
       <div class="wsub" id="wSub"></div>
@@ -135,36 +143,39 @@
   </section>
 
   <!-- ============ Receipt ============ -->
-  <section class="screen" id="s-receipt" hidden>
+  <section class="screen receipt" id="s-receipt" hidden>
     <header class="bar">
       <button class="round" id="btnReceiptBack" type="button" aria-label="戻る"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
       <h1>Receipt</h1>
       <span class="round ghost"></span>
     </header>
-    <div class="paperwrap">
-      <article class="paper" id="paper">
-        <div class="paperhead"><span class="logo"><svg class="mark small"><use href="#logo"/></svg>Currency Intelligence</span><span class="eyebrow">EXCHANGE RECEIPT</span></div>
-        <div class="stampwrap">
-          <div class="flags2"><span class="flag" id="rFlagFrom"></span><span class="flag" id="rFlagTo"></span><i class="mini"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></i></div>
-          <span class="stamp">COMPLETED</span>
-        </div>
-        <div class="rcenter">
-          <small>両替した金額</small>
-          <div class="rbig num" id="rBig"></div>
-          <div class="rfor" id="rFor"></div>
-          <div class="rdate" id="rDate"></div>
-        </div>
-        <div class="dash"></div>
-        <dl class="rrows" id="rRows"></dl>
-        <div class="dash"></div>
-        <div class="eyebrow small">レートの出典</div>
-        <dl class="rrows" id="rProv"></dl>
-        <svg class="barcode" id="barcode" viewBox="0 0 200 40" preserveAspectRatio="none"></svg>
-        <div class="rref" id="rRef"></div>
-        <div class="rthanks">このレシートは端末内で作成されたメモです。両替所やカード会社の明細ではありません。</div>
-      </article>
+    <div class="printer" id="printer">
+      <div class="slot" id="slot"><svg class="mark small"><use href="#logo"/></svg><span id="slotLabel">GENERATING…</span><i>×</i></div>
+      <div class="paperwrap" id="paperwrap">
+        <article class="paper" id="paper">
+          <div class="paperhead"><span class="logo"><svg class="mark small"><use href="#logo"/></svg>Currency Intelligence</span><span class="eyebrow">EXCHANGE RECEIPT</span></div>
+          <div class="stampwrap">
+            <div class="flags2"><span class="flag" id="rFlagFrom"></span><span class="flag" id="rFlagTo"></span><i class="mini"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></i></div>
+            <span class="stamp" id="stamp">COMPLETED</span>
+          </div>
+          <div class="rcenter">
+            <small>両替した金額</small>
+            <div class="rbig num" id="rBig"></div>
+            <div class="rfor" id="rFor"></div>
+            <div class="rdate" id="rDate"></div>
+          </div>
+          <div class="dash"></div>
+          <dl class="rrows" id="rRows"></dl>
+          <div class="dash"></div>
+          <div class="eyebrow small">レートの出典</div>
+          <dl class="rrows" id="rProv"></dl>
+          <svg class="barcode" id="barcode" viewBox="0 0 200 40" preserveAspectRatio="none"></svg>
+          <div class="rref" id="rRef"></div>
+          <div class="rthanks">このレシートは端末内で作成されたメモです。両替所やカード会社の明細ではありません。</div>
+        </article>
+      </div>
     </div>
-    <div class="actions2">
+    <div class="actions2" id="rActions">
       <button class="cta" id="btnReceiptShare" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v12M8 8l4-4 4 4"/><path d="M5 14v5h14v-5"/></svg><span>共有</span></button>
       <button class="cta white" id="btnReceiptDone" type="button">Done</button>
     </div>
@@ -172,7 +183,8 @@
 
   <!-- ============ Tab bar ============ -->
   <nav class="tabbar" id="tabbar" hidden>
-    <div class="tabs">
+    <div class="tabs" id="tabs">
+      <i class="tabhl" id="tabhl"></i>
       <a href="#home" data-tab="home"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg><span>ホーム</span></a>
       <a href="#convert" data-tab="convert"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg><span>両替</span></a>
       <a href="#wallet" data-tab="wallet"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg><span>財布</span></a>
@@ -232,16 +244,23 @@
 <!-- ============ Progress overlay ============ -->
 <div class="progress" id="progress" hidden>
   <div class="pcard">
-    <h2 id="pTitle">追加しています</h2>
-    <p class="sub" id="pSub">少しだけお待ちください</p>
+    <div class="phead" id="phead"><h2 id="pTitle">追加しています</h2><p class="sub" id="pSub">少しだけお待ちください</p></div>
     <div class="pcardvis"><div class="cardvis" id="pVis"></div></div>
-    <div class="steps" id="pSteps">
-      <div class="step"><i></i><span>記録</span></div><em></em>
-      <div class="step"><i></i><span>換算</span></div><em></em>
-      <div class="step"><i></i><span>保存</span></div>
+    <div class="pswap">
+      <div class="pstage" id="pstage">
+        <div class="steps" id="pSteps">
+          <div class="step"><i></i><span>記録</span></div><em></em>
+          <div class="step"><i></i><span>換算</span></div><em></em>
+          <div class="step"><i></i><span>保存</span></div>
+        </div>
+        <div class="pline"><span id="pLabel">記録しています</span><b id="pPct">0%</b></div>
+      </div>
+      <div class="pdone" id="pdone"><h2 id="pDoneTitle">追加しました</h2><p class="sub" id="pDoneSub"></p></div>
     </div>
-    <div class="pline"><span id="pLabel">保存しています</span><b id="pPct">0%</b></div>
-    <button class="cta glass" id="btnPDone" type="button" hidden>財布を見る</button>
+    <div class="pbtns" id="pbtns">
+      <button class="cta white" id="btnPDone" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg><span>財布を見る</span></button>
+      <button class="cta glass" id="btnPDone2" type="button">Done</button>
+    </div>
   </div>
 </div>
 

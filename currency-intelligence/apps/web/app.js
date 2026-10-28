@@ -1,4 +1,4 @@
-// Currency Intelligence — web client. Money math lives in ./core (packages/core); this file renders.
+// Currency Intelligence — web client. Money math lives in ./core (packages/core); this file renders and animates.
 import {
   Money, MoneyError, CURRENCIES, currency, convert, invert, cross, realizedRate, spreadPercent,
   parseDec, RateCache, OpenErApiProvider, FrankfurterProvider,
@@ -10,6 +10,7 @@ const CROSS_TOLERANCE_MS = 36 * 60 * 60 * 1000;
 const PIVOT = "USD";
 const ROUNDING = "HALF_EVEN";
 const SERIES_DAYS = 30;
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const FLAG_CC = { JPY:"JP", THB:"TH", USD:"US", EUR:"EU", GBP:"GB", KRW:"KR", TWD:"TW", CNY:"CN", HKD:"HK", SGD:"SG", MYR:"MY", IDR:"ID", PHP:"PH", VND:"VN", LAK:"LA", KHR:"KH", MMK:"MM", INR:"IN", AUD:"AU", NZD:"NZ", CAD:"CA", CHF:"CH", SEK:"SE", NOK:"NO", DKK:"DK", CZK:"CZ", PLN:"PL", HUF:"HU", ISK:"IS", TRY:"TR", AED:"AE", SAR:"SA", KWD:"KW", BHD:"BH", OMR:"OM", JOD:"JO", MXN:"MX", BRL:"BR", CLP:"CL", ZAR:"ZA", EGP:"EG", LKR:"LK", NPR:"NP" };
 const flag = (code) => { const cc = FLAG_CC[code]; return cc ? [...cc].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("") : "¤"; };
@@ -17,7 +18,6 @@ const CARD_GRAD = { JPY:"linear-gradient(135deg,#E8505B,#8E2B5A)", THB:"linear-g
 const grad = (c) => CARD_GRAD[c] || "linear-gradient(135deg,#5BA7FF,#3B5BDB 60%,#2A3F9E)";
 const CATS = [["food","食事","var(--c-food)","🍜"],["transport","交通","var(--c-transport)","🚕"],["shop","買い物","var(--c-shop)","🛍️"],["stay","宿","var(--c-stay)","🏨"],["fun","娯楽","var(--c-fun)","🎟️"],["other","その他","var(--c-other)","•"]];
 const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
-
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
@@ -25,11 +25,7 @@ function defaults() { return { onboarded: false, home: "JPY", sel: "THB", from: 
 function load() { try { const r = localStorage.getItem(STORE_KEY); if (r) return { ...defaults(), ...JSON.parse(r) }; } catch {} return defaults(); }
 function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch {} }
 let S = load();
-
-const store = {
-  async get(key) { return S.rateCache && S.rateCache.key === key ? S.rateCache.quotes : undefined; },
-  async set(key, quotes) { S.rateCache = { key, quotes }; save(); },
-};
+const store = { async get(key) { return S.rateCache && S.rateCache.key === key ? S.rateCache.quotes : undefined; }, async set(key, quotes) { S.rateCache = { key, quotes }; save(); } };
 const f = (u, i) => fetch(u, i);
 const providers = [new OpenErApiProvider({ fetch: f }), new FrankfurterProvider({ fetch: f })];
 const caches = providers.map((p) => new RateCache(p, { ttlMs: TTL_MS, store }));
@@ -38,11 +34,7 @@ let rate = { status: "loading", source: "", error: "" };
 
 function embeddedQuotes() {
   const now = new Date().toISOString();
-  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({
-    quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded",
-    observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily",
-    notes: ["アプリに同梱された参考値。通信できると置き換わります"],
-  }));
+  return Object.entries(EMBEDDED.rates).filter(([c]) => c !== PIVOT && CURRENCIES.has(c)).map(([c, r]) => ({ quoteId: `embedded:${PIVOT}${c}:${EMBEDDED.observedAt}`, base: PIVOT, quote: c, rate: String(r), source: "embedded", observedAt: EMBEDDED.observedAt, receivedAt: now, rateKind: "indicative", confidence: "estimated", granularity: "daily", notes: ["アプリに同梱された参考値。通信できると置き換わります"] }));
 }
 async function loadRates() {
   const symbols = [...CURRENCIES.keys()].filter((c) => c !== PIVOT);
@@ -92,51 +84,82 @@ function quoteBetween(base, target) {
   return mk ? { quote: mk, mine: false } : null;
 }
 const activeQuote = () => quoteBetween(S.from, S.to);
-/** Money in `to` currency, or null when no rate. */
-function toCcy(m, to) {
-  if (m.currency === to) return m;
-  const q = quoteBetween(m.currency, to);
-  if (!q) return null;
-  try { return convert(m, q.quote, { rounding: ROUNDING }).convertedAmount; } catch { return null; }
-}
+function toCcy(m, to) { if (m.currency === to) return m; const q = quoteBetween(m.currency, to); if (!q) return null; try { return convert(m, q.quote, { rounding: ROUNDING }).convertedAmount; } catch { return null; } }
 
 // ---------- formatting ----------
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const fmt = (m) => m.format("en-US");
+function fmtNum(v, ccy) { const sc = currency(ccy).scale; return new Intl.NumberFormat("en-US", { style: "currency", currency: ccy, currencyDisplay: "narrowSymbol", minimumFractionDigits: sc, maximumFractionDigits: sc }).format(v); }
 function groupDigits(s) { const [i, fr] = s.split("."); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (fr !== undefined ? "." + fr : ""); }
 function rateStr(r) { const n = Number(r); return n >= 100 ? n.toFixed(2) : n >= 1 ? n.toFixed(4) : n.toFixed(5); }
 function dateJa(iso) { return new Date(iso).toLocaleDateString("ja-JP", { month: "short", day: "numeric" }); }
 function balance(code) { const b = S.balances[code]; if (b === undefined) return null; try { return Money.of(b, code); } catch { return null; } }
 function setBalance(code, m) { S.balances[code] = m.toDecimalString(); }
 function parseAmt(txt, code) { const t = txt.trim().replace(/,/g, ""); if (!t) return null; try { const m = Money.of(t, code, "DOWN"); return m.isPositive() ? m : null; } catch { return null; } }
-function sourceLabel(q) {
-  if (!q) return "";
-  if (q.source === "user") return "自分レート";
-  if (q.source === "embedded") return `同梱の参考値 · ${dateJa(q.observedAt)}`;
-  if (q.source === "frankfurter") return `ECB参考レート · ${dateJa(q.observedAt)}`;
-  return `参考レート · ${dateJa(q.observedAt)}`;
-}
+function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "自分レート"; if (q.source === "embedded") return `同梱の参考値 · ${dateJa(q.observedAt)}`; if (q.source === "frankfurter") return `ECB参考レート · ${dateJa(q.observedAt)}`; return `参考レート · ${dateJa(q.observedAt)}`; }
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
+const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? 0 : ms));
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
-// ---------- routing ----------
+// ---------- number tween (count-up like the reference) ----------
+const tw = new WeakMap();
+function tweenMoney(el, money, { duration = 650, instant = false } = {}) {
+  const target = Number(money.toDecimalString()); const ccy = money.currency;
+  const prev = tw.get(el);
+  if (prev && prev.raf) cancelAnimationFrame(prev.raf);
+  if (instant || REDUCED || !prev || prev.ccy !== ccy && prev.value === 0 || prev.value === target) {
+    el.textContent = fmt(money); tw.set(el, { value: target, ccy, raf: 0 }); return;
+  }
+  const from = prev.value; const t0 = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / duration); const v = from + (target - from) * easeOut(t);
+    el.textContent = t < 1 ? fmtNum(v, ccy) : fmt(money);
+    const rec = tw.get(el); if (t < 1) rec.raf = requestAnimationFrame(step); else rec.raf = 0;
+  };
+  tw.set(el, { value: target, ccy, raf: requestAnimationFrame(step) });
+}
+function tweenSeed(el, money) { tw.set(el, { value: Number(money.toDecimalString()), ccy: money.currency, raf: 0 }); }
+/** Digit scramble (reference card number change). */
+function scramble(el, finalText, duration = 420) {
+  if (REDUCED) { el.textContent = finalText; return; }
+  const t0 = performance.now(); const chars = [...finalText];
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / duration); const settled = Math.floor(t * chars.length);
+    el.textContent = chars.map((c, i) => (i < settled || !/\d/.test(c) ? c : String(Math.floor(Math.random() * 10)))).join("");
+    if (t < 1) requestAnimationFrame(step); else el.textContent = finalText;
+  };
+  requestAnimationFrame(step);
+}
+
+// ---------- routing & screen transitions ----------
 const SCREENS = ["onboard", "home", "convert", "wallet", "receipt"];
-function show(name) {
-  for (const s of SCREENS) $("s-" + s).hidden = s !== name;
+let current = null;
+function show(name, how = "auto") {
+  for (const s of SCREENS) { const el = $("s-" + s); el.hidden = s !== name; el.classList.remove("push", "fadein", "enter"); }
   document.body.classList.toggle("night", name === "home" || name === "onboard");
   const tabs = ["home", "convert", "wallet"].includes(name);
   $("tabbar").hidden = !tabs;
   for (const s of SCREENS) $("s-" + s).classList.toggle("has-tabs", tabs && s === name);
   document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === name));
+  if (tabs) requestAnimationFrame(moveTabHl);
+  const el = $("s-" + name);
+  if (!REDUCED && current && current !== name) {
+    if (name === "convert" || name === "receipt") el.classList.add("push");
+    else if (name === "home" || name === "wallet") { el.classList.add("enter"); setTimeout(() => el.classList.remove("enter"), 1400); }
+    else el.classList.add("fadein");
+  }
+  current = name;
 }
+function moveTabHl() { const on = document.querySelector(".tabs a.on"); if (on) $("tabhl").style.left = on.offsetLeft + "px"; }
 function route() {
   if (!S.onboarded) { show("onboard"); return; }
   const h = (location.hash || "#home").slice(1);
   const name = ["home", "convert", "wallet"].includes(h) ? h : "home";
+  if (name === "home") renderHome(current !== "home");
+  if (name === "wallet") renderWallet(true);
+  if (name === "convert") { renderPair(true); renderRate(); }
   show(name);
-  if (name === "home") renderHome();
-  if (name === "wallet") renderWallet();
-  if (name === "convert") { renderPair(); renderRate(); }
 }
 window.addEventListener("hashchange", route);
 function go(name) { if (location.hash === "#" + name) route(); else location.hash = name; }
@@ -154,7 +177,8 @@ function key(k) {
 }
 
 // ---------- render: convert ----------
-function renderPair() {
+let lastCta = "";
+function renderPair(instant = false) {
   $("flagFrom").textContent = flag(S.from); $("codeFrom").textContent = S.from;
   $("flagTo").textContent = flag(S.to); $("codeTo").textContent = S.to;
   const bf = balance(S.from), bt = balance(S.to);
@@ -164,15 +188,19 @@ function renderPair() {
   const amount = inputMoney(); const sym = currency(S.from).symbol;
   const a = $("amtFrom"); a.className = "amt num " + (buf ? "input" : "placeholder"); a.textContent = buf ? sym + groupDigits(buf) : fmt(Money.zero(S.from));
   const aq = activeQuote(); const t = $("amtTo");
-  if (aq && !amount.isZero()) { try { t.textContent = fmt(convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount); t.className = "amt num " + (aq.mine ? "mine" : "input"); } catch { t.textContent = "—"; t.className = "amt num placeholder"; } }
-  else { t.textContent = fmt(Money.zero(S.to)); t.className = "amt num placeholder"; }
-  $("btnConvert").disabled = amount.isZero() || !aq;
-  $("ctaText").textContent = amount.isZero() ? "金額を入れてください" : !aq ? "レートがありません" : `Convert ${fmt(amount)}`;
+  if (aq && !amount.isZero()) {
+    try { const out = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount; t.className = "amt num " + (aq.mine ? "mine" : "input"); tweenMoney(t, out, { instant }); }
+    catch { t.textContent = "—"; t.className = "amt num placeholder"; }
+  } else { t.className = "amt num placeholder"; tweenMoney(t, Money.zero(S.to), { instant: true }); }
+  const cta = $("btnConvert"); const txt = $("ctaText");
+  cta.disabled = amount.isZero() || !aq;
+  const label = amount.isZero() ? "金額を入れてください" : !aq ? "レートがありません" : `Convert ${fmt(amount)}`;
+  if (label !== lastCta && !instant && !REDUCED && lastCta) { txt.classList.add("swapping"); setTimeout(() => { txt.textContent = label; txt.classList.remove("swapping"); }, 150); }
+  else txt.textContent = label;
+  lastCta = label;
 }
-function sparkPath(pts, w, h) {
-  const vals = pts.map((p) => p.rate); const min = Math.min(...vals), max = Math.max(...vals); const span = max - min || 1;
-  return pts.map((p, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - 3 - ((p.rate - min) / span) * (h - 6)}`).join(" ");
-}
+function sparkPath(pts, w, h) { const vals = pts.map((p) => p.rate); const min = Math.min(...vals), max = Math.max(...vals); const span = max - min || 1; return pts.map((p, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - 3 - ((p.rate - min) / span) * (h - 6)}`).join(" "); }
+let lastSpark = "";
 function renderRate() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   const dot = $("rateDot"); const chip = $("rateChip"); const sp = $("spark");
@@ -184,8 +212,10 @@ function renderRate() {
   if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "−" : "+"}${sp2.replace("-", "")}% vs 市場`; chip.className = "chip " + (worse ? "red" : "green"); }
   else if (series && series.length >= 2) { const a = series[0].rate, b = series[series.length - 1].rate; const ch = ((b - a) / a) * 100; chip.textContent = `${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch).toFixed(2)}%`; chip.className = "chip " + (ch >= 0 ? "green" : "red"); }
   else { chip.textContent = aq.quote.confidence === "estimated" ? "参考" : "確定"; chip.className = "chip grey"; }
-  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; sp.className.baseVal = "spark " + (up ? "" : "down"); sp.innerHTML = `<path d="${sparkPath(series, 100, 32)}"/>`; }
-  else { sp.className.baseVal = "spark flat"; sp.innerHTML = `<path d="M0,16 L100,16" stroke-dasharray="3 3"/>`; }
+  let html, cls;
+  if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; cls = "spark " + (up ? "" : "down"); html = `<path d="${sparkPath(series, 100, 32)}"/>`; }
+  else { cls = "spark flat"; html = `<path d="M0,16 L100,16" stroke-dasharray="3 3"/>`; }
+  if (html !== lastSpark) { sp.className.baseVal = cls; sp.innerHTML = html; lastSpark = html; }
 }
 function renderRateSheet() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
@@ -195,50 +225,46 @@ function renderRateSheet() {
   if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS}日 · 日次参考レート。リアルタイムではありません</span><span>${esc(series[series.length - 1].date)}</span>`; }
   else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = `<span></span><span>履歴は通信できる環境で取得されます(日次)</span><span></span>`; }
   const q = aq ? aq.quote : null;
-  const rows = q ? [
-    ["出典", q.source === "user" ? "あなたの両替レシート" : q.source === "embedded" ? "アプリ同梱の参考値" : `${q.source}(${providers.find((p) => p.id === q.source)?.description || ""})`],
-    ["種別", `${q.rateKind} · ${q.confidence === "confirmed" ? "確定" : "推定"}`],
-    ["観測", new Date(q.observedAt).toLocaleString("ja-JP")], ["取得", new Date(q.receivedAt).toLocaleString("ja-JP")],
-    ["期限", q.expiresAt ? new Date(q.expiresAt).toLocaleString("ja-JP") : "提供元の明示なし"],
-    ["計算", q.derivedFrom ? `USD経由のクロスレート · 丸め ${ROUNDING}` : `丸め ${ROUNDING}`],
-  ] : [["状態", "レート未取得"]];
+  const rows = q ? [["出典", q.source === "user" ? "あなたの両替レシート" : q.source === "embedded" ? "アプリ同梱の参考値" : `${q.source}(${providers.find((p) => p.id === q.source)?.description || ""})`], ["種別", `${q.rateKind} · ${q.confidence === "confirmed" ? "確定" : "推定"}`], ["観測", new Date(q.observedAt).toLocaleString("ja-JP")], ["取得", new Date(q.receivedAt).toLocaleString("ja-JP")], ["期限", q.expiresAt ? new Date(q.expiresAt).toLocaleString("ja-JP") : "提供元の明示なし"], ["計算", q.derivedFrom ? `USD経由のクロスレート · 丸め ${ROUNDING}` : `丸め ${ROUNDING}`]] : [["状態", "レート未取得"]];
   if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["注意", "2つの観測時刻がずれているため推定扱い"]);
   $("provRows").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("lblPaid").textContent = `払った(${S.from})`; $("lblGot").textContent = `受け取った(${S.to})`;
   const m = S.mine[`${S.from}/${S.to}`]; $("inPaid").value = m ? m.paid : ""; $("inGot").value = m ? m.received : "";
   $("mineNote").textContent = m ? `設定日時 ${new Date(m.at).toLocaleString("ja-JP")}。市場中値との差はチップに表示されます。` : "両替所で 10万円 → 22,500バーツ なら、100000 と 22500。";
   $("homeCcyFlag").textContent = flag(S.home); $("homeCcyCode").textContent = S.home;
+  stagger($("sheetRate").querySelector(".sheetbox"));
 }
+function stagger(box) { [...box.children].forEach((c, i) => c.style.setProperty("--i", i)); }
 
 // ---------- render: home ----------
 function weekSpend() {
   const since = Date.now() - 7 * 864e5; const byCat = {}; let total = Money.zero(S.home); let unconverted = 0;
-  for (const e of S.ledger) {
-    if (e.kind !== "spend" || Date.parse(e.at) < since) continue;
-    const m = toCcy(Money.of(e.amount, e.ccy), S.home);
-    if (!m) { unconverted++; continue; }
-    total = total.add(m); byCat[e.cat] = (byCat[e.cat] || Money.zero(S.home)).add(m);
-  }
+  for (const e of S.ledger) { if (e.kind !== "spend" || Date.parse(e.at) < since) continue; const m = toCcy(Money.of(e.amount, e.ccy), S.home); if (!m) { unconverted++; continue; } total = total.add(m); byCat[e.cat] = (byCat[e.cat] || Money.zero(S.home)).add(m); }
   return { total, byCat, unconverted };
 }
-function renderHome() {
+function renderHome(entering = false) {
   const ccys = walletCcys(); if (!ccys.includes(S.sel)) S.sel = ccys[0] || S.to;
-  $("ticker").innerHTML = ccys.map((c) => { const b = balance(c) || Money.zero(c); return `<button type="button" data-c="${c}" class="${c === S.sel ? "on" : ""}"><span class="flag">${flag(c)}</span><span><b>${c}</b><span>${esc(b.format("en-US", { style: "decimal" }))}</span></span></button>`; }).join("");
+  const tk = $("ticker");
+  tk.querySelectorAll("button").forEach((b) => b.remove());
+  for (const c of ccys) { const b = balance(c) || Money.zero(c); const btn = document.createElement("button"); btn.type = "button"; btn.dataset.c = c; btn.className = c === S.sel ? "on" : ""; btn.innerHTML = `<span class="flag">${flag(c)}</span><span><b>${c}</b><span>${esc(b.format("en-US", { style: "decimal" }))}</span></span>`; tk.appendChild(btn); }
+  requestAnimationFrame(() => { const on = tk.querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
   const sel = balance(S.sel) || Money.zero(S.sel);
-  $("homeBal").textContent = fmt(sel);
+  const hb = $("homeBal");
+  if (entering) { tweenSeed(hb, Money.zero(S.sel).add(Money.fromMinor(sel.minor * 6n / 10n, S.sel))); tweenMoney(hb, sel, { duration: 900 }); }
+  else tweenMoney(hb, sel, { duration: 800 });
   const h = S.sel === S.home ? null : toCcy(sel, S.home);
   $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? "(自分レート)" : ""}` : S.sel === S.home ? "基準通貨" : "基準通貨への換算レートがありません";
   $("miniCards").innerHTML = ccys.map((c) => `<button type="button" class="mc ${c === S.sel ? "on" : ""}" data-c="${c}" style="background:${grad(c)}">${flag(c)}</button>`).join("") + `<button type="button" class="mc add" id="mcAdd" aria-label="通貨を追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
   const w = weekSpend();
-  $("weekTotal").textContent = fmt(w.total) + (w.unconverted ? " +?" : "");
+  tweenMoney($("weekTotal"), w.total, { instant: !entering && tw.get($("weekTotal")) === undefined });
+  if (w.unconverted) $("weekTotal").textContent += " +?";
   const parts = Object.entries(w.byCat).sort((a, b) => b[1].compareTo(a[1]));
   const tot = Number(w.total.toDecimalString()) || 1;
   $("catBar").innerHTML = parts.length ? parts.map(([id, m]) => `<i style="width:${Math.max(2, (Number(m.toDecimalString()) / tot) * 100)}%;background:${catOf(id)[2]}"></i>`).join("") : `<i style="width:100%;background:var(--box)"></i>`;
   $("catLegend").innerHTML = parts.length ? parts.map(([id, m]) => `<span style="--c:${catOf(id)[2]}">${catOf(id)[1]} <b>${esc(fmt(m))}</b></span>`).join("") : `<span style="--c:var(--faint)">支払いを記録すると内訳が出ます</span>`;
-  // list
   const list = $("txList"); list.innerHTML = ""; $("txEmpty").hidden = S.ledger.length > 0;
   const groups = new Map();
-  for (const e of S.ledger.slice(0, 40)) { const d = new Date(e.at); const k = d.toDateString(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
+  for (const e of S.ledger.slice(0, 40)) { const k = new Date(e.at).toDateString(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
   const today = new Date().toDateString(), yest = new Date(Date.now() - 864e5).toDateString();
   for (const [k, items] of groups) {
     const label = k === today ? "今日" : k === yest ? "昨日" : new Date(items[0].at).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
@@ -247,41 +273,87 @@ function renderHome() {
     const g = document.createElement("div"); g.className = "txgroup"; g.innerHTML = `<span>${esc(label)}</span><b>${dayTotal.isZero() && !miss ? "" : "−" + esc(fmt(dayTotal)) + (miss ? " +?" : "")}</b>`; list.appendChild(g);
     for (const e of items) {
       const el = document.createElement("div"); el.className = "tx";
-      const m = Money.of(e.amount, e.ccy); const sub = e.ccy !== S.home ? toCcy(m, S.home) : null;
+      const m = e.kind === "convert" ? null : Money.of(e.amount, e.ccy); const sub = m && e.ccy !== S.home ? toCcy(m, S.home) : null;
       if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || c[1])}</b><span>${c[1]} · ${e.ccy} 現金</span></div><div class="a">−${esc(fmt(m))}${sub ? `<span>≈ ${esc(fmt(sub))}</span>` : ""}</div>`; }
       else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>現金を追加</b><span>${esc(e.note || "")} · ${e.ccy}</span></div><div class="a pos">+${esc(fmt(m))}${sub ? `<span>≈ ${esc(fmt(sub))}</span>` : ""}</div>`; }
       else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>両替 ${esc(e.from)} → ${esc(e.to)}</b><span>${esc(e.rateText)}</span></div><div class="a pos">+${esc(e.toText)}<span>−${esc(e.fromText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
       list.appendChild(el);
     }
   }
+  [...$("s-home").querySelector(".sky").children].forEach((c, i) => c.style.setProperty("--i", i));
+  [...$("s-home").querySelector(".homebody").children].forEach((c, i) => c.style.setProperty("--i", i + 6));
 }
 
-// ---------- render: wallet ----------
-function renderWallet() {
-  const ccys = walletCcys(); if (!ccys.includes(S.sel)) S.sel = ccys[0];
-  const car = $("carousel");
-  car.innerHTML = ccys.map((c) => { const b = balance(c) || Money.zero(c); const meta = currency(c); return `<div class="card3d ${c === S.sel ? "on" : ""}" data-c="${c}" style="background:${grad(c)}"><div class="top"><span class="flag">${flag(c)}</span><span class="kind">${c} CASH</span></div><div class="chipw"><i></i><svg viewBox="0 0 24 24"><path d="M5 9a9 9 0 0 1 14 0M8 12a5 5 0 0 1 8 0M11 15a1.5 1.5 0 0 1 2 0"/></svg></div><div class="numline">${esc(b.format("en-US"))}</div><div class="bottom"><span><small>CURRENCY</small><b>${esc(meta.name.en.toUpperCase())}</b></span><span><small>HOLDER</small><b>TRAVELLER</b></span></div></div>`; }).join("");
-  $("dots").innerHTML = ccys.map((c) => `<i class="${c === S.sel ? "on" : ""}"></i>`).join("");
+// ---------- render: wallet (3D carousel) ----------
+const car = { ccys: [], idx: 0, drag: 0, dragging: false, startX: 0, width: 1, moved: false };
+function layoutCards(animated = true) {
+  const els = $("carousel").children;
+  for (let i = 0; i < els.length; i++) {
+    const el = els[i]; const off = i - car.idx - car.drag; const a = Math.abs(off);
+    el.style.transition = animated && !car.dragging && !REDUCED ? "transform .5s cubic-bezier(.2,.9,.25,1.05), opacity .3s" : "none";
+    el.style.transform = `translate(-50%,-50%) translateX(${off * 74}%) rotateY(${-off * 48}deg) translateZ(${-a * 80}px) scale(${1 - Math.min(1, a) * 0.1})`;
+    el.style.zIndex = String(20 - Math.round(a * 10)); el.style.opacity = a > 1.8 ? "0" : "1";
+    el.classList.toggle("on", Math.round(car.idx + car.drag) === i);
+  }
+}
+function buildCards() {
+  car.ccys = walletCcys(); if (!car.ccys.includes(S.sel)) S.sel = car.ccys[0]; car.idx = car.ccys.indexOf(S.sel);
+  const c = $("carousel");
+  c.innerHTML = car.ccys.map((cc) => { const b = balance(cc) || Money.zero(cc); const meta = currency(cc); return `<div class="card3d" data-c="${cc}" style="background:${grad(cc)}"><div class="top"><span class="flag">${flag(cc)}</span><span class="kind">${cc} CASH</span></div><div class="chipw"><i></i><svg viewBox="0 0 24 24"><path d="M5 9a9 9 0 0 1 14 0M8 12a5 5 0 0 1 8 0M11 15a1.5 1.5 0 0 1 2 0"/></svg></div><div class="numline" data-num>${esc(b.format("en-US"))}</div><div class="bottom"><span><small>CURRENCY</small><b>${esc(meta.name.en.toUpperCase())}</b></span><span><small>HOLDER</small><b>TRAVELLER</b></span></div></div>`; }).join("");
+  layoutCards(false);
+}
+function walletInfo(animated = true) {
   const b = balance(S.sel) || Money.zero(S.sel);
-  $("wBal").textContent = fmt(b);
-  const h = S.sel === S.home ? null : toCcy(b, S.home);
-  $("wSub").textContent = h ? `≈ ${fmt(h)}` : "";
+  tweenMoney($("wBal"), b, { duration: 700, instant: !animated });
+  const h = S.sel === S.home ? null : toCcy(b, S.home); $("wSub").textContent = h ? `≈ ${fmt(h)}` : "";
+  $("dots").innerHTML = car.ccys.map((c) => `<i class="${c === S.sel ? "on" : ""}"></i>`).join("");
   const since = Date.now() - 7 * 864e5;
   let spent = Money.zero(S.sel), added = Money.zero(S.sel), got = Money.zero(S.sel);
   for (const e of S.ledger) { if (e.kind === "spend" && e.ccy === S.sel && Date.parse(e.at) >= since) spent = spent.add(Money.of(e.amount, e.ccy)); if (e.kind === "add" && e.ccy === S.sel) added = added.add(Money.of(e.amount, e.ccy)); if (e.kind === "convert" && e.to === S.sel) got = got.add(Money.of(e.toAmt, e.to)); }
   const m = S.mine[`${S.home}/${S.sel}`];
   $("wRows").innerHTML = [["残高", fmt(b)], ["今週の支出", fmt(spent)], ["追加した現金", fmt(added)], ["両替で得た額", fmt(got)], ["自分レート", m ? `1 ${S.home} = ${rateStr(Number(m.received) / Number(m.paid))} ${S.sel}` : "未設定"]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
-  const onEl = car.querySelector(".card3d.on"); if (onEl) onEl.scrollIntoView({ inline: "center", block: "nearest" });
 }
-let carT;
-$("carousel").addEventListener("scroll", () => { clearTimeout(carT); carT = setTimeout(() => { const car = $("carousel"); const mid = car.scrollLeft + car.clientWidth / 2; let best = null, bd = 1e9; for (const el of car.children) { const c = el.offsetLeft + el.offsetWidth / 2; const d = Math.abs(c - mid); if (d < bd) { bd = d; best = el; } } if (best && best.dataset.c !== S.sel) { S.sel = best.dataset.c; save(); renderWallet(); } }, 80); });
+function renderWallet(entering = false) {
+  buildCards();
+  if (entering) tweenSeed($("wBal"), Money.zero(S.sel));
+  walletInfo(true);
+  [...$("s-wallet").querySelector(".walletsky").children].forEach((c, i) => c.style.setProperty("--i", i));
+  [...$("s-wallet").querySelector(".wbody").children].forEach((c, i) => c.style.setProperty("--i", i + 4));
+}
+function selectCard(i, { scrambleNum = true } = {}) {
+  i = Math.max(0, Math.min(car.ccys.length - 1, i));
+  const changed = car.ccys[i] !== S.sel;
+  car.idx = i; car.drag = 0; S.sel = car.ccys[i]; save(); layoutCards(true); walletInfo(true);
+  if (changed && scrambleNum) { const el = $("carousel").children[i]?.querySelector("[data-num]"); if (el) scramble(el, el.textContent); }
+}
+const stage = $("carousel");
+stage.addEventListener("pointerdown", (e) => { car.dragging = true; car.moved = false; car.startX = e.clientX; car.width = stage.clientWidth; stage.setPointerCapture(e.pointerId); });
+stage.addEventListener("pointermove", (e) => {
+  if (!car.dragging) return; const dx = e.clientX - car.startX; if (Math.abs(dx) > 4) car.moved = true;
+  car.drag = Math.max(-1, Math.min(1, -dx / (car.width * 0.6)));
+  const lim = car.idx + car.drag; if (lim < 0 || lim > car.ccys.length - 1) car.drag *= 0.3;
+  layoutCards(false);
+  // balance interpolates with the drag (reference behaviour)
+  const j = car.drag > 0 ? Math.min(car.ccys.length - 1, car.idx + 1) : Math.max(0, car.idx - 1);
+  const a = Number((balance(car.ccys[car.idx]) || Money.zero(car.ccys[car.idx])).toDecimalString()); const b = Number((balance(car.ccys[j]) || Money.zero(car.ccys[j])).toDecimalString());
+  const p = Math.min(1, Math.abs(car.drag)); const ccy = p > 0.5 ? car.ccys[j] : car.ccys[car.idx];
+  if (!REDUCED) $("wBal").textContent = fmtNum(a + (b - a) * p, ccy);
+});
+const endDrag = () => { if (!car.dragging) return; car.dragging = false; const target = Math.round(car.idx + car.drag); selectCard(target); };
+stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", endDrag);
+stage.addEventListener("click", (e) => { if (car.moved) return; const el = e.target.closest(".card3d"); if (el) selectCard(car.ccys.indexOf(el.dataset.c)); });
+$("dots").addEventListener("click", (e) => { const i = [...$("dots").children].indexOf(e.target); if (i >= 0) selectCard(i); });
 
-function render() { if (!$("s-convert").hidden) { renderPair(); renderRate(); } if (!$("s-home").hidden) renderHome(); if (!$("s-wallet").hidden) renderWallet(); }
+function render() { if (!$("s-convert").hidden) { renderPair(); renderRate(); } if (!$("s-home").hidden) renderHome(); if (!$("s-wallet").hidden) { buildCards(); walletInfo(false); } }
 
-// ---------- convert flow ----------
+// ---------- convert flow (CTA morph → sheet) ----------
 let lastTx = null;
-function doConvert() {
+async function doConvert() {
   const amount = inputMoney(); const aq = activeQuote(); if (amount.isZero() || !aq) return;
+  const cta = $("btnConvert");
+  if (!REDUCED && !cta.classList.contains("loading")) {
+    cta.style.width = cta.offsetWidth + "px"; await new Promise((r) => requestAnimationFrame(r)); cta.classList.add("loading"); await wait(650);
+  }
   const r = convert(amount, aq.quote, { rounding: ROUNDING });
   const bf = balance(S.from), bt = balance(S.to);
   const newFrom = bf ? bf.subtract(amount) : null; const newTo = (bt || Money.zero(S.to)).add(r.convertedAmount);
@@ -291,48 +363,71 @@ function doConvert() {
   const tx = { at, ref, from: S.from, to: S.to, fromAmt: amount.toDecimalString(), toAmt: r.convertedAmount.toDecimalString(), fromText: fmt(amount), toText: fmt(r.convertedAmount), rate: aq.quote.rate, rateText: `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`, source: sourceLabel(aq.quote), sourceId: aq.quote.source, rateKind: aq.quote.rateKind, confidence: aq.quote.confidence, observedAt: aq.quote.observedAt, mine: aq.mine, rounding: ROUNDING, balFrom: newFrom ? fmt(newFrom) : null, balTo: fmt(newTo) };
   S.history.unshift(tx); S.history = S.history.slice(0, 100);
   S.ledger.unshift({ kind: "convert", at, ref, from: S.from, to: S.to, fromText: tx.fromText, toText: tx.toText, toAmt: tx.toAmt, rateText: tx.rateText }); S.ledger = S.ledger.slice(0, 500);
-  save(); lastTx = tx; buf = ""; render();
+  save(); lastTx = tx; buf = ""; renderPair(true);
   $("doneRate").textContent = tx.rateText + (tx.mine ? "(自分レート)" : "");
   $("dFlagFrom").textContent = flag(tx.from); $("dFromLbl").textContent = `From ${tx.from}`; $("dFromAmt").textContent = "−" + tx.fromText;
   $("dFlagTo").textContent = flag(tx.to); $("dToLbl").textContent = `To ${tx.to}`; $("dToAmt").textContent = "+" + tx.toText;
   $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "未設定"], [tx.to, tx.balTo]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} 残高</dt><dd>${esc(v)}</dd>`).join("");
+  stagger($("sheetDone").querySelector(".sheetbox"));
   $("sheetDone").hidden = false;
+  setTimeout(() => { cta.classList.remove("loading"); cta.style.width = ""; }, 300);
 }
 function barcodeFor(ref) { let h = 2166136261; const bars = []; for (let i = 0; i < 120; i++) { h ^= ref.charCodeAt(i % ref.length) + i; h = Math.imul(h, 16777619) >>> 0; bars.push(h & 1); } let x = 0, out = ""; for (const b of bars) { const w = 1 + ((x * 7) % 3) * 0.4; if (b) out += `<rect x="${x.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="40"/>`; x += w + 0.4; } return out; }
-function showReceipt(tx) {
+
+// ---------- receipt: generating → printing → done → stamp → buttons ----------
+let printToken = 0;
+async function showReceipt(tx) {
   $("rFlagFrom").textContent = flag(tx.from); $("rFlagTo").textContent = flag(tx.to);
   $("rBig").textContent = tx.toText; $("rFor").textContent = `for ${tx.fromText}`;
   $("rDate").textContent = new Date(tx.at).toLocaleString("ja-JP", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   $("rRows").innerHTML = [["払った", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], ["受け取った", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["レート", esc(tx.rateText), ""], ["手数料", tx.mine ? "自分レートに込み" : "参考レートのため未反映", ""], ["参照", esc(tx.ref), ""], ...(tx.balFrom ? [[`${tx.from} 残高`, esc(tx.balFrom), ""]] : []), [`${tx.to} 残高`, esc(tx.balTo), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
   $("rProv").innerHTML = [["出典", tx.source], ["種別", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "確定" : "推定"}`], ["観測", new Date(tx.observedAt).toLocaleString("ja-JP")], ["丸め", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("barcode").innerHTML = barcodeFor(tx.ref); $("rRef").textContent = tx.ref; lastTx = tx;
+  const token = ++printToken;
+  const slot = $("slot"), label = $("slotLabel"), wrap = $("paperwrap"), stamp = $("stamp"), actions = $("rActions");
+  slot.classList.remove("gone"); stamp.classList.remove("in"); actions.classList.remove("in");
+  label.textContent = "GENERATING…";
+  wrap.classList.add("printing"); wrap.style.setProperty("--h", "0px");
   show("receipt");
+  if (REDUCED) { wrap.classList.remove("printing"); slot.classList.add("gone"); stamp.classList.add("in"); actions.classList.add("in"); return; }
+  await wait(800); if (token !== printToken) return;
+  label.textContent = "PRINTING…";
+  const full = $("paper").offsetHeight + 16; const dur = 2300; const t0 = performance.now();
+  await new Promise((done) => { const step = (now) => { if (token !== printToken) return done(); const t = Math.min(1, (now - t0) / dur); const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; wrap.style.setProperty("--h", (full * e).toFixed(1) + "px"); if (t < 1) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  if (token !== printToken) return;
+  label.textContent = "DONE"; await wait(450); if (token !== printToken) return;
+  slot.classList.add("gone"); wrap.classList.remove("printing"); wrap.style.removeProperty("--h");
+  await wait(380); if (token !== printToken) return;
+  stamp.classList.add("in");
+  await wait(420); if (token !== printToken) return;
+  actions.classList.add("in");
 }
 
 // ---------- add / spend ----------
 let addCcy = "THB", spCcy = "THB", spCat = "food";
-function openAdd(ccy) { addCcy = ccy || S.sel; $("addFlag").textContent = flag(addCcy); $("addCode").textContent = addCcy; $("addAmt").value = ""; $("sheetAdd").hidden = false; setTimeout(() => $("addAmt").focus(), 60); }
+function openAdd(ccy) { addCcy = ccy || S.sel; $("addFlag").textContent = flag(addCcy); $("addCode").textContent = addCcy; $("addAmt").value = ""; stagger($("sheetAdd").querySelector(".sheetbox")); $("sheetAdd").hidden = false; setTimeout(() => $("addAmt").focus(), 60); }
 function openSpend(ccy) {
   spCcy = ccy || S.sel; $("spFlag").textContent = flag(spCcy); $("spCode").textContent = spCcy; $("spAmt").value = ""; $("spNote").value = "";
   $("spCat").innerHTML = CATS.map((c) => `<button type="button" data-v="${c[0]}" class="${c[0] === spCat ? "on" : ""}" style="--c:${c[2]}">${c[1]}</button>`).join("");
   const b = balance(spCcy); $("spHint").textContent = b ? `${spCcy} の残高 ${fmt(b)} から引きます` : `${spCcy} の残高は未設定です。記録はできますが残高はマイナスになります`;
-  $("sheetSpend").hidden = false; setTimeout(() => $("spAmt").focus(), 60);
+  stagger($("sheetSpend").querySelector(".sheetbox")); $("sheetSpend").hidden = false; setTimeout(() => $("spAmt").focus(), 60);
 }
 function runProgress(title, vis, done) {
-  const p = $("progress"); p.hidden = false; $("pTitle").textContent = title; $("btnPDone").hidden = true;
+  const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = "少しだけお待ちください";
   $("pVis").style.background = vis.grad; $("pVis").innerHTML = `<div class="cv"><small>${esc(vis.small)}</small>${esc(vis.big)}</div>`;
   const steps = [...$("pSteps").querySelectorAll(".step")], lines = [...$("pSteps").querySelectorAll("em")];
   steps.forEach((s) => (s.className = "step")); lines.forEach((l) => (l.className = ""));
-  const labels = ["記録しています", "換算しています", "保存しています"]; let i = 0, pct = 0;
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const labels = ["記録しています", "換算しています", "保存しています"]; let i = -1, pct = 0;
   const tick = () => {
-    pct = Math.min(100, pct + (reduced ? 50 : 9)); $("pPct").textContent = pct + "%";
+    pct = Math.min(100, pct + (REDUCED ? 50 : 1 + Math.round(Math.random() * 3)));
+    $("pPct").textContent = pct + "%";
     const stage = Math.min(2, Math.floor(pct / 34));
     if (stage !== i || pct === 100) { for (let k = 0; k < 3; k++) { steps[k].className = "step " + (k < stage || pct === 100 ? "done" : k === stage ? "active" : ""); if (k < 2) lines[k].className = k < stage || pct === 100 ? "done" : ""; } i = stage; }
     $("pLabel").textContent = pct === 100 ? "完了" : labels[stage];
-    if (pct < 100) setTimeout(tick, reduced ? 10 : 110); else { $("pTitle").textContent = done.title; $("pSub").textContent = done.sub; $("btnPDone").hidden = false; }
+    if (pct < 100) setTimeout(tick, REDUCED ? 10 : 45 + Math.random() * 50);
+    else setTimeout(() => { $("pDoneTitle").textContent = done.title; $("pDoneSub").textContent = done.sub; p.classList.add("done"); }, REDUCED ? 0 : 500);
   };
-  $("pSub").textContent = "少しだけお待ちください"; tick();
+  tick();
 }
 $("btnAddGo").addEventListener("click", () => {
   const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast("金額を入れてください"); return; }
@@ -348,7 +443,9 @@ $("btnSpendGo").addEventListener("click", () => {
   const h = toCcy(m, S.home); toast(`−${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""} を記録`);
   if ($("s-home").hidden && $("s-wallet").hidden) go("home");
 });
-$("btnPDone").addEventListener("click", () => { $("progress").hidden = true; go("wallet"); renderWallet(); });
+const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done"); };
+$("btnPDone").addEventListener("click", () => { closeProgress(); if (current === "wallet") renderWallet(true); else go("wallet"); });
+$("btnPDone2").addEventListener("click", () => { closeProgress(); route(); });
 $("addSource").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; $("addSource").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
 $("spCat").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; spCat = b.dataset.v; $("spCat").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
 $("addCur").addEventListener("click", () => openPicker("any", (c) => { addCcy = c; $("addFlag").textContent = flag(c); $("addCode").textContent = c; }));
@@ -369,47 +466,64 @@ function openPicker(which, onPick) {
       li.querySelector("button").addEventListener("click", () => {
         $("sheetPick").hidden = true;
         if (which === "from") { if (c.code === S.to) S.to = S.from; S.from = c.code; buf = ""; save(); render(); loadSeries(); }
-        else if (which === "to") { if (c.code === S.from) S.from = S.to; S.to = c.code; buf = ""; save(); render(); loadSeries(); }
+        else if (which === "to") { if (c.code === S.from) S.from = S.to; S.to = c.code; save(); renderPair(); renderRate(); loadSeries(); }
         else onPick(c.code);
       });
       list.appendChild(li);
     }
   };
-  search.value = ""; search.oninput = draw; draw(); $("sheetPick").hidden = false; setTimeout(() => search.focus(), 50);
+  search.value = ""; search.oninput = draw; draw(); stagger($("sheetPick").querySelector(".sheetbox")); $("sheetPick").hidden = false; setTimeout(() => search.focus(), 50);
 }
 
+// ---------- onboarding ----------
+async function leaveOnboarding(demo) {
+  S.onboarded = true;
+  if (demo) {
+    S.home = "JPY"; S.sel = "THB"; S.from = "JPY"; S.to = "THB";
+    S.balances = { JPY: "48000", THB: "9870.00", USD: "120.00" }; S.mine = { "JPY/THB": { paid: "100000", received: "22500", at: new Date(Date.now() - 2 * 864e5).toISOString() } };
+    const t = (h) => new Date(Date.now() - h * 3600e3).toISOString();
+    S.ledger = [{ kind: "spend", at: t(2), ccy: "THB", amount: "180.00", cat: "food", note: "ガパオライス" }, { kind: "spend", at: t(5), ccy: "THB", amount: "95.00", cat: "transport", note: "BTS" }, { kind: "spend", at: t(26), ccy: "THB", amount: "1250.00", cat: "shop", note: "ターミナル21" }, { kind: "spend", at: t(30), ccy: "THB", amount: "320.00", cat: "food", note: "ソンブーン" }, { kind: "spend", at: t(52), ccy: "USD", amount: "80.00", cat: "stay", note: "ホステル" }, { kind: "add", at: t(50), ccy: "THB", amount: "22500.00", note: "両替所" }];
+    S.history = [];
+  }
+  save();
+  const ob = $("s-onboard");
+  if (!REDUCED) { ob.classList.add("leaving"); await wait(700); }
+  ob.classList.remove("leaving", "play", "still");
+  current = null; // so home plays its entrance
+  location.hash = "home"; route();
+}
+function buildBurst() {
+  const svg = $("burst"); let d = "";
+  for (let i = 0; i < 46; i++) { const a = (i / 46) * Math.PI * 2 + (i % 3) * 0.07; const r0 = 60 + (i % 5) * 22, r1 = r0 + 90 + (i % 4) * 40; d += `<path d="M${(200 + Math.cos(a) * r0).toFixed(1)},${(400 + Math.sin(a) * r0).toFixed(1)} L${(200 + Math.cos(a) * r1).toFixed(1)},${(400 + Math.sin(a) * r1).toFixed(1)}" style="animation-delay:${(i % 7) * 25}ms"/>`; }
+  svg.innerHTML = d;
+}
+$("btnStart").addEventListener("click", () => leaveOnboarding(false));
+$("btnStartDemo").addEventListener("click", () => leaveOnboarding(true));
+
 // ---------- events ----------
-$("btnStart").addEventListener("click", () => { S.onboarded = true; save(); location.hash = "home"; route(); });
-$("btnStartDemo").addEventListener("click", () => {
-  S.onboarded = true; S.home = "JPY"; S.sel = "THB"; S.from = "JPY"; S.to = "THB";
-  S.balances = { JPY: "48000", THB: "9870.00", USD: "120.00" }; S.mine = { "JPY/THB": { paid: "100000", received: "22500", at: new Date(Date.now() - 2 * 864e5).toISOString() } };
-  const t = (h) => new Date(Date.now() - h * 3600e3).toISOString();
-  S.ledger = [
-    { kind: "spend", at: t(2), ccy: "THB", amount: "180.00", cat: "food", note: "ガパオライス" },
-    { kind: "spend", at: t(5), ccy: "THB", amount: "95.00", cat: "transport", note: "BTS" },
-    { kind: "spend", at: t(26), ccy: "THB", amount: "1250.00", cat: "shop", note: "ターミナル21" },
-    { kind: "spend", at: t(30), ccy: "THB", amount: "320.00", cat: "food", note: "ソンブーン" },
-    { kind: "spend", at: t(52), ccy: "USD", amount: "80.00", cat: "stay", note: "ホステル" },
-    { kind: "add", at: t(50), ccy: "THB", amount: "22500.00", note: "両替所" },
-  ];
-  S.history = []; save(); location.hash = "home"; route(); toast("サンプルの財布を入れました");
-});
 $("pad").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) key(b.dataset.k); });
 window.addEventListener("keydown", (e) => { if (e.target.tagName === "INPUT" || $("s-convert").hidden) return; if (/^[0-9.]$/.test(e.key)) key(e.key); else if (e.key === "Backspace") key("⌫"); else if (e.key === "Enter") doConvert(); else if (e.key === "Escape") closeSheets(); });
 $("btnFrom").addEventListener("click", () => openPicker("from"));
 $("btnTo").addEventListener("click", () => openPicker("to"));
-$("btnSwap").addEventListener("click", () => { const amount = inputMoney(); const aq = activeQuote(); let next = ""; if (aq && !amount.isZero()) { try { next = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount.toDecimalString(); } catch {} } [S.from, S.to] = [S.to, S.from]; buf = next.replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1"); save(); render(); loadSeries(); });
+$("btnSwap").addEventListener("click", () => {
+  const amount = inputMoney(); const aq = activeQuote(); let next = "";
+  if (aq && !amount.isZero()) { try { next = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount.toDecimalString(); } catch {} }
+  const sw = $("btnSwap"); sw.classList.toggle("turn");
+  [S.from, S.to] = [S.to, S.from]; buf = next.replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1"); save();
+  $("amtFrom").classList.remove("flip"); void $("amtFrom").offsetWidth; $("amtFrom").classList.add("flip");
+  tweenSeed($("amtTo"), amount); renderPair(); renderRate(); loadSeries();
+});
 $("btnMax").addEventListener("click", () => { const b = balance(S.from); if (b) { buf = b.toDecimalString().replace(/\.0+$/, ""); renderPair(); } });
 $("btnConvert").addEventListener("click", doConvert);
 $("btnDone").addEventListener("click", () => { closeSheets(); go("home"); });
 $("btnMore").addEventListener("click", closeSheets);
 $("btnReceipt").addEventListener("click", () => { closeSheets(); if (lastTx) showReceipt(lastTx); });
-$("btnReceiptBack").addEventListener("click", () => route());
-$("btnReceiptDone").addEventListener("click", () => go("home"));
+$("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
+$("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
 $("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("コピーしました"); } catch { toast("共有できませんでした"); } });
 const openRate = () => { renderRateSheet(); $("sheetRate").hidden = false; };
 $("rateRow").addEventListener("click", openRate); $("btnRates").addEventListener("click", openRate); $("btnRatesHome").addEventListener("click", openRate); $("btnTabRate").addEventListener("click", openRate);
-$("btnHistory").addEventListener("click", () => { renderHistory(); $("sheetHistory").hidden = false; });
+$("btnHistory").addEventListener("click", () => { renderHistory(); stagger($("sheetHistory").querySelector(".sheetbox")); $("sheetHistory").hidden = false; });
 $("btnHistClear").addEventListener("click", () => { S.history = []; save(); renderHistory(); });
 document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
 for (const id of ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetAdd", "sheetSpend"]) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
@@ -419,7 +533,7 @@ $("btnHomeCcy").addEventListener("click", () => openPicker("any", (c) => { S.hom
 $("ticker").addEventListener("click", (e) => { const b = e.target.closest("button[data-c]"); if (b) { S.sel = b.dataset.c; save(); renderHome(); } });
 $("miniCards").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; if (b.id === "mcAdd") openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderHome(); openAdd(c); }); else { S.sel = b.dataset.c; save(); renderHome(); } });
 $("qAdd").addEventListener("click", () => openAdd(S.sel)); $("qSpend").addEventListener("click", () => openSpend(S.sel)); $("qConvert").addEventListener("click", () => { S.to = S.sel === S.home ? S.to : S.sel; S.from = S.home === S.sel ? S.from : S.home; save(); go("convert"); loadSeries(); }); $("qMore").addEventListener("click", () => go("wallet"));
-$("btnAllTx").addEventListener("click", () => go("wallet"));
+$("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: REDUCED ? "auto" : "smooth" }); });
 $("btnSearch").addEventListener("click", () => openPicker("any", (c) => { S.sel = c; if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); save(); renderHome(); }));
 $("btnBell").addEventListener("click", () => toast("お知らせはまだありません"));
 $("btnWAdd").addEventListener("click", () => openAdd(S.sel)); $("btnWSpend").addEventListener("click", () => openSpend(S.sel));
@@ -427,8 +541,10 @@ $("btnWalletAdd").addEventListener("click", () => openPicker("any", (c) => { if 
 function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)}</div><div class="t">${new Date(h.at).toLocaleString("ja-JP")}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2200); }
+window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
 
 // ---------- boot ----------
+if (!S.onboarded) { buildBurst(); $("s-onboard").classList.add(REDUCED ? "still" : "play"); }
 route();
 loadRates();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js").catch(() => {});
