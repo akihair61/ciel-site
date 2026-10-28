@@ -15,7 +15,6 @@ jobs:
     defaults: { run: { working-directory: currency-intelligence/ios/CoreMoney } }
     steps:
       - uses: actions/checkout@v4
-      - run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.1.app || true
       - run: swift --version
       - run: swift build
       - run: |
@@ -30,24 +29,26 @@ jobs:
     defaults: { run: { working-directory: currency-intelligence/ios/CurrencyIntelligence } }
     steps:
       - uses: actions/checkout@v4
-      - run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.1.app || true
       - run: xcodebuild -version
       - run: xcodebuild -list -project CurrencyIntelligence.xcodeproj
-      - run: |
-          set -o pipefail
-          xcodebuild -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
-            -destination 'generic/platform=iOS Simulator' -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build 2>&1 | tee ../../../xcodebuild.log | grep -E "error:|warning: unre|BUILD (SUCCEEDED|FAILED)|\*\* " || true
-          grep -q "BUILD SUCCEEDED" ../../../xcodebuild.log
-      - name: Launch in the simulator and take screenshots
+      - name: Pick an installed simulator
+        id: sim
+        run: |
+          xcrun simctl list runtimes
+          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin)["devices"]; c=[x for k,v in d.items() if "iOS" in k for x in v if x["name"].startswith("iPhone")]; c.sort(key=lambda x: x["name"]); print(c[-1]["udid"] if c else "")')
+          echo "udid: $UDID"; test -n "$UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: Build for the simulator
         run: |
           set -o pipefail
           xcodebuild -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
-            -destination 'generic/platform=iOS Simulator' -configuration Debug -derivedDataPath ../../../dd \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build 2>&1 | grep -E "error:|BUILD" || true
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" -configuration Debug -derivedDataPath ../../../dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build 2>&1 | tee ../../../xcodebuild.log | grep -E "error:|warning:|BUILD (SUCCEEDED|FAILED)|\*\* " || true
+          grep -q "BUILD SUCCEEDED" ../../../xcodebuild.log
+      - name: Launch in the simulator and take a screenshot
+        run: |
+          UDID="${{ steps.sim.outputs.udid }}"
           APP=$(find ../../../dd/Build/Products -name "CurrencyIntelligence.app" -maxdepth 3 | head -1); echo "app: $APP"; test -n "$APP"
-          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin)["devices"]; c=[x for k,v in d.items() if "iOS" in k for x in v if x["name"] in ("iPhone 16","iPhone 16 Pro","iPhone 15")]; print(c[0]["udid"] if c else "")')
-          echo "udid: $UDID"; test -n "$UDID"
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP"
