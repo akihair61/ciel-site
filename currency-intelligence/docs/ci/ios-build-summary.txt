@@ -1,0 +1,6 @@
+run: 40658016457  commit: 2af85be1c73b639e0051d88c7c56424481dd2851  date: 2026-10-28T08:42:30Z
+Xcode 16.4
+Build version 16F6
+
+   1 ** BUILD SUCCEEDED **
+   1 2026-10-28 08:37:41.728 appintentsmetadataprocessor[2111:10764] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
