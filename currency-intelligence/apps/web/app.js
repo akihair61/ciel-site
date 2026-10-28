@@ -3,6 +3,7 @@ import {
   Money, MoneyError, CURRENCIES, currency, convert, invert, cross, realizedRate, spreadPercent,
   parseDec, RateCache, OpenErApiProvider, FrankfurterProvider, CoinbaseProvider, splitEqual, splitByWeight, settle,
 } from "./core/index.js";
+import { DICT, LANGS, LOCALE } from "./i18n.js";
 
 const SCHEMA_VERSION = 4;
 const STORE_KEY = "ci.v4";
@@ -17,6 +18,29 @@ const LIVE_POLL_MS = 60_000;
 let SERIES_DAYS = 30;
 // Motion: the OS "Reduce Motion" setting is honoured by default (spec 02 Q-03, ADR-0003). The user can override it in Settings
 // (S.motion = "auto" | "on" | "off"). When reduced, every sequence collapses to its final state in one short step.
+// ---------- language (F01 ja/en/th) ----------
+let LANG = "en";
+function t(s) { const d = DICT[s]; return (d && d[LANG]) || s; }
+const locale = () => LOCALE[LANG] || "en-US";
+const origText = new WeakMap();
+function applyLang() {
+  const nav = (navigator.language || "en").slice(0, 2);
+  LANG = S.lang && S.lang !== "auto" ? S.lang : nav === "ja" ? "ja" : nav === "th" ? "th" : "en";
+  document.documentElement.lang = LANG;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    const tag = n.parentNode && n.parentNode.tagName; if (tag === "SCRIPT" || tag === "STYLE") continue;
+    let orig = origText.get(n);
+    if (orig === undefined) { orig = n.nodeValue; if (!DICT[orig.trim()]) continue; origText.set(n, orig); }
+    n.nodeValue = orig.replace(orig.trim(), t(orig.trim()));
+  }
+  for (const el of document.querySelectorAll("[placeholder],[aria-label]")) for (const attr of ["placeholder", "aria-label"]) {
+    const v = el.getAttribute(attr); if (v === null) continue; const key = "o" + attr.replace("-", "");
+    let o = el.dataset[key]; if (o === undefined) { if (!DICT[v]) continue; el.dataset[key] = v; o = v; }
+    el.setAttribute(attr, t(o));
+  }
+}
 const motionMq = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : { matches: false, addEventListener() {} };
 const reduced = () => S.motion === "off" || (S.motion !== "on" && motionMq.matches);
 function applyMotion() { document.body.classList.toggle("reduced", reduced()); }
@@ -32,7 +56,7 @@ const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
-function defaults() { return { schemaVersion: SCHEMA_VERSION, onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M", motion: "auto", migrations: [], split: null }; }
+function defaults() { return { schemaVersion: SCHEMA_VERSION, onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M", motion: "auto", migrations: [], split: null, lang: "auto", pins: [], trips: [], trip: null, convBasis: "snapshot" }; }
 const DEC_RE = /^-?\d+(\.\d+)?$/;
 /** Shape check for stored / imported state. Returns { ok, errors }. Never throws. */
 function validateState(d) {
@@ -45,6 +69,9 @@ function validateState(d) {
   if (d.mine !== undefined && (typeof d.mine !== "object" || Array.isArray(d.mine))) errors.push("mine must be an object");
   for (const k of ["home", "sel", "from", "to"]) if (d[k] !== undefined && !CURRENCIES.has(d[k])) errors.push(`${k} is not a known currency`);
   if (d.motion !== undefined && !["auto", "on", "off"].includes(d.motion)) errors.push("motion must be auto/on/off");
+  if (d.lang !== undefined && !["auto", "en", "ja", "th"].includes(d.lang)) errors.push("lang must be auto/en/ja/th");
+  if (d.pins !== undefined && (!Array.isArray(d.pins) || d.pins.some((c) => !CURRENCIES.has(c)))) errors.push("pins must be known currency codes");
+  if (d.trips !== undefined && (!Array.isArray(d.trips) || d.trips.some((x) => !x || typeof x !== "object" || typeof x.id !== "string" || typeof x.name !== "string" || (x.budget !== null && (typeof x.budget !== "string" || !DEC_RE.test(x.budget)))))) errors.push("trips must be a list of {id, name, budget}");
   return { ok: errors.length === 0, errors };
 }
 /** v3 → v4: conversions made before v4 changed balances; they are kept, marked legacy, and never reinterpreted. */
@@ -89,18 +116,18 @@ async function exportState() {
   // Inside the claude.ai artifact viewer a plain download link does nothing; the viewer offers the file through its own confirmation instead.
   if (window.claude && typeof window.claude.use === "function") {
     const dl = await window.claude.use("downloads");
-    if (dl) { try { await dl.save({ filename, data: text }); toast("Exported"); } catch (e) { toast(e && e.code === "declined" ? "Export cancelled" : "Export unavailable here"); } return; }
+    if (dl) { try { await dl.save({ filename, data: text }); toast(t("Exported")); } catch (e) { toast(t(e && e.code === "declined" ? "Export cancelled" : "Export unavailable here")); } return; }
   }
   const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "application/json" })); a.download = filename;
-  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast("Exported");
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); toast(t("Exported"));
 }
 async function importStateFile(file) {
-  let obj; try { obj = JSON.parse(await file.text()); } catch { toast("Not a JSON file"); return; }
+  let obj; try { obj = JSON.parse(await file.text()); } catch { toast(t("Not a JSON file")); return; }
   const data = obj && obj.app === "currency-intelligence" && obj.data ? obj.data : obj;
   const v = validateState(data); if (!v.ok) { toast("Import rejected: " + v.errors[0]); return; }
   const mig = migrate(data);
   if (!confirm(`Replace the data on this device with this file?\n${Object.keys(mig.balances || {}).length} balances · ${(mig.ledger || []).length} transactions · ${(mig.history || []).length} conversions\nThe current data is kept as a backup.`)) return;
-  S = { ...defaults(), ...mig }; save(); applyMotion(); closeSheets(); render(); toast("Imported");
+  S = { ...defaults(), ...mig }; save(); applyMotion(); applyLang(); closeSheets(); render(); toast(t("Imported"));
 }
 let S = load();
 if (loadNote) save(); // persist a migration or recovery right away (and create the backup slot)
@@ -201,16 +228,16 @@ const fmt = (m) => m.format("en-US");
 function fmtNum(v, ccy) { const sc = currency(ccy).scale; return new Intl.NumberFormat("en-US", { style: "currency", currency: ccy, currencyDisplay: "narrowSymbol", minimumFractionDigits: sc, maximumFractionDigits: sc }).format(v); }
 function groupDigits(s) { const [i, fr] = s.split("."); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (fr !== undefined ? "." + fr : ""); }
 function rateStr(r) { const n = Number(r); return n >= 100 ? n.toFixed(2) : n >= 1 ? n.toFixed(4) : n.toFixed(5); }
-function dateJa(iso) { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
-function dateTime(iso) { return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+function dateJa(iso) { return new Date(iso).toLocaleDateString(locale(), { month: "short", day: "numeric" }); }
+function dateTime(iso) { return new Date(iso).toLocaleString(locale(), { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
 function balance(code) { const b = S.balances[code]; if (b === undefined) return null; try { return Money.of(b, code); } catch { return null; } }
 function setBalance(code, m) { S.balances[code] = m.toDecimalString(); }
 function parseAmt(txt, code) { const t = txt.trim().replace(/,/g, ""); if (!t) return null; try { const m = Money.of(t, code, "DOWN"); return m.isPositive() ? m : null; } catch { return null; } }
-function ago(iso) { const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000)); return s < 60 ? `${s}s ago` : s < 3600 ? `${Math.floor(s / 60)}m ago` : `${Math.floor(s / 3600)}h ago`; }
+function ago(iso) { const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000)); return s < 60 ? t("{n}s ago").replace("{n}", s) : s < 3600 ? t("{n}m ago").replace("{n}", Math.floor(s / 60)) : t("{n}h ago").replace("{n}", Math.floor(s / 3600)); }
 // Wording rule (spec 02 Q-02): never "Live". A rate without a published observation time says so and shows the fetch age instead.
-function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return "Your rate"; if (q.source === "coinbase") return `Coinbase · fetched ${ago(q.receivedAt)} · observation time not published`; if (q.source === "embedded") return `Sample rate · ${dateJa(q.observedAt)} · not current`; if (q.source === "frankfurter") return `ECB reference · daily · ${dateJa(q.observedAt)}`; return `Reference rate · daily · ${dateJa(q.observedAt)}`; }
+function sourceLabel(q) { if (!q) return ""; if (q.source === "user") return t("Your rate"); if (q.source === "coinbase") return `Coinbase · ${t("fetched")} ${ago(q.receivedAt)} · ${t("observation time not published")}`; if (q.source === "embedded") return `${t("Sample rate")} · ${dateJa(q.observedAt)} · ${t("not current")}`; if (q.source === "frankfurter") return `${t("ECB reference")} · ${t("daily")} · ${dateJa(q.observedAt)}`; return `${t("Reference rate")} · ${t("daily")} · ${dateJa(q.observedAt)}`; }
 const STATUS_TEXT = { fresh: "Fresh", stale: "Stale · older than its refresh window", offline: "Offline · last saved rate", sample: "Sample · shipped with the app, not current", loading: "Loading", error: "Unavailable" };
-function statusSuffix() { return rate.status === "stale" ? " · stale" : rate.status === "offline" ? " · offline, last saved" : rate.source !== "embedded" && rate.status === "sample" ? " · sample" : ""; }
+function statusSuffix() { return rate.status === "stale" ? ` · ${t("stale")}` : rate.status === "offline" ? ` · ${t("offline, last saved")}` : rate.source !== "embedded" && rate.status === "sample" ? ` · ${t("sample")}` : ""; }
 function walletCcys() { const set = new Set([...Object.keys(S.balances), S.sel]); return [...set].filter((c) => CURRENCIES.has(c)); }
 const wait = (ms) => new Promise((r) => setTimeout(r, reduced() ? 0 : ms));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
@@ -320,36 +347,36 @@ function renderPair(instant = false) {
   $("flagFrom").textContent = flag(S.from); $("codeFrom").textContent = S.from;
   $("flagTo").textContent = flag(S.to); $("codeTo").textContent = S.to;
   const bf = balance(S.from), bt = balance(S.to);
-  $("balFrom").textContent = bf ? `Balance ${fmt(bf)}` : "No balance";
-  $("balTo").textContent = bt ? `Balance ${fmt(bt)}` : "";
+  $("balFrom").textContent = bf ? `${t("Balance")} ${fmt(bf)}` : t("No balance");
+  $("balTo").textContent = bt ? `${t("Balance")} ${fmt(bt)}` : "";
   $("btnMax").hidden = !bf || !bf.isPositive();
   const amount = inputMoney(); const sym = currency(S.from).symbol;
   renderDigits($("amtFrom"), sym, buf, currency(S.from).scale, instant);
-  const aq = activeQuote(); const t = $("amtTo");
+  const aq = activeQuote(); const toEl = $("amtTo");
   if (aq && !amount.isZero()) {
-    try { const out = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount; t.className = "amt num input"; tweenMoney(t, out, { instant }); }
-    catch { t.textContent = "—"; t.className = "amt num placeholder"; }
-  } else { t.className = "amt num placeholder"; tweenMoney(t, Money.zero(S.to), { instant: true }); }
+    try { const out = convert(amount, aq.quote, { rounding: ROUNDING }).convertedAmount; toEl.className = "amt num input"; tweenMoney(toEl, out, { instant }); }
+    catch { toEl.textContent = "—"; toEl.className = "amt num placeholder"; }
+  } else { toEl.className = "amt num placeholder"; tweenMoney(toEl, Money.zero(S.to), { instant: true }); }
   const cta = $("btnConvert"); const txt = $("ctaText");
   cta.disabled = amount.isZero() || !aq;
-  const label = amount.isZero() ? "Enter an amount" : !aq ? "No rate available" : `Convert ${fmt(amount)}`;
+  const label = amount.isZero() ? t("Enter an amount") : !aq ? t("No rate available") : `${t("Convert")} ${fmt(amount)}`;
   if (label !== lastCta && !instant && !reduced() && lastCta) { txt.classList.add("swapping"); setTimeout(() => { txt.textContent = label; txt.classList.remove("swapping"); }, 150); }
   else txt.textContent = label;
   lastCta = label;
 }
 function sparkPath(pts, w, h) { const vals = pts.map((p) => p.rate); const min = Math.min(...vals), max = Math.max(...vals); const span = max - min || 1; return pts.map((p, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - 3 - ((p.rate - min) / span) * (h - 6)}`).join(" "); }
 let lastSpark = "";
-function renderRateSub() { const aq = activeQuote(); if (!aq) return; const mk = marketQuote(S.from, S.to); let sub = sourceLabel(aq.quote); if (aq.mine && mk && mk.source === "coinbase") sub = `Your rate · market mid ${rateStr(mk.rate)} · fetched ${ago(mk.receivedAt)}`; sub += statusSuffix(); $("rateSub").textContent = sub; }
+function renderRateSub() { const aq = activeQuote(); if (!aq) return; const mk = marketQuote(S.from, S.to); let sub = sourceLabel(aq.quote); if (aq.mine && mk && mk.source === "coinbase") sub = `${t("Your rate")} · ${t("market mid")} ${rateStr(mk.rate)} · ${t("fetched")} ${ago(mk.receivedAt)}`; sub += statusSuffix(); $("rateSub").textContent = sub; }
 function renderRate() {
   const aq = activeQuote(); const mk = marketQuote(S.from, S.to);
   const dot = $("rateDot"); const chip = $("rateChip"); const sp = $("spark");
-  if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? "Loading rate…" : "No rate for this pair"; dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
+  if (!aq) { $("rateMain").textContent = "—"; $("rateSub").textContent = rate.status === "loading" ? t("Loading rate…") : t("No rate for this pair"); dot.className = "dot error"; chip.textContent = "—"; chip.className = "chip grey"; sp.innerHTML = ""; return; }
   $("rateMain").textContent = `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`;
   renderRateSub();
   dot.className = "dot " + (rate.status === "fresh" ? "" : rate.status === "error" ? "error" : "stale") + (rate.status === "fresh" && rate.source === "coinbase" ? " polling" : "");
-  if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "▼" : "▲"} ${sp2.replace("-", "")}% vs mid`; chip.className = "chip " + (worse ? "red" : "green"); }
+  if (aq.mine && mk) { const sp2 = spreadPercent(mk, aq.quote); const worse = !sp2.startsWith("-"); chip.textContent = `${worse ? "▼" : "▲"} ${sp2.replace("-", "")}% ${t("vs mid")}`; chip.className = "chip " + (worse ? "red" : "green"); }
   else if (series && series.length >= 2) { const a = series[0].rate, b = series[series.length - 1].rate; const ch = ((b - a) / a) * 100; chip.textContent = `${ch >= 0 ? "▲" : "▼"} ${Math.abs(ch).toFixed(2)}%`; chip.className = "chip " + (ch >= 0 ? "green" : "red"); }
-  else { chip.textContent = aq.quote.confidence === "estimated" ? "Reference" : "Confirmed"; chip.className = "chip grey"; }
+  else { chip.textContent = aq.quote.confidence === "estimated" ? t("Reference") : t("Confirmed"); chip.className = "chip grey"; }
   let html, cls;
   if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; cls = "spark " + (up ? "" : "down"); html = `<path d="${sparkPath(series, 100, 32)}"/>`; }
   else { cls = "spark flat"; html = `<path d="M0,16 L100,16" stroke-dasharray="3 3"/>`; }
@@ -364,7 +391,7 @@ function renderRateSheet() {
   if (series && series.length >= 2) { const up = series[series.length - 1].rate >= series[0].rate; big.className.baseVal = "bigspark " + (up ? "" : "down"); big.innerHTML = `<path d="${sparkPath(series, 320, 90)}"/>`; legend.innerHTML = S.period === "1D" ? `<span>${esc(series[0].date)}</span><span>Ticks collected while the app is open (fetched about once a minute; provider publishes no observation time)</span><span>${esc(series[series.length - 1].date)}</span>` : `<span>${esc(series[0].date)}</span><span>${SERIES_DAYS} days · daily reference rates, not real time</span><span>${esc(series[series.length - 1].date)}</span>`; }
   else { big.className.baseVal = "bigspark flat"; big.innerHTML = `<path d="M0,45 L320,45" stroke-dasharray="4 4"/>`; legend.innerHTML = S.period === "1D" ? `<span></span><span>Collecting ticks… keep the app open a few minutes</span><span></span>` : `<span></span><span>History loads when online (daily)</span><span></span>`; }
   const q = aq ? aq.quote : null;
-  const rows = q ? [["Source", q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Sample snapshot shipped with the app (not current)" : q.source === "coinbase" ? "Coinbase exchange rates (indicative; refreshed about once a minute while open; no observation time published)" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], ["Type", `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Freshness", STATUS_TEXT[rate.status] || rate.status], ["Observed", q.observedAt ? dateTime(q.observedAt) : "Not published by provider; age is counted from the fetch"], ["Fetched", dateTime(q.receivedAt)], ["Expires", q.expiresAt ? dateTime(q.expiresAt) : "Not stated by provider"], ["Math", q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
+  const rows = q ? [[t("Source"), q.source === "user" ? "Your exchange receipt" : q.source === "embedded" ? "Sample snapshot shipped with the app (not current)" : q.source === "coinbase" ? "Coinbase exchange rates (indicative; refreshed about once a minute while open; no observation time published)" : q.source === "frankfurter" ? "Frankfurter (ECB reference rates, daily)" : "ExchangeRate-API (reference rates, daily)"], [t("Type"), `${q.rateKind} · ${q.confidence === "confirmed" ? "confirmed" : "estimated"}`], [t("Freshness"), STATUS_TEXT[rate.status] || rate.status], [t("Observed"), q.observedAt ? dateTime(q.observedAt) : t("Not published by provider")], [t("Fetched"), dateTime(q.receivedAt)], [t("Expires"), q.expiresAt ? dateTime(q.expiresAt) : t("Not stated by provider")], [t("Math"), q.derivedFrom ? `Cross rate via USD · rounding ${ROUNDING}` : `Rounding ${ROUNDING}`]] : [["Status", "No rate loaded"]];
   if (q && q.notes?.some((n) => n.includes("skew"))) rows.push(["Note", "Observation times differ, treated as estimated"]);
   if (q && q.notes?.some((n) => n.includes("observation time unknown"))) rows.push(["Note", "Cross rate from legs without observation time, treated as estimated"]);
   $("provRows").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
@@ -373,7 +400,8 @@ function renderRateSheet() {
   $("mineNote").textContent = m ? `Set ${dateTime(m.at)}. The chip shows the gap to the market mid rate.` : "Paid ¥100,000 and got ฿22,500? Enter 100000 and 22500.";
   $("homeCcyFlag").textContent = flag(S.home); $("homeCcyCode").textContent = S.home;
   $("motionChips").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === (S.motion || "auto")));
-  $("motionNote").textContent = motionMq.matches ? "Your device asks for reduced motion." : "Your device allows full motion.";
+  $("langChips").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === (S.lang || "auto")));
+  $("motionNote").textContent = motionMq.matches ? t("Your device asks for reduced motion.") : t("Your device allows full motion.");
   let bytes = 0; try { bytes = (localStorage.getItem(STORE_KEY) || "").length; } catch {}
   $("dataNote").textContent = `Schema v${S.schemaVersion} · ${Object.keys(S.balances).length} balances · ${S.ledger.length} transactions · ${S.history.length} conversions · ${(bytes / 1024).toFixed(1)} KB on this device`;
   stagger($("sheetRate").querySelector(".sheetbox"));
@@ -381,10 +409,43 @@ function renderRateSheet() {
 function stagger(box) { [...box.children].forEach((c, i) => c.style.setProperty("--i", i)); }
 
 // ---------- render: home ----------
+/** Home-currency value of a ledger entry. "snapshot" basis uses the rate saved when it was recorded (F11); "current" converts with today's rate. */
+function entryHome(e) {
+  if (S.convBasis !== "current" && e.snap && e.snap.home === S.home) { try { return Money.of(e.snap.amount, S.home); } catch {} }
+  return toCcy(Money.of(e.amount, e.ccy), S.home);
+}
+/** Rate snapshot stored with a spend at record time (F11): the rate, its source and times, and the home-currency amount. */
+function snapshotHome(m) {
+  const now = new Date().toISOString();
+  if (m.currency === S.home) return { home: S.home, amount: m.toDecimalString(), rate: "1", source: "same", observedAt: null, receivedAt: now, rateKind: "mid" };
+  const q = quoteBetween(m.currency, S.home); if (!q) return null;
+  try { const r = convert(m, q.quote, { rounding: ROUNDING }); return { home: S.home, amount: r.convertedAmount.toDecimalString(), rate: q.quote.rate, source: q.quote.source, observedAt: q.quote.observedAt, receivedAt: q.quote.receivedAt, rateKind: q.quote.rateKind, mine: q.mine, status: rate.status }; } catch { return null; }
+}
 function weekSpend() {
   const since = Date.now() - 7 * 864e5; const byCat = {}; let total = Money.zero(S.home); let unconverted = 0;
-  for (const e of S.ledger) { if (e.kind !== "spend" || Date.parse(e.at) < since) continue; const m = toCcy(Money.of(e.amount, e.ccy), S.home); if (!m) { unconverted++; continue; } total = total.add(m); byCat[e.cat] = (byCat[e.cat] || Money.zero(S.home)).add(m); }
+  for (const e of S.ledger) { if (e.kind !== "spend" || Date.parse(e.at) < since) continue; const m = entryHome(e); if (!m) { unconverted++; continue; } total = total.add(m); byCat[e.cat] = (byCat[e.cat] || Money.zero(S.home)).add(m); }
   return { total, byCat, unconverted };
+}
+const currentTrip = () => (S.trip ? S.trips.find((x) => x.id === S.trip) || null : null);
+function tripTotals(trip) {
+  let spent = Money.zero(S.home); let n = 0, noSnap = 0, unconverted = 0;
+  for (const e of S.ledger) { if (e.kind !== "spend" || e.tripId !== trip.id) continue; n++; if (!e.snap) noSnap++; const m = entryHome(e); if (!m) { unconverted++; continue; } spent = spent.add(m); }
+  const budget = trip.budget ? Money.of(trip.budget, S.home) : null;
+  return { spent, budget, remaining: budget ? budget.subtract(spent) : null, n, noSnap, unconverted };
+}
+function renderTripCard() {
+  const trip = currentTrip(); const card = $("tripCard"); card.hidden = !trip; if (!trip) return;
+  const tt = tripTotals(trip);
+  $("tripName").textContent = `${trip.name}${trip.start ? ` · ${dateJa(trip.start + "T12:00:00")}${trip.end ? ` → ${dateJa(trip.end + "T12:00:00")}` : ""}` : ""}`;
+  tweenMoney($("tripSpent"), tt.spent, { instant: tw.get($("tripSpent")) === undefined });
+  if (tt.unconverted) $("tripSpent").textContent += " +?";
+  const bar = $("tripBar");
+  if (tt.budget && tt.budget.isPositive()) { const pct = Math.min(100, (Number(tt.spent.toDecimalString()) / Number(tt.budget.toDecimalString())) * 100); bar.style.width = pct + "%"; bar.classList.toggle("over", tt.remaining.isNegative()); }
+  else { bar.style.width = "0%"; bar.classList.remove("over"); }
+  const parts = [];
+  if (tt.budget) parts.push(`<span style="--c:var(--green)">${t("Budget")} <b>${esc(fmt(tt.budget))}</b></span>`, tt.remaining.isNegative() ? `<span style="--c:var(--red)">${t("Over budget by")} <b>${esc(fmt(tt.remaining.abs()))}</b></span>` : `<span style="--c:var(--blue)">${t("Remaining")} <b>${esc(fmt(tt.remaining))}</b></span>`);
+  parts.push(`<span style="--c:var(--faint)">${S.convBasis === "current" ? t("Current rate") : t("Rate at record time")}${tt.noSnap && S.convBasis !== "current" ? ` · ${tt.noSnap} ${t("entries without a saved rate")}` : ""}</span>`);
+  $("tripLegend").innerHTML = parts.join("");
 }
 function renderHome(entering = false) {
   const ccys = walletCcys(); if (!ccys.includes(S.sel)) S.sel = ccys[0] || S.to;
@@ -397,30 +458,31 @@ function renderHome(entering = false) {
   if (entering) { tweenSeed(hb, Money.zero(S.sel).add(Money.fromMinor(sel.minor * 6n / 10n, S.sel))); tweenMoney(hb, sel, { duration: 800, ease: easeOutQuad }); }
   else tweenMoney(hb, sel, { duration: 750, ease: easeOutQuad });
   const h = S.sel === S.home ? null : toCcy(sel, S.home);
-  $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? " at your rate" : ""}` : S.sel === S.home ? "Home currency" : "No rate to home currency";
+  $("homeSub").textContent = h ? `≈ ${fmt(h)}${S.mine[`${S.sel}/${S.home}`] ? ` ${t("at your rate")}` : ""}` : S.sel === S.home ? t("Home currency") : t("No rate to home currency");
   $("miniCards").innerHTML = ccys.map((c) => `<button type="button" class="mc ${c === S.sel ? "on" : ""}" data-c="${c}" style="background:${grad(c)}">${flag(c)}</button>`).join("") + `<button type="button" class="mc add" id="mcAdd" aria-label="通貨を追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
+  renderTripCard();
   const w = weekSpend();
   tweenMoney($("weekTotal"), w.total, { instant: !entering && tw.get($("weekTotal")) === undefined });
   if (w.unconverted) $("weekTotal").textContent += " +?";
   const parts = Object.entries(w.byCat).sort((a, b) => b[1].compareTo(a[1]));
   const tot = Number(w.total.toDecimalString()) || 1;
   $("catBar").innerHTML = parts.length ? parts.map(([id, m]) => `<i style="width:${Math.max(2, (Number(m.toDecimalString()) / tot) * 100)}%;background:${catOf(id)[2]}"></i>`).join("") : `<i style="width:100%;background:var(--box)"></i>`;
-  $("catLegend").innerHTML = parts.length ? parts.map(([id, m]) => `<span style="--c:${catOf(id)[2]}">${catOf(id)[1]} <b>${esc(fmt(m))}</b></span>`).join("") : `<span style="--c:var(--faint)">Record a spend to see the breakdown</span>`;
+  $("catLegend").innerHTML = parts.length ? parts.map(([id, m]) => `<span style="--c:${catOf(id)[2]}">${t(catOf(id)[1])} <b>${esc(fmt(m))}</b></span>`).join("") : `<span style="--c:var(--faint)">${t("Record a spend to see the breakdown")}</span>`;
   const list = $("txList"); list.innerHTML = ""; $("txEmpty").hidden = S.ledger.length > 0;
   const groups = new Map();
   for (const e of S.ledger.slice(0, 40)) { const k = new Date(e.at).toDateString(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(e); }
   const today = new Date().toDateString(), yest = new Date(Date.now() - 864e5).toDateString();
   for (const [k, items] of groups) {
-    const label = k === today ? "Today" : k === yest ? "Yesterday" : new Date(items[0].at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const label = k === today ? t("Today") : k === yest ? t("Yesterday") : new Date(items[0].at).toLocaleDateString(locale(), { month: "short", day: "numeric" });
     let dayTotal = Money.zero(S.home); let miss = false;
-    for (const e of items) { if (e.kind !== "spend") continue; const m = toCcy(Money.of(e.amount, e.ccy), S.home); if (m) dayTotal = dayTotal.add(m); else miss = true; }
+    for (const e of items) { if (e.kind !== "spend") continue; const m = entryHome(e); if (m) dayTotal = dayTotal.add(m); else miss = true; }
     const g = document.createElement("div"); g.className = "txgroup"; g.innerHTML = `<span>${esc(label)}</span><b>${dayTotal.isZero() && !miss ? "" : "−" + esc(fmt(dayTotal)) + (miss ? " +?" : "")}</b>`; list.appendChild(g);
     for (const e of items) {
       const el = document.createElement("div"); el.className = "tx";
       const m = e.kind === "convert" || e.kind === "exchange" ? null : Money.of(e.amount, e.ccy); const sub = m && e.ccy !== S.home ? toCcy(m, S.home) : null;
-      if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || c[1])}</b><span>${c[1]}</span></div><div class="a">${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
-      else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>Cash added</b><span>${esc(e.note || "")}</span></div><div class="a pos">+${esc(fmt(m))}<span>${e.ccy} cash</span></div>`; }
-      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>${e.kind === "exchange" ? "Exchange recorded" : "Conversion"} ${esc(e.from)} → ${esc(e.to)}</b><span>${e.kind === "exchange" ? "You recorded a real exchange" : "Legacy (pre-v4): changed balances"}</span></div><div class="a">${esc(e.fromText)}<span class="pos">↳ ${esc(e.toText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
+      if (e.kind === "spend") { const c = catOf(e.cat); el.innerHTML = `<div class="av" style="--c:${c[2]}">${c[3]}</div><div class="t"><b>${esc(e.note || t(c[1]))}</b><span>${t(c[1])}</span></div><div class="a">${esc(fmt(m))}<span>${e.ccy} ${t("cash")}</span></div>`; }
+      else if (e.kind === "add") { el.innerHTML = `<div class="av" style="--c:#1E7F4F"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div class="t"><b>${t("Cash added")}</b><span>${esc(e.note || "")}</span></div><div class="a pos">+${esc(fmt(m))}<span>${e.ccy} ${t("cash")}</span></div>`; }
+      else { el.innerHTML = `<div class="av conv"><svg viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></div><div class="t"><b>${e.kind === "exchange" ? t("Exchange recorded") : t("Conversion")} ${esc(e.from)} → ${esc(e.to)}</b><span>${e.kind === "exchange" ? t("You recorded a real exchange") : t("Legacy (pre-v4): changed balances")}</span></div><div class="a">${esc(e.fromText)}<span class="pos">↳ ${esc(e.toText)}</span></div>`; el.addEventListener("click", () => { const tx = S.history.find((h) => h.ref === e.ref); if (tx) showReceipt(tx); }); }
       list.appendChild(el);
     }
     list.lastElementChild.classList.add(items.length === 1 ? "only" : "last");
@@ -454,9 +516,9 @@ function walletInfo(animated = true) {
   $("dots").innerHTML = car.ccys.map((c) => `<i class="${c === S.sel ? "on" : ""}"></i>`).join("");
   const since = Date.now() - 7 * 864e5;
   let spent = Money.zero(S.sel), added = Money.zero(S.sel), got = Money.zero(S.sel);
-  for (const e of S.ledger) { if (e.kind === "spend" && e.ccy === S.sel && Date.parse(e.at) >= since) spent = spent.add(Money.of(e.amount, e.ccy)); if (e.kind === "add" && e.ccy === S.sel) added = added.add(Money.of(e.amount, e.ccy)); if (e.kind === "convert" && e.to === S.sel) got = got.add(Money.of(e.toAmt, e.to)); }
+  for (const e of S.ledger) { if (e.kind === "spend" && e.ccy === S.sel && Date.parse(e.at) >= since) spent = spent.add(Money.of(e.amount, e.ccy)); if (e.kind === "add" && e.ccy === S.sel) added = added.add(Money.of(e.amount, e.ccy)); if ((e.kind === "convert" || e.kind === "exchange") && e.to === S.sel) got = got.add(Money.of(e.toAmt, e.to)); }
   const m = S.mine[`${S.home}/${S.sel}`];
-  $("wRows").innerHTML = [["Balance", fmt(b)], ["Spent this week", fmt(spent)], ["Cash added", fmt(added)], ["From conversions", fmt(got)], ["Your rate", m ? `1 ${S.home} = ${rateStr(Number(m.received) / Number(m.paid))} ${S.sel}` : "Not set"]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("wRows").innerHTML = [[t("Balance"), fmt(b)], [t("Spent this week"), fmt(spent)], [t("Cash added"), fmt(added)], [t("From conversions"), fmt(got)], [t("Your rate"), m ? `1 ${S.home} = ${rateStr(Number(m.received) / Number(m.paid))} ${S.sel}` : t("Not set")]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
 }
 function renderWallet(entering = false) {
   buildCards();
@@ -508,10 +570,10 @@ async function doConvert() {
   const tx = { kind: "simulation", at, ref, from: S.from, to: S.to, fromAmt: amount.toDecimalString(), toAmt: r.convertedAmount.toDecimalString(), fromText: fmt(amount), toText: fmt(r.convertedAmount), rate: aq.quote.rate, rateText: `1 ${S.from} = ${rateStr(aq.quote.rate)} ${S.to}`, source: sourceLabel(aq.quote), sourceId: aq.quote.source, rateKind: aq.quote.rateKind, confidence: aq.quote.confidence, observedAt: aq.quote.observedAt, receivedAt: aq.quote.receivedAt, mine: aq.mine, rounding: ROUNDING, balFrom: bf ? fmt(bf) : null, balTo: bt ? fmt(bt) : null };
   S.history.unshift(tx); S.history = S.history.slice(0, 100);
   save(); lastTx = tx; buf = ""; renderPair(true);
-  $("doneRate").textContent = tx.rateText + (tx.mine ? " (your rate)" : "");
-  $("dFlagFrom").textContent = flag(tx.from); $("dFromLbl").textContent = `From ${tx.from}`; $("dFromAmt").textContent = "−" + tx.fromText;
-  $("dFlagTo").textContent = flag(tx.to); $("dToLbl").textContent = `To ${tx.to}`; $("dToAmt").textContent = "+" + tx.toText;
-  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? "Not set"], [tx.to, tx.balTo ?? "Not set"]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} balance (unchanged)</dt><dd>${esc(v)}</dd>`).join("");
+  $("doneRate").textContent = tx.rateText + (tx.mine ? ` ${t("(your rate)")}` : "");
+  $("dFlagFrom").textContent = flag(tx.from); $("dFromLbl").textContent = `${t("From")} ${tx.from}`; $("dFromAmt").textContent = "−" + tx.fromText;
+  $("dFlagTo").textContent = flag(tx.to); $("dToLbl").textContent = `${t("To")} ${tx.to}`; $("dToAmt").textContent = "+" + tx.toText;
+  $("doneBals").innerHTML = [[tx.from, tx.balFrom ?? t("Not set")], [tx.to, tx.balTo ?? t("Not set")]].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c} ${t("balance (unchanged)")}</dt><dd>${esc(v)}</dd>`).join("");
   stagger($("sheetDone").querySelector(".sheetbox"));
   $("sheetDone").hidden = false;
   setTimeout(() => { cta.classList.remove("loading"); cta.style.width = ""; }, 300);
@@ -521,7 +583,7 @@ function recordExchange(sim) {
   if (!sim || sim.kind !== "simulation") return null;
   const amount = Money.of(sim.fromAmt, sim.from), got = Money.of(sim.toAmt, sim.to);
   const newFrom = (balance(sim.from) || Money.zero(sim.from)).subtract(amount); const newTo = (balance(sim.to) || Money.zero(sim.to)).add(got);
-  if (!confirm(`Record this as a real exchange you made?\n−${sim.fromText} from ${sim.from} cash\n+${sim.toText} to ${sim.to} cash\nThis changes the balances recorded on this device.`)) return null;
+  if (!confirm(`${t("Record this as a real exchange you made?")}\n−${sim.fromText} ${sim.from}\n+${sim.toText} ${sim.to}\n${t("This changes the balances recorded on this device.")}`)) return null;
   const at = new Date().toISOString(); const ref = sim.ref.replace(/^SIM-/, "EXC-");
   const tx = { ...sim, kind: "exchange", at, ref, simRef: sim.ref, balFrom: fmt(newFrom), balTo: fmt(newTo) };
   setBalance(sim.from, newFrom); setBalance(sim.to, newTo);
@@ -535,17 +597,17 @@ function barcodeFor(ref) { let h = 2166136261; const bars = []; for (let i = 0; 
 let printToken = 0;
 async function showReceipt(tx) {
   const kind = tx.kind || "legacy_convert"; const sim = kind === "simulation";
-  $("rEyebrow").textContent = kind === "exchange" ? "EXCHANGE RECORD" : sim ? "SIMULATION NOTE" : "LEGACY CONVERSION";
-  $("stamp").textContent = kind === "exchange" ? "RECORDED" : sim ? "SIMULATED" : "LEGACY"; $("stamp").classList.toggle("sim", sim);
-  $("rWhat").textContent = sim ? "You would get" : "You converted";
-  $("rBalsHead").textContent = sim ? "BALANCES (UNCHANGED)" : "NEW BALANCES";
-  $("rKindNote").textContent = kind === "exchange" ? "A record you entered of a real exchange. Balances on this device were updated." : sim ? "A simulation at the rate shown. No balance changed and no money moved." : "Made before v4, when Convert changed balances. Kept as it was.";
+  $("rEyebrow").textContent = kind === "exchange" ? t("EXCHANGE RECORD") : sim ? t("SIMULATION NOTE") : t("LEGACY CONVERSION");
+  $("stamp").textContent = kind === "exchange" ? t("RECORDED") : sim ? t("SIMULATED") : t("LEGACY"); $("stamp").classList.toggle("sim", sim);
+  $("rWhat").textContent = sim ? t("You would get") : t("You converted");
+  $("rBalsHead").textContent = sim ? t("BALANCES (UNCHANGED)") : t("NEW BALANCES");
+  $("rKindNote").textContent = kind === "exchange" ? t("A record you entered of a real exchange. Balances on this device were updated.") : sim ? t("A simulation at the rate shown. No balance changed and no money moved.") : t("Made before v4, when Convert changed balances. Kept as it was.");
   $("rFlagFrom").textContent = flag(tx.from); $("rFlagTo").textContent = flag(tx.to);
-  $("rBig").textContent = tx.toText; $("rFor").textContent = `for ${tx.fromText}`;
+  $("rBig").textContent = tx.toText; $("rFor").textContent = `${t("for")} ${tx.fromText}`;
   $("rDate").textContent = dateTime(tx.at).replace(", ", " · ").replace(/(\d{4}),? /, "$1 · ");
-  $("rRows").innerHTML = [[sim ? "You'd pay" : "You paid", `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], [sim ? "You'd get" : "You got", `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], ["Exchange rate", esc(tx.rateText), ""], ["Fee", tx.mine ? "Included in your rate" : "Not included (reference rate)", tx.mine ? "green" : ""], ["Reference", esc(tx.ref), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
+  $("rRows").innerHTML = [[sim ? t("You'd pay") : t("You paid"), `<span class="flag">${flag(tx.from)}</span>${esc(tx.fromText)}`, ""], [sim ? t("You'd get") : t("You got"), `<span class="flag">${flag(tx.to)}</span>${esc(tx.toText)}`, "green"], [t("Exchange rate"), esc(tx.rateText), ""], [t("Fee"), tx.mine ? t("Included in your rate") : t("Not included (reference rate)"), tx.mine ? "green" : ""], [t("Reference"), esc(tx.ref), ""]].map(([k, v, c]) => `<dt>${esc(k)}</dt><dd class="${c}">${v}</dd>`).join("");
   $("rBals").innerHTML = [...(tx.balFrom ? [[tx.from, tx.balFrom]] : []), ...(tx.balTo ? [[tx.to, tx.balTo]] : [])].map(([c, v]) => `<dt><span class="flag">${flag(c)}</span>${c}</dt><dd>${esc(v)}</dd>`).join("") || `<dt>—</dt><dd>No balances recorded</dd>`;
-  $("rProv").innerHTML = [["Source", tx.source], ["Type", `${tx.rateKind} · ${tx.confidence === "confirmed" ? "confirmed" : "estimated"}`], ["Observed", tx.observedAt ? dateTime(tx.observedAt) : "Not published by provider"], ...(tx.receivedAt ? [["Fetched", dateTime(tx.receivedAt)]] : []), ["Rounding", tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("rProv").innerHTML = [[t("Source"), tx.source], [t("Type"), `${tx.rateKind} · ${tx.confidence === "confirmed" ? "confirmed" : "estimated"}`], [t("Observed"), tx.observedAt ? dateTime(tx.observedAt) : t("Not published by provider")], ...(tx.receivedAt ? [[t("Fetched"), dateTime(tx.receivedAt)]] : []), [t("Rounding"), tx.rounding]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
   $("barcode").innerHTML = barcodeFor(tx.ref); $("rRef").textContent = tx.ref; lastTx = tx;
   const token = ++printToken;
   const slot = $("slot"), label = $("slotLabel"), wrap = $("paperwrap"), stamp = $("stamp"), actions = $("rActions");
@@ -593,22 +655,22 @@ $("btnAddBack").addEventListener("click", () => route());
 $("addDate").addEventListener("change", () => { const v = $("addDate").value; if (v) $("acDate").textContent = new Date(v + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }); });
 function openSpend(ccy) {
   spCcy = ccy || S.sel; $("spFlag").textContent = flag(spCcy); $("spCode").textContent = spCcy; $("spAmt").value = ""; $("spNote").value = "";
-  $("spCat").innerHTML = CATS.map((c) => `<button type="button" data-v="${c[0]}" class="${c[0] === spCat ? "on" : ""}" style="--c:${c[2]}">${c[1]}</button>`).join("");
-  const b = balance(spCcy); $("spHint").textContent = b ? `Taken from your ${spCcy} balance of ${fmt(b)}` : `No ${spCcy} balance yet; recording still works and the balance goes negative`;
+  $("spCat").innerHTML = CATS.map((c) => `<button type="button" data-v="${c[0]}" class="${c[0] === spCat ? "on" : ""}" style="--c:${c[2]}">${t(c[1])}</button>`).join("");
+  const b = balance(spCcy); $("spHint").textContent = b ? t("Taken from your {c} balance of {b}").replace("{c}", spCcy).replace("{b}", fmt(b)) : t("No {c} balance yet; recording still works and the balance goes negative").replace("{c}", spCcy);
   stagger($("sheetSpend").querySelector(".sheetbox")); $("sheetSpend").hidden = false; setTimeout(() => $("spAmt").focus(), 60);
 }
 function runProgress(title, vis, done) {
-  const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = "This only takes a moment";
+  const p = $("progress"); p.hidden = false; p.classList.remove("done"); $("pTitle").textContent = title; $("pSub").textContent = t("This only takes a moment");
   $("pVis").style.background = vis.grad; $("pVis").style.color = vis.ink || "#fff"; $("pVis").innerHTML = `<div class="cv"><small>${esc(vis.small)}</small>${esc(vis.big)}</div>`;
   const steps = [...$("pSteps").querySelectorAll(".step")], lines = [...$("pSteps").querySelectorAll("em")];
   steps.forEach((s) => (s.className = "step")); lines.forEach((l) => (l.className = ""));
-  const labels = ["Recording your cash", "Converting to home currency", "Securing your wallet"]; let i = -1, pct = 0;
+  const labels = [t("Recording your cash"), t("Converting to home currency"), t("Securing your wallet")]; let i = -1, pct = 0;
   const tick = () => {
     pct = Math.min(100, pct + (reduced() ? 50 : 1 + Math.round(Math.random() * 3)));
     $("pPct").textContent = pct + "%";
     const stage = Math.min(2, Math.floor(pct / 34));
     if (stage !== i || pct === 100) { for (let k = 0; k < 3; k++) { steps[k].className = "step " + (k < stage || pct === 100 ? "done" : k === stage ? "active" : ""); if (k < 2) lines[k].className = k < stage || pct === 100 ? "done" : ""; } i = stage; }
-    $("pLabel").textContent = pct === 100 ? "All set" : labels[stage];
+    $("pLabel").textContent = pct === 100 ? t("All set") : labels[stage];
     if (pct < 100) setTimeout(tick, reduced() ? 10 : 45 + Math.random() * 50);
     else {
       // Reference: steps fade out (0.45s), the card alone for ~1.5s, then a hard background switch with title and buttons popping in.
@@ -620,19 +682,20 @@ function runProgress(title, vis, done) {
   tick();
 }
 $("btnAddGo").addEventListener("click", async () => {
-  const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast("Enter an amount"); return; }
-  const src = $("addSource").value || "Other"; const note = $("addNote").value.trim();
+  const m = parseAmt($("addAmt").value, addCcy); if (!m) { toast(t("Enter an amount")); return; }
+  const src = t($("addSource").value || "Other"); const note = $("addNote").value.trim();
   const dv = $("addDate").value; const at = dv ? new Date(dv + "T" + new Date().toTimeString().slice(0, 8)).toISOString() : new Date().toISOString();
   setBalance(addCcy, (balance(addCcy) || Money.zero(addCcy)).add(m));
-  S.ledger.unshift({ kind: "add", at, ccy: addCcy, amount: m.toDecimalString(), note: note ? `${src} · ${note}` : src }); S.ledger.sort((a, b) => (a.at < b.at ? 1 : -1)); S.sel = addCcy; save();
+  S.ledger.unshift({ kind: "add", at, ccy: addCcy, amount: m.toDecimalString(), note: note ? `${src} · ${note}` : src, tripId: S.trip || null, snap: snapshotHome(m) }); S.ledger.sort((a, b) => (a.at < b.at ? 1 : -1)); S.sel = addCcy; save();
   $("s-addcash").classList.add("leaving"); await wait(350); $("s-addcash").classList.remove("leaving");
-  runProgress("Adding your cash", { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m), ink: cardInk(addCcy) }, { title: "Cash added", sub: `${addCcy} ${fmt(m)} is ready to use · balance ${fmt(balance(addCcy))}` });
+  runProgress(t("Adding your cash"), { grad: grad(addCcy), small: addCcy + " CASH", big: fmt(m), ink: cardInk(addCcy) }, { title: t("Cash added"), sub: `${addCcy} ${fmt(m)} ${t("is ready to use · balance")} ${fmt(balance(addCcy))}` });
 });
 $("btnSpendGo").addEventListener("click", () => {
-  const m = parseAmt($("spAmt").value, spCcy); if (!m) { toast("Enter an amount"); return; }
+  const m = parseAmt($("spAmt").value, spCcy); if (!m) { toast(t("Enter an amount")); return; }
   setBalance(spCcy, (balance(spCcy) || Money.zero(spCcy)).subtract(m));
-  S.ledger.unshift({ kind: "spend", at: new Date().toISOString(), ccy: spCcy, amount: m.toDecimalString(), cat: spCat, note: $("spNote").value.trim() }); S.ledger = S.ledger.slice(0, 500); save(); closeSheets(); render();
-  const h = toCcy(m, S.home); toast(`Recorded −${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""}`);
+  const snap = snapshotHome(m); // F11: keep the rate used at record time
+  S.ledger.unshift({ kind: "spend", at: new Date().toISOString(), ccy: spCcy, amount: m.toDecimalString(), cat: spCat, note: $("spNote").value.trim(), tripId: S.trip || null, snap }); S.ledger = S.ledger.slice(0, 500); save(); closeSheets(); render();
+  const h = snap ? Money.of(snap.amount, S.home) : null; toast(`${t("Recorded")} −${fmt(m)}${h && spCcy !== S.home ? ` ≈ ${fmt(h)}` : ""}`);
   if ($("s-home").hidden && $("s-wallet").hidden) go("home");
 });
 const closeProgress = () => { $("progress").hidden = true; $("progress").classList.remove("done", "fading"); };
@@ -643,29 +706,86 @@ $("addCur").addEventListener("click", () => openPicker("any", (c) => { addCcy = 
 $("spCur").addEventListener("click", () => openPicker("any", (c) => { spCcy = c; $("spFlag").textContent = flag(c); $("spCode").textContent = c; }));
 
 // ---------- sheets ----------
-const SHEETS = ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend", "sheetMore", "sheetSplit"];
+const SHEETS = ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend", "sheetMore", "sheetSplit", "sheetTrip", "sheetRates"];
 function closeSheets() { for (const id of SHEETS) $(id).hidden = true; }
 function openPicker(which, onPick) {
-  $("pickTitle").textContent = which === "from" ? "Convert from" : which === "to" ? "Convert to" : "Choose currency";
+  $("pickTitle").textContent = which === "from" ? t("Convert from") : which === "to" ? t("Convert to") : t("Choose currency");
   const list = $("pickList"); const search = $("pickSearch");
   const cur = which === "from" ? S.from : which === "to" ? S.to : null;
+  const ccyName = (c) => (LANG === "ja" ? c.name.ja : c.name.en);
   const draw = () => {
     const q = search.value.trim().toLowerCase(); list.innerHTML = "";
-    for (const c of CURRENCIES.values()) {
-      if (q && !(c.code.toLowerCase().includes(q) || c.name.ja.includes(q) || c.name.en.toLowerCase().includes(q))) continue;
+    const all = [...CURRENCIES.values()].filter((c) => !q || c.code.toLowerCase().includes(q) || c.name.ja.includes(q) || c.name.en.toLowerCase().includes(q));
+    const pinned = S.pins.map((p) => all.find((c) => c.code === p)).filter(Boolean); const rest = all.filter((c) => !S.pins.includes(c.code));
+    const sect = (label) => { const li = document.createElement("li"); li.className = "sect"; li.textContent = label; list.appendChild(li); };
+    const row = (c) => {
       const li = document.createElement("li"); if (cur === c.code) li.className = "on";
-      const bal = balance(c.code); li.innerHTML = `<button type="button"><span class="flag">${flag(c.code)}</span><span><span class="code">${c.code}</span><span class="name2">${esc(c.name.en)}</span></span><span class="name">${bal ? esc(fmt(bal)) : ""}</span></button>`;
+      const bal = balance(c.code); const on = S.pins.includes(c.code);
+      li.innerHTML = `<button type="button"><span class="flag">${flag(c.code)}</span><span><span class="code">${c.code}</span><span class="name2">${esc(ccyName(c))}</span></span><span class="name">${bal ? esc(fmt(bal)) : ""}</span></button><button type="button" class="pin ${on ? "on" : ""}" aria-label="Pin ${c.code}">${on ? "★" : "☆"}</button>`;
       li.querySelector("button").addEventListener("click", () => {
         $("sheetPick").hidden = true;
         if (which === "from") { if (c.code === S.to) S.to = S.from; S.from = c.code; buf = ""; save(); render(); loadSeries(); }
         else if (which === "to") { if (c.code === S.from) S.from = S.to; S.to = c.code; save(); renderPair(); renderRate(); loadSeries(); }
         else onPick(c.code);
       });
+      li.querySelector(".pin").addEventListener("click", (e) => { e.stopPropagation(); togglePin(c.code); draw(); });
       list.appendChild(li);
-    }
+    };
+    if (pinned.length) { sect(t("Pinned")); pinned.forEach(row); if (rest.length) sect(t("All currencies")); }
+    rest.forEach(row);
   };
   search.value = ""; search.oninput = draw; draw(); stagger($("sheetPick").querySelector(".sheetbox")); $("sheetPick").hidden = false; setTimeout(() => search.focus(), 50);
 }
+
+function togglePin(code) {
+  if (S.pins.includes(code)) S.pins = S.pins.filter((c) => c !== code);
+  else { if (S.pins.length >= 12) { toast(t("Up to 12 pinned currencies")); return; } S.pins = [...S.pins, code]; }
+  save();
+}
+
+// ---------- all rates (F03): the entered amount in every pinned currency ----------
+function openAllRates() {
+  const amt = inputMoney(); const base = amt.isZero() ? Money.of("1", S.from) : amt;
+  const codes = (S.pins.length ? S.pins : [...new Set([...walletCcys(), S.to, S.home])]).filter((c) => c !== base.currency).slice(0, 12);
+  $("arAmount").textContent = fmt(base);
+  $("arSub").textContent = `${S.from} → ${codes.join(" · ")}`;
+  $("arList").innerHTML = codes.map((c) => {
+    const q = quoteBetween(base.currency, c); let v = "—", src = t("No rate available");
+    if (q) { try { v = fmt(convert(base, q.quote, { rounding: ROUNDING }).convertedAmount); src = sourceLabel(q.quote) + statusSuffix(); } catch {} }
+    const meta = currency(c);
+    return `<li><button type="button" data-c="${c}"><span class="flag">${flag(c)}</span><span><span class="code">${c}</span><span class="name2">${esc(LANG === "ja" ? meta.name.ja : meta.name.en)}</span></span><span class="name">${esc(v)}<span class="src">${esc(src)}</span></span></button></li>`;
+  }).join("") || `<li class="sect">${t("Pinned currencies (up to 12). Pin more from the currency picker.")}</li>`;
+  $("arList").querySelectorAll("button[data-c]").forEach((b) => b.addEventListener("click", () => { S.to = b.dataset.c; if (S.to === S.from) S.from = S.home === S.to ? "USD" : S.home; save(); closeSheets(); go("convert"); renderPair(true); renderRate(); loadSeries(); }));
+  stagger($("sheetRates").querySelector(".sheetbox")); $("sheetRates").hidden = false;
+}
+
+// ---------- trips & budget (F11) ----------
+function openTrips() { renderTrips(); $("tripBudgetCcy").textContent = S.home; stagger($("sheetTrip").querySelector(".sheetbox")); $("sheetTrip").hidden = false; }
+function renderTrips() {
+  const box = $("tripList");
+  if (!S.trips.length) box.innerHTML = `<div class="empty">${t("No trips yet.")}</div>`;
+  else box.innerHTML = S.trips.map((tr) => { const tt = tripTotals(tr); const on = tr.id === S.trip; return `<div class="trip ${on ? "on" : ""}" data-id="${esc(tr.id)}"><div class="t"><b>${esc(tr.name)}${on ? ` · ${t("Current")}` : ""}</b><span>${tr.start ? dateJa(tr.start + "T12:00:00") : ""}${tr.end ? ` → ${dateJa(tr.end + "T12:00:00")}` : ""}${tt.budget ? ` · ${t("Budget")} ${esc(fmt(tt.budget))}` : ""}</span><span>${t("Spent")} ${esc(fmt(tt.spent))}${tt.unconverted ? " +?" : ""} · ${tt.n} ${t("Transactions").toLowerCase()}</span></div><div class="btns">${on ? `<button type="button" data-act="end">${t("End trip")}</button>` : `<button type="button" data-act="use">${t("Use")}</button>`}<button type="button" data-act="del">${t("Delete")}</button></div></div>`; }).join("");
+  $("basisChips").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === (S.convBasis || "snapshot")));
+}
+$("tripList").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-act]"); if (!b) return; const id = b.closest(".trip").dataset.id; const tr = S.trips.find((x) => x.id === id); if (!tr) return;
+  if (b.dataset.act === "use") S.trip = id;
+  else if (b.dataset.act === "end") S.trip = null;
+  else if (b.dataset.act === "del") { if (!confirm(`${t("Delete")}: ${tr.name}?`)) return; S.trips = S.trips.filter((x) => x.id !== id); if (S.trip === id) S.trip = null; } // spends keep their tripId and snapshots
+  save(); renderTrips(); render();
+});
+$("btnTripCreate").addEventListener("click", () => {
+  const name = $("tripNewName").value.trim(); const budget = parseAmt($("tripNewBudget").value, S.home);
+  if (!name) { toast(t("Enter a trip name and a budget")); return; }
+  const tr = { id: "trip-" + Date.now().toString(36), name, budget: budget ? budget.toDecimalString() : null, home: S.home, start: $("tripNewStart").value || null, end: $("tripNewEnd").value || null, createdAt: new Date().toISOString() };
+  S.trips = [tr, ...S.trips]; S.trip = tr.id; $("tripNewName").value = ""; $("tripNewBudget").value = ""; save(); renderTrips(); render();
+});
+$("basisChips").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; S.convBasis = b.dataset.v; save(); renderTrips(); render(); });
+$("btnTripOpen").addEventListener("click", openTrips);
+$("btnMoreTrips").addEventListener("click", () => { closeSheets(); openTrips(); });
+$("btnMoreRates").addEventListener("click", () => { closeSheets(); openAllRates(); });
+$("btnAllRates").addEventListener("click", () => { closeSheets(); openAllRates(); });
+$("langChips").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; S.lang = b.dataset.v; save(); applyLang(); render(); renderRateSheet(); });
 
 // ---------- split a bill (F13) ----------
 // Pure UI over packages/core split.ts: shares always sum to the total; the settlement is a proposal that REDUCES the number
@@ -682,7 +802,7 @@ function splitCompute() {
   const parts = spl.people.map((id) => ({ id }));
   let res;
   try {
-    if (spl.mode === "weight") { const w = spl.people.map((p) => Math.max(0, Math.floor(Number(spl.weights[p] ?? 1)) || 0)); if (w.every((x) => x === 0)) return { error: "Give at least one person a weight above 0" }; res = splitByWeight(total, parts, w); }
+    if (spl.mode === "weight") { const w = spl.people.map((p) => Math.max(0, Math.floor(Number(spl.weights[p] ?? 1)) || 0)); if (w.every((x) => x === 0)) return { error: t("Give at least one person a weight above 0") }; res = splitByWeight(total, parts, w); }
     else res = splitEqual(total, parts);
     const transfers = settle(res.shares, [{ payerId: spl.payer, amount: total }]);
     return { total, res, transfers };
@@ -696,11 +816,11 @@ function renderSplit() {
   $("splWeights").innerHTML = spl.people.map((p) => `<label>${esc(p)}<input type="number" min="0" step="1" inputmode="numeric" data-w="${esc(p)}" value="${esc(spl.weights[p] ?? 1)}"></label>`).join("");
   $("splPayer").innerHTML = spl.people.map((p) => `<button type="button" data-payer="${esc(p)}" class="${p === spl.payer ? "on" : ""}">${esc(p)}</button>`).join("");
   const out = splitCompute(); const box = $("splRes");
-  if (!out) { box.innerHTML = `<div class="empty">Enter a total to see each share.</div>`; return; }
+  if (!out) { box.innerHTML = `<div class="empty">${t("Enter a total to see each share.")}</div>`; return; }
   if (out.error) { box.innerHTML = `<div class="empty">${esc(out.error)}</div>`; return; }
   const absorbed = new Set(out.res.roundingAbsorbedBy);
-  box.innerHTML = `<h3>Shares · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>+rounding</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("")
-    + `<h3>Proposal to reduce transfers</h3>` + (out.transfers.length ? out.transfers.map((t) => `<div class="line"><span>${esc(t.from)} → ${esc(t.to)}</span><b>${esc(fmt(t.amount))}</b></div>`).join("") : `<div class="empty">Nothing to settle: the payer's share equals the total.</div>`);
+  box.innerHTML = `<h3>${t("Shares")} · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>${t("+rounding")}</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("")
+    + `<h3>${t("Proposal to reduce transfers")}</h3>` + (out.transfers.length ? out.transfers.map((x) => `<div class="line"><span>${esc(x.from)} → ${esc(x.to)}</span><b>${esc(fmt(x.amount))}</b></div>`).join("") : `<div class="empty">${t("Nothing to settle: the payer's share equals the total.")}</div>`);
   S.split = splState(); save();
 }
 function splitText() {
@@ -710,15 +830,15 @@ function splitText() {
 }
 $("splTotal").addEventListener("input", () => { spl.total = $("splTotal").value; renderSplit(); });
 $("splCur").addEventListener("click", () => openPicker("any", (c) => { spl.ccy = c; renderSplit(); $("sheetSplit").hidden = false; }));
-$("splAddPerson").addEventListener("click", () => { const n = $("splName").value.trim(); if (!n) return; if (spl.people.includes(n)) { toast("Already in the list"); return; } if (spl.people.length >= 20) { toast("Up to 20 people"); return; } spl.people.push(n); $("splName").value = ""; renderSplit(); });
+$("splAddPerson").addEventListener("click", () => { const n = $("splName").value.trim(); if (!n) return; if (spl.people.includes(n)) { toast(t("Already in the list")); return; } if (spl.people.length >= 20) { toast(t("Up to 20 people")); return; } spl.people.push(n); $("splName").value = ""; renderSplit(); });
 $("splName").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("splAddPerson").click(); } });
-$("splPeople").addEventListener("click", (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; if (spl.people.length <= 1) { toast("Keep at least one person"); return; } spl.people = spl.people.filter((p) => p !== b.dataset.p); delete spl.weights[b.dataset.p]; if (spl.payer === b.dataset.p) spl.payer = spl.people[0]; renderSplit(); });
+$("splPeople").addEventListener("click", (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; if (spl.people.length <= 1) { toast(t("Keep at least one person")); return; } spl.people = spl.people.filter((p) => p !== b.dataset.p); delete spl.weights[b.dataset.p]; if (spl.payer === b.dataset.p) spl.payer = spl.people[0]; renderSplit(); });
 $("splMode").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; spl.mode = b.dataset.v; renderSplit(); });
 $("splWeights").addEventListener("input", (e) => { const i = e.target.closest("input[data-w]"); if (!i) return; spl.weights[i.dataset.w] = i.value; const out = splitCompute(); const box = $("splRes"); if (out && !out.error) { renderSplitResultOnly(out); } else if (out) box.innerHTML = `<div class="empty">${esc(out.error)}</div>`; });
-function renderSplitResultOnly(out) { const absorbed = new Set(out.res.roundingAbsorbedBy); $("splRes").innerHTML = `<h3>Shares · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>+rounding</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("") + `<h3>Proposal to reduce transfers</h3>` + (out.transfers.length ? out.transfers.map((t) => `<div class="line"><span>${esc(t.from)} → ${esc(t.to)}</span><b>${esc(fmt(t.amount))}</b></div>`).join("") : `<div class="empty">Nothing to settle.</div>`); S.split = splState(); save(); }
+function renderSplitResultOnly(out) { const absorbed = new Set(out.res.roundingAbsorbedBy); $("splRes").innerHTML = `<h3>${t("Shares")} · ${esc(fmt(out.total))}</h3>` + out.res.shares.map((s) => `<div class="line"><span>${esc(s.participantId)}${absorbed.has(s.participantId) ? `<small>${t("+rounding")}</small>` : ""}</span><b>${esc(fmt(s.amount))}</b></div>`).join("") + `<h3>${t("Proposal to reduce transfers")}</h3>` + (out.transfers.length ? out.transfers.map((x) => `<div class="line"><span>${esc(x.from)} → ${esc(x.to)}</span><b>${esc(fmt(x.amount))}</b></div>`).join("") : `<div class="empty">${t("Nothing to settle.")}</div>`); S.split = splState(); save(); }
 $("splPayer").addEventListener("click", (e) => { const b = e.target.closest("button[data-payer]"); if (!b) return; spl.payer = b.dataset.payer; renderSplit(); });
-$("btnSplitShare").addEventListener("click", async () => { const text = splitText(); if (!text) { toast("Enter a total first"); return; } if (navigator.share) { try { await navigator.share({ title: "Split", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
-$("btnSplitSpend").addEventListener("click", () => { const out = splitCompute(); if (!out || out.error) { toast("Enter a total first"); return; } closeSheets(); openSpend(spl.ccy); $("spAmt").value = out.total.toDecimalString(); $("spNote").value = `Split: ${spl.people.join(", ")}`; });
+$("btnSplitShare").addEventListener("click", async () => { const text = splitText(); if (!text) { toast(t("Enter a total first")); return; } if (navigator.share) { try { await navigator.share({ title: "Split", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
+$("btnSplitSpend").addEventListener("click", () => { const out = splitCompute(); if (!out || out.error) { toast(t("Enter a total first")); return; } closeSheets(); openSpend(spl.ccy); $("spAmt").value = out.total.toDecimalString(); $("spNote").value = `Split: ${spl.people.join(", ")}`; });
 
 // ---------- onboarding ----------
 async function leaveOnboarding(demo) {
@@ -765,7 +885,7 @@ $("btnMore").addEventListener("click", closeSheets);
 $("btnReceipt").addEventListener("click", async () => { if (!lastTx) return closeSheets(); $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); showReceipt(lastTx); });
 $("btnReceiptBack").addEventListener("click", () => { printToken++; route(); });
 $("btnReceiptDone").addEventListener("click", () => { printToken++; go("home"); });
-$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.kind === "exchange" ? "Exchange record" : lastTx.kind === "simulation" ? "Simulation (no money moved)" : "Legacy conversion"}\n${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Could not share"); } });
+$("btnReceiptShare").addEventListener("click", async () => { if (!lastTx) return; const text = `${lastTx.kind === "exchange" ? t("Exchange record") : lastTx.kind === "simulation" ? t("Simulation (no money moved)") : t("Legacy conversion")}\n${lastTx.fromText} → ${lastTx.toText}\n${lastTx.rateText}\n${lastTx.source}\n${lastTx.ref}`; if (navigator.share) { try { await navigator.share({ title: "Exchange receipt", text }); return; } catch {} } try { await navigator.clipboard.writeText(text); toast(t("Copied")); } catch { toast(t("Could not share")); } });
 const openRate = () => { renderRateSheet(); $("sheetRate").hidden = false; };
 $("periods").addEventListener("click", async (e) => { const b = e.target.closest("button[data-p]"); if (!b) return; S.period = b.dataset.p; save(); $("periods").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); await loadSeries(); renderRateSheet(); });
 $("rateRow").addEventListener("click", openRate); $("btnRates").addEventListener("click", openRate); $("btnRatesHome").addEventListener("click", openRate); $("btnTabRate").addEventListener("click", openRate);
@@ -773,10 +893,10 @@ $("btnHistory").addEventListener("click", () => { renderHistory(); stagger($("sh
 $("btnHistClear").addEventListener("click", () => { if (!S.history.length || !confirm(`Delete ${S.history.length} conversion notes? Recorded exchanges stay in Transactions and balances are not affected.`)) return; S.history = []; save(); renderHistory(); });
 document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeSheets));
 for (const id of SHEETS) $(id).addEventListener("click", (e) => { if (e.target.id === id) closeSheets(); });
-$("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast("Enter both amounts"); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast("Converting at your rate"); });
+$("btnSetMine").addEventListener("click", () => { const paid = $("inPaid").value.trim(), got = $("inGot").value.trim(); try { realizedRate(parseDec(paid), parseDec(got), { base: S.from, quote: S.to, at: new Date().toISOString(), receivedAt: new Date().toISOString() }); } catch { toast(t("Enter both amounts")); return; } S.mine[`${S.from}/${S.to}`] = { paid, received: got, at: new Date().toISOString() }; save(); closeSheets(); render(); toast(t("Converting at your rate")); });
 $("btnClearMine").addEventListener("click", () => { delete S.mine[`${S.from}/${S.to}`]; save(); closeSheets(); render(); });
 $("btnHomeCcy").addEventListener("click", () => openPicker("any", (c) => { S.home = c; save(); renderRateSheet(); render(); }));
-$("btnRecordReal").addEventListener("click", async () => { const tx = recordExchange(lastTx); if (!tx) return; $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); toast("Exchange recorded"); showReceipt(tx); });
+$("btnRecordReal").addEventListener("click", async () => { const tx = recordExchange(lastTx); if (!tx) return; $("sheetDone").classList.add("closing"); $("s-convert").classList.add("blurout"); await wait(380); closeSheets(); $("sheetDone").classList.remove("closing"); toast(t("Exchange recorded")); showReceipt(tx); });
 $("motionChips").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; S.motion = b.dataset.v; save(); applyMotion(); renderRateSheet(); });
 motionMq.addEventListener("change", applyMotion);
 $("btnExport").addEventListener("click", exportState);
@@ -791,10 +911,10 @@ $("btnMoreCards").addEventListener("click", () => { closeSheets(); go("wallet");
 $("btnMoreSettings").addEventListener("click", () => { closeSheets(); openRate(); });
 $("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: reduced() ? "auto" : "smooth" }); });
 $("btnSearch").addEventListener("click", () => openPicker("any", (c) => { S.sel = c; if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); save(); renderHome(); }));
-$("btnBell").addEventListener("click", () => toast("No notifications yet"));
+$("btnBell").addEventListener("click", () => toast(t("No notifications yet")));
 $("btnWAdd").addEventListener("click", () => openAdd(S.sel)); $("btnWSpend").addEventListener("click", () => openSpend(S.sel));
 $("btnWalletAdd").addEventListener("click", () => openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderWallet(); openAdd(c); }));
-function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)} <small class="kind">${h.kind === "exchange" ? "recorded" : h.kind === "simulation" ? "simulation" : "legacy"}</small></div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
+function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)} <small class="kind">${h.kind === "exchange" ? t("recorded") : h.kind === "simulation" ? t("simulation") : t("legacy")}</small></div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2200); }
 window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
@@ -802,7 +922,7 @@ window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").qu
 // ---------- boot ----------
 // Splash plays on every cold open (as in the reference). Returning users skip the copy and land on home after the bands.
 buildBurst();
-applyMotion();
+applyMotion(); applyLang();
 const ob = $("s-onboard"); ob.classList.add("play"); if (S.onboarded) ob.classList.add("auto");
 route();
 if (S.onboarded) { if (reduced()) leaveOnboarding(false); else setTimeout(() => leaveOnboarding(false), 2150); }

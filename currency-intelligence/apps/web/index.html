@@ -63,6 +63,12 @@
       </div>
     </div>
     <div class="homebody">
+      <div class="txcard tripcard" id="tripCard" hidden>
+        <div class="txhead"><small id="tripName"></small><button class="link" id="btnTripOpen" type="button">Trips</button></div>
+        <div class="weekbig num" id="tripSpent"></div>
+        <div class="catbar one"><i id="tripBar"></i></div>
+        <div class="legend2" id="tripLegend"></div>
+      </div>
       <div class="txhead"><b>Transactions</b><button class="link" id="btnAllTx" type="button">View all</button></div>
       <div class="txcard" id="txcard">
         <small>Spent this week</small>
@@ -300,6 +306,8 @@
     <div class="periods" id="periods"><button type="button" data-p="1D">1D</button><button type="button" data-p="1W">1W</button><button type="button" data-p="1M" class="on">1M</button><button type="button" data-p="3M">3M</button><button type="button" data-p="1Y">1Y</button></div>
     <svg class="bigspark" id="bigSpark" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
     <div class="legend" id="sparkLegend"></div>
+    <p class="sub defs" id="chartDefs">Change = last point vs first point of the period. Daily points are ECB reference rates (one per working day, no weekend or holiday points). 1D = ticks collected while the app is open.</p>
+    <button class="listbtn" id="btnAllRates" type="button"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Compare in pinned currencies</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <dl class="bals" id="provRows"></dl>
     <div class="mine">
       <div class="minehead"><b>Your rate</b><span>Enter the two numbers from your exchange receipt. Conversions then use your true rate.</span></div>
@@ -316,6 +324,10 @@
     <div class="mine">
       <div class="minehead"><b>Home currency</b><span>Used for the "≈" amounts and this week's spend.</span></div>
       <button class="curpill" id="btnHomeCcy" type="button"><span class="flag" id="homeCcyFlag"></span><b id="homeCcyCode">JPY</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+    </div>
+    <div class="mine">
+      <div class="minehead"><b>Language</b><span>Follows your device unless you pick one.</span></div>
+      <div class="chips" id="langChips"><button type="button" data-v="auto">Auto</button><button type="button" data-v="en">English</button><button type="button" data-v="ja">日本語</button><button type="button" data-v="th">ไทย</button></div>
     </div>
     <div class="mine">
       <div class="minehead"><b>Motion</b><span>"Auto" follows your device's Reduce Motion setting. "Off" shows every result in one short step.</span></div>
@@ -339,6 +351,8 @@
   <div class="sheetbox">
     <div class="sheethead"><h2>More</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <button class="listbtn" id="btnMoreSplit" type="button"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 20a5 5 0 0 1 10 0M11 20a5 5 0 0 1 10 0"/></svg><span>Split a bill</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreTrips" type="button"><svg viewBox="0 0 24 24"><path d="M3 11l18-7-7 18-2-8z"/></svg><span>Trips &amp; budget</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreRates" type="button"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>All rates</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreHistory" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>Conversion notes</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreCards" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg><span>Cards</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreSettings" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.6h5l.3-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg><span>Rate, motion &amp; data</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
@@ -364,6 +378,40 @@
       <button class="cta small" id="btnSplitShare" type="button">Share summary</button>
       <button class="cta white small" id="btnSplitSpend" type="button">Record payer's spend</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ Trips & budget (F11) ============ -->
+<div class="sheet" id="sheetTrip" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>Trips &amp; budget</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="triplist" id="tripList"></div>
+    <div class="mine">
+      <div class="minehead"><b>New trip</b><span>Budget is in your home currency. Each spend keeps the rate at the time you record it.</span></div>
+      <input id="tripNewName" class="search2" type="text" placeholder="Trip name" autocomplete="off" maxlength="40">
+      <div class="two">
+        <label><span>Budget (<b id="tripBudgetCcy">JPY</b>)</span><input id="tripNewBudget" class="num" type="text" inputmode="decimal" placeholder="100000" autocomplete="off"></label>
+        <label><span>Start</span><input id="tripNewStart" type="date"></label>
+      </div>
+      <div class="two">
+        <label><span>End</span><input id="tripNewEnd" type="date"></label>
+        <button class="cta small" id="btnTripCreate" type="button" style="align-self:end">Create trip</button>
+      </div>
+    </div>
+    <div class="mine">
+      <div class="minehead"><b>Conversion basis</b><span>Totals use the rate saved when each spend was recorded, or today's rate.</span></div>
+      <div class="chips" id="basisChips"><button type="button" data-v="snapshot" class="on">Rate at record time</button><button type="button" data-v="current">Current rate</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ All rates (F03) ============ -->
+<div class="sheet" id="sheetRates" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>All rates</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="ratehero"><div class="num" id="arAmount"></div><div class="sub" id="arSub"></div></div>
+    <ul class="picklist" id="arList"></ul>
+    <p class="sub">Pinned currencies (up to 12). Pin more from the currency picker.</p>
   </div>
 </div>
 

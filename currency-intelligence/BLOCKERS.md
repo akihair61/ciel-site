@@ -27,6 +27,6 @@
 | Q-05 「最少回数」の表現 | split.ts コメント、F13 UI 文言 | 修正・試験済み |
 | Q-06 ストレージの原子性・移行・Export/Import | schemaVersion 4、`.bak`、Export/Import | 修正・試験済み |
 | Phase 2 F13 割り勘 UI | ホーム MORE → Split a bill | 作成・ブラウザ試験済み |
-| Phase 2 F11 旅行・予算(スナップショット)、F01 ピン・ja/en/th、F02 定義、F03 12 通貨一覧 | 未着手 | 次の PR 単位 |
+| Phase 2 F11 旅行・予算(スナップショット)、F01 ピン・ja/en/th、F02 定義、F03 12 通貨一覧 | ホーム MORE → Trips & budget / All rates、ピッカーの ★、レート詳細の定義文、設定の Language | 作成・ブラウザ試験済み(`docs/verify_p2.js` 20 項目) |
 | Phase 3 iOS | B-01(macOS/Xcode なし) | 未着手 |
 | 外部 API の実疎通 | B-02(この環境から api.coinbase.com / open.er-api.com / api.frankfurter.app は 403) | 未解決。プロバイダはテストのフェイク応答でのみ検証 |

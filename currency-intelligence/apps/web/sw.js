@@ -1,9 +1,9 @@
 // App-shell cache. Rates are never cached here: they live in localStorage with
 // their observedAt, so the app can say how old they are. Bump VERSION on deploy.
-const VERSION = "ci-shell-v5";
-const SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg",
+const VERSION = "ci-shell-v6";
+const SHELL = ["./", "./index.html", "./styles.css", "./app.js", "./i18n.js", "./manifest.webmanifest", "./icon.svg",
   "./core/index.js", "./core/dec.js", "./core/currencies.js", "./core/money.js", "./core/rates.js",
-  "./core/convert.js", "./core/compare.js", "./core/split.js", "./core/providers.js", "./core/cache.js"];
+  "./core/convert.js", "./core/compare.js", "./core/split.js", "./core/providers.js", "./core/cache.js", "./core/json.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
