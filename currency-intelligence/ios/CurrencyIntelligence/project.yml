@@ -1,0 +1,30 @@
+# Fallback: if Xcode cannot open the hand-written project.pbxproj, regenerate it with XcodeGen:
+#   brew install xcodegen && cd ios/CurrencyIntelligence && xcodegen generate
+name: CurrencyIntelligence
+options:
+  bundleIdPrefix: com.akihair
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+packages:
+  CoreMoney:
+    path: ../CoreMoney
+targets:
+  CurrencyIntelligence:
+    type: application
+    platform: iOS
+    sources: [CurrencyIntelligence]
+    dependencies:
+      - package: CoreMoney
+    info:
+      path: CurrencyIntelligence/Info.plist
+      properties:
+        CFBundleDisplayName: Currency Intelligence
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.akihair.currencyintelligence
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
