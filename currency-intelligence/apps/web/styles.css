@@ -97,6 +97,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .onboard.play .onb-copy > :nth-child(4){animation-delay:3s}
 .onboard.still .splashwhite,.onboard.still .burst,.onboard.still .pieces,.onboard.still .diagline,.onboard.still .bands{display:none}
 .onboard.still .onb-logo,.onboard.still .onb-copy > *{opacity:1}
+.onboard.auto .onb-copy{visibility:hidden}
 .onboard.leaving .onb-copy > *{transition:opacity .3s;opacity:0!important}
 .onboard.leaving{position:fixed;inset:0;z-index:50;max-width:480px;margin-left:auto;margin-right:auto;transition:opacity .45s .55s,filter .5s .45s;opacity:0;filter:blur(18px);pointer-events:none}
 
@@ -217,7 +218,6 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-l
 .swap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;background:var(--black);color:var(--black-ink);display:grid;place-items:center;border:4px solid var(--bg);z-index:2}
 .swap svg{width:20px;height:20px;transition:transform .45s var(--spring)}
 .swap.turn svg{transform:rotate(180deg)}
-@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
 .raterow{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:10px;background:var(--box);border-radius:20px;padding:12px 14px;text-align:left;min-width:0}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgb(25 160 91 / .5);animation:pulse 2.4s ease-out infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgb(25 160 91 / .45)}70%{box-shadow:0 0 0 8px rgb(25 160 91 / 0)}100%{box-shadow:0 0 0 0 rgb(25 160 91 / 0)}}

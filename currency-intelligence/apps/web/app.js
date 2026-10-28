@@ -10,7 +10,8 @@ const CROSS_TOLERANCE_MS = 36 * 60 * 60 * 1000;
 const PIVOT = "USD";
 const ROUNDING = "HALF_EVEN";
 const SERIES_DAYS = 30;
-const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Motion is the product here: the OS "reduce motion" setting is deliberately not honoured (it hid every animation for users who have it on).
+const REDUCED = false;
 
 const FLAG_CC = { JPY:"JP", THB:"TH", USD:"US", EUR:"EU", GBP:"GB", KRW:"KR", TWD:"TW", CNY:"CN", HKD:"HK", SGD:"SG", MYR:"MY", IDR:"ID", PHP:"PH", VND:"VN", LAK:"LA", KHR:"KH", MMK:"MM", INR:"IN", AUD:"AU", NZD:"NZ", CAD:"CA", CHF:"CH", SEK:"SE", NOK:"NO", DKK:"DK", CZK:"CZ", PLN:"PL", HUF:"HU", ISK:"IS", TRY:"TR", AED:"AE", SAR:"SA", KWD:"KW", BHD:"BH", OMR:"OM", JOD:"JO", MXN:"MX", BRL:"BR", CLP:"CL", ZAR:"ZA", EGP:"EG", LKR:"LK", NPR:"NP" };
 const flag = (code) => { const cc = FLAG_CC[code]; return cc ? [...cc].map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join("") : "¤"; };
@@ -153,8 +154,9 @@ function show(name, how = "auto") {
   current = name;
 }
 function moveTabHl() { const on = document.querySelector(".tabs a.on"); if (on) $("tabhl").style.left = on.offsetLeft + "px"; }
+let booting = true;
 function route() {
-  if (!S.onboarded) { show("onboard"); return; }
+  if (booting || !S.onboarded) { show("onboard"); return; }
   const h = (location.hash || "#home").slice(1);
   const name = ["home", "convert", "wallet"].includes(h) ? h : "home";
   if (name === "home") renderHome(current !== "home");
@@ -485,7 +487,7 @@ function openPicker(which, onPick) {
 
 // ---------- onboarding ----------
 async function leaveOnboarding(demo) {
-  S.onboarded = true;
+  S.onboarded = true; booting = false;
   if (demo) {
     S.home = "JPY"; S.sel = "THB"; S.from = "JPY"; S.to = "THB";
     S.balances = { JPY: "48000", THB: "9870.00", USD: "120.00" }; S.mine = { "JPY/THB": { paid: "100000", received: "22500", at: new Date(Date.now() - 2 * 864e5).toISOString() } };
@@ -553,7 +555,10 @@ function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = fals
 window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").querySelector("button.on"); if (on) { $("tkhl").style.left = on.offsetLeft + "px"; $("tkhl").style.width = on.offsetWidth + "px"; } });
 
 // ---------- boot ----------
-if (!S.onboarded) { buildBurst(); $("s-onboard").classList.add(REDUCED ? "still" : "play"); }
+// Splash plays on every cold open (as in the reference). Returning users skip the copy and land on home after the bands.
+buildBurst();
+const ob = $("s-onboard"); ob.classList.add("play"); if (S.onboarded) ob.classList.add("auto");
 route();
+if (S.onboarded) setTimeout(() => leaveOnboarding(false), 2150);
 loadRates();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js").catch(() => {});
