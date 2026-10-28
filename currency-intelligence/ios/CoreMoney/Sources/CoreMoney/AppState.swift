@@ -185,8 +185,15 @@ public struct StateStore {
     public static func importJSON(_ data: Data) -> Result<AppState, ImportError> {
         let dec = JSONDecoder()
         var state: AppState
-        if let env = try? dec.decode(ExportEnvelope.self, from: data), env.app == "currency-intelligence" { state = env.data }
-        else if let s = try? dec.decode(AppState.self, from: data) { state = s }
+        // Envelope {app, schemaVersion, exportedAt?, data} or a bare state object. Decide by the "app" key so a
+        // partial envelope is never mistaken for a (nearly empty) bare state.
+        guard let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return .failure(.notJSON) }
+        if (root["app"] as? String) == "currency-intelligence" {
+            guard let inner = root["data"] as? [String: Any], let innerData = try? JSONSerialization.data(withJSONObject: inner),
+                  let s = try? dec.decode(AppState.self, from: innerData) else { return .failure(.notJSON) }
+            if let v = root["schemaVersion"] as? Int, v > AppState.schema { return .failure(.invalid(["schema v\(v) is newer than this app (v\(AppState.schema))"])) }
+            state = s
+        } else if let s = try? dec.decode(AppState.self, from: data) { state = s }
         else { return .failure(.notJSON) }
         let errors = state.validate()
         if !errors.isEmpty { return .failure(.invalid(errors)) }
