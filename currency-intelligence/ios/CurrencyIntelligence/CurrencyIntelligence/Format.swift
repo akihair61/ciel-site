@@ -9,6 +9,7 @@ enum Format {
         f.numberStyle = .currency
         f.currencyCode = m.currency
         f.locale = Locale(identifier: "en_US")
+        if let sym = Currencies.all[m.currency]?.symbol { f.currencySymbol = sym } // same symbols as the web client (฿, ¥, ₩ …)
         f.minimumFractionDigits = m.scale
         f.maximumFractionDigits = m.scale
         return f.string(from: NSDecimalNumber(string: m.decimalString, locale: Locale(identifier: "en_US_POSIX"))) ?? "\(m.currency) \(m.decimalString)"
