@@ -71,3 +71,21 @@ final class SpecTwoTests: XCTestCase {
         XCTAssertEqual(try Converter.convert(try Money("1000", currency: "JPY"), quote: q, rounding: .halfEven).convertedAmount.decimalString, "222.95")
     }
 }
+
+final class SplitTests: XCTestCase {
+    func testSharesSumToTotalAndRoundingGoesToFirst() throws {
+        let r = try Split.equal(try Money("1000.01", currency: "THB"), participants: ["Me", "A", "B", "Dee"])
+        XCTAssertEqual(r.shares.map { $0.amount.decimalString }, ["250.01", "250.00", "250.00", "250.00"])
+        XCTAssertEqual(r.roundingAbsorbedBy, ["Me"])
+        let w = try Split.byWeight(try Money("1000.01", currency: "THB"), participants: ["Me", "A", "B", "Dee"], weights: [2, 1, 1, 1])
+        XCTAssertEqual(w.shares.map { $0.amount.decimalString }, ["400.01", "200.00", "200.00", "200.00"])
+    }
+    func testSettleReducesTransfersAndNetsToZero() throws {
+        let r = try Split.equal(try Money("1000.01", currency: "THB"), participants: ["Me", "A", "B", "Dee"])
+        let t = try Split.settle(r.shares, payments: [Payment(payerId: "A", amount: r.total)])
+        XCTAssertEqual(t.map { "\($0.from)>\($0.to):\($0.amount.decimalString)" }, ["Me>A:250.01", "B>A:250.00", "Dee>A:250.00"])
+        XCTAssertLessThanOrEqual(t.count, 3) // debtors(3) + creditors(1) - 1
+        let net = t.reduce(0) { $0 + $1.amount.minor }
+        XCTAssertEqual(net, r.total.minor - r.shares[1].amount.minor)
+    }
+}

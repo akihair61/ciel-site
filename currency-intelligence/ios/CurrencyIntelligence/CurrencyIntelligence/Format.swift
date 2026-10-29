@@ -21,15 +21,15 @@ enum Format {
         return "\(out)"
     }
     static func date(_ d: Date) -> String {
-        let f = DateFormatter(); f.dateStyle = .medium; f.timeStyle = .none; return f.string(from: d)
+        let f = DateFormatter(); f.locale = Lang.locale; f.dateStyle = .medium; f.timeStyle = .none; return f.string(from: d)
     }
     static func dateTime(_ iso: String?) -> String {
-        guard let iso, let d = ISO8601DateFormatter().date(from: iso) ?? ISO8601DateFormatter.withFraction.date(from: iso) else { return "Not published by provider" }
-        let f = DateFormatter(); f.dateStyle = .medium; f.timeStyle = .short; return f.string(from: d)
+        guard let iso, let d = ISO8601DateFormatter().date(from: iso) ?? ISO8601DateFormatter.withFraction.date(from: iso) else { return L("Not published by provider") }
+        let f = DateFormatter(); f.locale = Lang.locale; f.dateStyle = .medium; f.timeStyle = .short; return f.string(from: d)
     }
     static func ago(_ d: Date) -> String {
         let s = Int(max(0, Date().timeIntervalSince(d)))
-        return s < 60 ? "\(s)s ago" : s < 3600 ? "\(s / 60)m ago" : "\(s / 3600)h ago"
+        return s < 60 ? L("{n}s ago").replacingOccurrences(of: "{n}", with: "\(s)") : s < 3600 ? L("{n}m ago").replacingOccurrences(of: "{n}", with: "\(s / 60)") : L("{n}h ago").replacingOccurrences(of: "{n}", with: "\(s / 3600)")
     }
     static func ref() -> String {
         let chars = Array("ABCDEFGHJKLMNPQRSTUVWXYZ23456789")

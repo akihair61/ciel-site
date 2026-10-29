@@ -2,7 +2,7 @@
 import SwiftUI
 import CoreMoney
 
-/// "Converted" sheet. The conversion is a SIMULATION until the user taps "Record as a real exchange".
+/// L("Converted") sheet. The conversion is a SIMULATION until the user taps L("Record as a real exchange").
 struct ResultSheet: View {
     let tx: Conversion
     @EnvironmentObject var model: AppModel
@@ -13,9 +13,9 @@ struct ResultSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 14) {
-                Text("Converted").font(.title2.weight(.heavy))
+                Text(L("Converted")).font(.title2.weight(.heavy))
                 Text(tx.rateText + (tx.mine == true ? " (your rate)" : "")).foregroundStyle(.secondary).font(.footnote)
-                Label("Simulation · no balance changed, no money moved", systemImage: "circle.fill").font(.caption.weight(.bold)).foregroundStyle(.orange)
+                Label(L("Simulation · no balance changed, no money moved"), systemImage: "circle.fill").font(.caption.weight(.bold)).foregroundStyle(.orange)
                     .padding(.vertical, 6).padding(.horizontal, 12).background(Capsule().fill(.orange.opacity(0.15)))
                 HStack(spacing: 12) {
                     tile("From \(tx.from)", "−" + tx.fromText, .primary)
@@ -23,12 +23,12 @@ struct ResultSheet: View {
                     tile("To \(tx.to)", "+" + tx.toText, .green)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    row("\(Format.flag(tx.from)) \(tx.from) balance (unchanged)", tx.balFrom ?? "Not set")
-                    row("\(Format.flag(tx.to)) \(tx.to) balance (unchanged)", tx.balTo ?? "Not set")
+                    row("\(Format.flag(tx.from)) \(tx.from) balance (unchanged)", tx.balFrom ?? L("Not set"))
+                    row("\(Format.flag(tx.to)) \(tx.to) balance (unchanged)", tx.balTo ?? L("Not set"))
                 }
-                Button { receipt = tx } label: { listRow("doc.text", "Simulation note (receipt)") }
-                Button { confirmRecord = true } label: { listRow("checkmark", "Record as a real exchange") }
-                Button("Done") { dismiss() }.buttonStyle(.borderedProminent).frame(maxWidth: .infinity)
+                Button { receipt = tx } label: { listRow("doc.text", L("Simulation note (receipt)")) }
+                Button { confirmRecord = true } label: { listRow("checkmark", L("Record as a real exchange")) }
+                Button(L("Done")) { dismiss() }.buttonStyle(.borderedProminent).frame(maxWidth: .infinity)
                 Spacer()
             }
             .padding()
@@ -61,34 +61,34 @@ struct ReceiptView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 10) {
-                    Text(kind == "exchange" ? "EXCHANGE RECORD" : sim ? "SIMULATION NOTE" : "LEGACY CONVERSION").font(.caption.weight(.heavy)).tracking(2).foregroundStyle(.secondary)
-                    Text(kind == "exchange" ? "RECORDED" : sim ? "SIMULATED" : "LEGACY").font(.caption.weight(.heavy)).tracking(2)
+                    Text(kind == "exchange" ? L("EXCHANGE RECORD") : sim ? L("SIMULATION NOTE") : L("LEGACY CONVERSION")).font(.caption.weight(.heavy)).tracking(2).foregroundStyle(.secondary)
+                    Text(kind == "exchange" ? L("RECORDED") : sim ? L("SIMULATED") : L("LEGACY")).font(.caption.weight(.heavy)).tracking(2)
                         .padding(6).overlay(RoundedRectangle(cornerRadius: 6).stroke(lineWidth: 2)).foregroundStyle(kind == "exchange" ? .green : .orange).rotationEffect(.degrees(-8))
-                    Text(sim ? "You would get" : "You converted").font(.footnote).foregroundStyle(.secondary)
+                    Text(sim ? L("You would get") : L("You converted")).font(.footnote).foregroundStyle(.secondary)
                     Text(tx.toText).font(.system(size: 40, weight: .heavy, design: .rounded)).monospacedDigit()
                     Text("for \(tx.fromText)").foregroundStyle(.secondary)
                     Text(Format.dateTime(tx.at)).font(.caption).foregroundStyle(.secondary)
                     Divider()
-                    rows([(sim ? "You'd pay" : "You paid", tx.fromText), (sim ? "You'd get" : "You got", tx.toText), ("Exchange rate", tx.rateText),
-                          ("Fee", tx.mine == true ? "Included in your rate" : "Not included (reference rate)"), ("Reference", tx.ref)])
+                    rows([(sim ? L("You'd pay") : L("You paid"), tx.fromText), (sim ? L("You'd get") : L("You got"), tx.toText), (L("Exchange rate"), tx.rateText),
+                          ("Fee", tx.mine == true ? L("Included in your rate") : L("Not included (reference rate)")), (L("Reference"), tx.ref)])
                     Divider()
-                    Text(sim ? "BALANCES (UNCHANGED)" : "NEW BALANCES").font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
+                    Text(sim ? L("BALANCES (UNCHANGED)") : L("NEW BALANCES")).font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
                     rows([(tx.from, tx.balFrom ?? "No balance recorded"), (tx.to, tx.balTo ?? "No balance recorded")])
-                    Text("RATE SOURCE").font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
-                    rows([("Source", tx.source), ("Type", "\(tx.rateKind ?? "") · \(tx.confidence ?? "")"), ("Observed", Format.dateTime(tx.observedAt)), ("Fetched", Format.dateTime(tx.receivedAt)), ("Rounding", tx.rounding ?? "")])
-                    Text(kind == "exchange" ? "A record you entered of a real exchange. Balances on this device were updated." : sim ? "A simulation at the rate shown. No balance changed and no money moved." : "Made before v4, when Convert changed balances. Kept as it was.")
+                    Text(L("RATE SOURCE")).font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
+                    rows([(L("Source"), tx.source), ("Type", "\(tx.rateKind ?? "") · \(tx.confidence ?? "")"), (L("Observed"), Format.dateTime(tx.observedAt)), (L("Fetched"), Format.dateTime(tx.receivedAt)), (L("Rounding"), tx.rounding ?? "")])
+                    Text(kind == "exchange" ? L("A record you entered of a real exchange. Balances on this device were updated.") : sim ? L("A simulation at the rate shown. No balance changed and no money moved.") : L("Made before v4, when Convert changed balances. Kept as it was."))
                         .font(.footnote).padding(10).background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
-                    Text("A note kept on your device (record or simulation), not a statement from an exchange, bank or card issuer.").font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    Text(L("A note kept on your device (record or simulation), not a statement from an exchange, bank or card issuer.")).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }.padding()
             }
-            .navigationTitle("Receipt")
+            .navigationTitle(L("Receipt"))
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(L("Done")) { dismiss() } }
                 ToolbarItem(placement: .primaryAction) { ShareLink(item: shareText) }
             }
         }
     }
-    var shareText: String { "\(kind == "exchange" ? "Exchange record" : sim ? "Simulation (no money moved)" : "Legacy conversion")\n\(tx.fromText) → \(tx.toText)\n\(tx.rateText)\n\(tx.source)\n\(tx.ref)" }
+    var shareText: String { "\(kind == "exchange" ? L("Exchange record") : sim ? L("Simulation (no money moved)") : L("Legacy conversion"))\n\(tx.fromText) → \(tx.toText)\n\(tx.rateText)\n\(tx.source)\n\(tx.ref)" }
     func rows(_ items: [(String, String)]) -> some View {
         VStack(spacing: 6) { ForEach(items, id: \.0) { item in HStack(alignment: .top) { Text(item.0).foregroundStyle(.secondary); Spacer(); Text(item.1).bold().monospacedDigit().multilineTextAlignment(.trailing) }.font(.subheadline) } }
     }

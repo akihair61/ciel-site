@@ -23,12 +23,12 @@ struct ConvertView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                box(title: "You convert", code: model.state.from, balance: model.balance(model.state.from)) {
+                box(title: L("You convert"), code: model.state.from, balance: model.balance(model.state.from)) {
                     TextField("0", text: $input).keyboardType(.decimalPad).multilineTextAlignment(.trailing)
                         .font(.system(size: 34, weight: .heavy, design: .rounded)).monospacedDigit()
                 } tap: { pick = .from }
                 Button { swap() } label: { Image(systemName: "arrow.up.arrow.down").padding(10).background(Circle().fill(.primary)).foregroundStyle(Color(.systemBackground)) }
-                box(title: "You get", code: model.state.to, balance: model.balance(model.state.to)) {
+                box(title: L("You get"), code: model.state.to, balance: model.balance(model.state.to)) {
                     Text(converted.map(Format.money) ?? Format.money(Money.zero(model.state.to)))
                         .font(.system(size: 34, weight: .heavy, design: .rounded)).monospacedDigit()
                         .foregroundStyle(converted == nil ? .tertiary : .primary).frame(maxWidth: .infinity, alignment: .trailing)
@@ -51,11 +51,11 @@ struct ConvertView: View {
                 .disabled(converted == nil || loading)
             }
             .padding()
-            .navigationTitle("Convert")
+            .navigationTitle(L("Convert"))
             .sheet(isPresented: $showResult) { if let tx = model.lastConversion { ResultSheet(tx: tx).environmentObject(model) } }
             .sheet(isPresented: $showRate) { RateInfoView().environmentObject(model) }
             .sheet(item: $pick) { which in
-                CurrencyPicker(title: which == .from ? "Convert from" : "Convert to") { code in
+                CurrencyPicker(title: which == .from ? L("Convert from") : L("Convert to")) { code in
                     if which == .from { if code == model.state.to { model.state.to = model.state.from }; model.state.from = code; input = "" }
                     else { if code == model.state.from { model.state.from = model.state.to }; model.state.to = code }
                     model.save()
@@ -65,8 +65,8 @@ struct ConvertView: View {
     }
 
     var ctaText: String {
-        guard let a = amount, a.minor > 0 else { return "Enter an amount" }
-        return converted == nil ? "No rate available" : "Convert \(Format.money(a))"
+        guard let a = amount, a.minor > 0 else { return L("Enter an amount") }
+        return converted == nil ? L("No rate available") : "Convert \(Format.money(a))"
     }
     var rateRow: some View {
         HStack(spacing: 10) {
@@ -75,7 +75,7 @@ struct ConvertView: View {
                 if let q = model.quote(from: model.state.from, to: model.state.to) {
                     Text("1 \(model.state.from) = \(Format.rate(q.quote.rate)) \(model.state.to)").font(.subheadline.weight(.bold)).monospacedDigit()
                     Text(model.sourceLabel(q.quote) + model.statusSuffix).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                } else { Text("No rate for this pair").font(.subheadline) }
+                } else { Text(L("No rate for this pair")).font(.subheadline) }
             }
             Spacer()
             Image(systemName: "chevron.right").foregroundStyle(.secondary)
@@ -84,7 +84,7 @@ struct ConvertView: View {
     }
     func box<Content: View>(title: String, code: String, balance: Money?, @ViewBuilder content: () -> Content, tap: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack { Text(title).font(.caption).foregroundStyle(.secondary); Spacer(); Text(balance.map { "Balance \(Format.money($0))" } ?? "No balance").font(.caption).foregroundStyle(.secondary) }
+            HStack { Text(title).font(.caption).foregroundStyle(.secondary); Spacer(); Text(balance.map { "Balance \(Format.money($0))" } ?? L("No balance")).font(.caption).foregroundStyle(.secondary) }
             HStack {
                 Button(action: tap) { HStack(spacing: 6) { Text(Format.flag(code)); Text(code).font(.headline); Image(systemName: "chevron.down").font(.caption) }
                     .padding(.vertical, 6).padding(.horizontal, 10).background(Capsule().fill(Color(.systemBackground))) }.buttonStyle(.plain)
@@ -114,13 +114,13 @@ struct CurrencyPicker: View {
         NavigationStack {
             List {
                 if !model.state.pins.isEmpty && search.isEmpty {
-                    Section("Pinned") { rows(model.state.pins) }
-                    Section("All currencies") { rows(codes.filter { !model.state.pins.contains($0) }) }
+                    Section(L("Pinned")) { rows(model.state.pins) }
+                    Section(L("All currencies")) { rows(codes.filter { !model.state.pins.contains($0) }) }
                 } else {
                     rows(codes)
                 }
             }
-            .searchable(text: $search, prompt: "Search currency")
+            .searchable(text: $search, prompt: L("Search currency"))
             .navigationTitle(title)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } } }
         }

@@ -18,34 +18,34 @@ struct RateInfoView: View {
                         Text(model.sourceLabel(p.quote) + model.statusSuffix).font(.footnote).foregroundStyle(.secondary)
                     }
                     Section("Provenance") {
-                        row("Source", sourceText(p.quote))
+                        row(L("Source"), sourceText(p.quote))
                         row("Type", "\(p.quote.rateKind.rawValue) · \(p.quote.confidence.rawValue)")
-                        row("Freshness", freshness)
-                        row("Observed", p.quote.observedAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? "Not published by provider; age is counted from the fetch")
-                        row("Fetched", Format.dateTime(ISO8601DateFormatter().string(from: p.quote.receivedAt)))
-                        row("Expires", p.quote.expiresAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? "Not stated by provider")
+                        row(L("Freshness"), freshness)
+                        row(L("Observed"), p.quote.observedAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? "Not published by provider; age is counted from the fetch")
+                        row(L("Fetched"), Format.dateTime(ISO8601DateFormatter().string(from: p.quote.receivedAt)))
+                        row(L("Expires"), p.quote.expiresAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? L("Not stated by provider"))
                         row("Math", (p.quote.derivedFrom != nil ? "Cross rate via USD · " : "") + "rounding \(model.rounding.rawValue)")
                         if let n = p.quote.notes?.first(where: { $0.contains("observation time unknown") }) { row("Note", n) }
                     }
-                } else { Text("No rate for this pair") }
-                Section("Your rate") {
-                    Text("Enter the two numbers from your exchange receipt. Conversions then use your true rate.").font(.footnote).foregroundStyle(.secondary)
+                } else { Text(L("No rate for this pair")) }
+                Section(L("Your rate")) {
+                    Text(L("Enter the two numbers from your exchange receipt. Conversions then use your true rate.")).font(.footnote).foregroundStyle(.secondary)
                     TextField("You paid (\(model.state.from))", text: $paid).keyboardType(.decimalPad)
                     TextField("You got (\(model.state.to))", text: $got).keyboardType(.decimalPad)
                     HStack {
-                        Button("Use this rate") { if !model.setMine(from: model.state.from, to: model.state.to, paid: paid, received: got) { model.notice = "Enter both amounts" } }
+                        Button(L("Use this rate")) { if !model.setMine(from: model.state.from, to: model.state.to, paid: paid, received: got) { model.notice = L("Enter both amounts") } }
                         Spacer()
-                        Button("Back to market rate") { model.clearMine(from: model.state.from, to: model.state.to) }
+                        Button(L("Back to market rate")) { model.clearMine(from: model.state.from, to: model.state.to) }
                     }.buttonStyle(.bordered)
                 }
-                Section("Home currency") {
-                    Picker("Home currency", selection: Binding(get: { model.state.home }, set: { model.state.home = $0; model.save() })) {
+                Section(L("Home currency")) {
+                    Picker(L("Home currency"), selection: Binding(get: { model.state.home }, set: { model.state.home = $0; model.save() })) {
                         ForEach(Currencies.all.keys.sorted(), id: \.self) { Text("\(Format.flag($0)) \($0)").tag($0) }
                     }
                 }
                 Section { Text("Change = last point vs first point of the period. Daily points are ECB reference rates (one per working day, no weekend or holiday points). Charts are not yet implemented in the iOS client.").font(.footnote).foregroundStyle(.secondary) }
             }
-            .navigationTitle("About this rate")
+            .navigationTitle(L("About this rate"))
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } } }
             .onAppear { if let m = model.state.mine["\(model.state.from)/\(model.state.to)"] { paid = m.paid; got = m.received } }
             .refreshable { await model.refreshRates() }

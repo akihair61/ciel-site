@@ -26,6 +26,7 @@ final class AppModel: ObservableObject {
         let (s, how) = store.load()
         state = s
         rates = RateTable(quotes: SampleRates.quotes(), source: "embedded", status: "sample")
+        Lang.current = Lang.resolve(setting: s.lang)
         switch how {
         case .restoredFromBackup: notice = "Saved data was unreadable. Restored the last backup."
         case .unreadable(let why): notice = "Saved data was unreadable: \(why). Starting fresh."
@@ -35,7 +36,29 @@ final class AppModel: ObservableObject {
 
     // MARK: persistence
     func save() {
+        Lang.current = Lang.resolve(setting: state.lang)
         do { try store.save(state) } catch { notice = "Could not save: \(error.localizedDescription)" }
+    }
+
+    // MARK: trips (F11)
+    func currentTrip() -> Trip? { state.trip.flatMap { id in state.trips.first { $0.id == id } } }
+    func createTrip(name: String, budget: String, start: Date?, end: Date?) {
+        let b = (try? Money(budget.replacingOccurrences(of: ",", with: ""), currency: state.home, rounding: .down)).map { $0.decimalString }
+        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"; df.locale = Locale(identifier: "en_US_POSIX")
+        let t = Trip(id: "trip-" + String(Int(Date().timeIntervalSince1970), radix: 36), name: name.trimmingCharacters(in: .whitespaces), budget: b, home: state.home,
+                     start: start.map(df.string), end: end.map(df.string), createdAt: ISO8601DateFormatter().string(from: Date()))
+        state.trips.insert(t, at: 0); state.trip = t.id; save()
+    }
+    func deleteTrip(_ id: String) { state.trips.removeAll { $0.id == id }; if state.trip == id { state.trip = nil }; save() } // spends keep their tripId and snapshots
+    func tripTotals(_ trip: Trip) -> (spent: Money, budget: Money?, remaining: Money?, n: Int, noSnap: Int, unconverted: Int) {
+        var spent = Money.zero(state.home); var n = 0, noSnap = 0, unconverted = 0
+        for e in state.ledger where e.kind == "spend" && e.tripId == trip.id {
+            n += 1; if e.snap == nil { noSnap += 1 }
+            guard let m = entryHome(e), let t = try? spent.add(m) else { unconverted += 1; continue }
+            spent = t
+        }
+        let budget = trip.budget.flatMap { try? Money($0, currency: state.home) }
+        return (spent, budget, budget.flatMap { try? $0.subtract(spent) }, n, noSnap, unconverted)
     }
 
     // MARK: rates
@@ -63,14 +86,14 @@ final class AppModel: ObservableObject {
 
     func sourceLabel(_ q: RateQuote) -> String {
         switch q.source {
-        case "user": return "Your rate"
-        case "coinbase": return "Coinbase · fetched \(Format.ago(q.receivedAt)) · observation time not published"
-        case "embedded": return "Sample rate · \(Format.date(q.observedAt ?? q.receivedAt)) · not current"
-        default: return "Reference rate · daily · \(Format.date(q.observedAt ?? q.receivedAt))"
+        case "user": return L("Your rate")
+        case "coinbase": return "Coinbase · \(L("fetched")) \(Format.ago(q.receivedAt)) · \(L("observation time not published"))"
+        case "embedded": return "\(L("Sample rate")) · \(Format.date(q.observedAt ?? q.receivedAt)) · \(L("not current"))"
+        default: return "\(L("Reference rate")) · \(L("daily")) · \(Format.date(q.observedAt ?? q.receivedAt))"
         }
     }
     var statusSuffix: String {
-        switch rates.status { case "stale": return " · stale"; case "offline": return " · offline, last saved"; default: return "" }
+        switch rates.status { case "stale": return " · " + L("stale"); case "offline": return " · " + L("offline, last saved"); default: return "" }
     }
 
     // MARK: balances
@@ -159,7 +182,7 @@ final class AppModel: ObservableObject {
     // MARK: pins, mine rate, settings
     func togglePin(_ code: String) {
         if let i = state.pins.firstIndex(of: code) { state.pins.remove(at: i) }
-        else if state.pins.count < 12 { state.pins.append(code) } else { notice = "Up to 12 pinned currencies"; return }
+        else if state.pins.count < 12 { state.pins.append(code) } else { notice = L("Up to 12 pinned currencies"); return }
         save()
     }
     func setMine(from: String, to: String, paid: String, received: String) -> Bool {
@@ -173,7 +196,7 @@ final class AppModel: ObservableObject {
     func importData(_ data: Data) -> String? {
         switch StateStore.importJSON(data) {
         case .success(let s): state = s; save(); return nil
-        case .failure(.notJSON): return "Not a JSON file"
+        case .failure(.notJSON): return L("Not a JSON file")
         case .failure(.invalid(let errs)): return "Import rejected: " + (errs.first ?? "invalid")
         }
     }

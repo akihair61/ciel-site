@@ -11,20 +11,23 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Motion") {
-                    Picker("Motion", selection: Binding(get: { model.state.motion }, set: { model.state.motion = $0; model.save() })) {
-                        Text("Auto").tag("auto"); Text("On").tag("on"); Text("Off").tag("off")
+                Section(L("Motion")) {
+                    Picker(L("Motion"), selection: Binding(get: { model.state.motion }, set: { model.state.motion = $0; model.save() })) {
+                        Text(L("Auto")).tag("auto"); Text(L("On")).tag("on"); Text(L("Off")).tag("off")
                     }.pickerStyle(.segmented)
                     Text("\"Auto\" follows your device's Reduce Motion setting. \"Off\" shows every result in one short step.").font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Language") {
-                    Text("The iOS client follows the device language for system text. App copy is English in this version; ja/th are available in the web client.").font(.footnote).foregroundStyle(.secondary)
+                Section(L("Language")) {
+                    Picker("", selection: Binding(get: { model.state.lang }, set: { model.state.lang = $0; model.save() })) {
+                        Text(L("Auto")).tag("auto"); Text("English").tag("en"); Text("日本語").tag("ja"); Text("ไทย").tag("th")
+                    }.pickerStyle(.segmented)
+                    Text(L("Follows your device unless you pick one.")).font(.footnote).foregroundStyle(.secondary)
                 }
-                Section("Your data") {
+                Section(L("Your data")) {
                     Text("Everything stays on this device (one backup copy is kept). Export a JSON file to move it to another device or the web app; import replaces what is here after you confirm.").font(.footnote).foregroundStyle(.secondary)
-                    Button("Export JSON") { export() }
+                    Button(L("Export JSON")) { export() }
                     if let url = exportURL { ShareLink(item: url) { Label("Share the exported file", systemImage: "square.and.arrow.up") } }
-                    Button("Import JSON") { importing = true }
+                    Button(L("Import JSON")) { importing = true }
                     Text("Schema v\(model.state.schemaVersion) · \(model.state.balances.count) balances · \(model.state.ledger.count) transactions · \(model.state.history.count) conversions").font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Rates") {
