@@ -13,6 +13,15 @@ public struct SplitResult: Sendable {
     public let roundingAbsorbedBy: [String]
 }
 
+struct Side {
+    let id: String
+    var v: Int64
+    static func order(_ a: Side, _ b: Side) -> Bool {
+        if a.v == b.v { return a.id < b.id }
+        return a.v > b.v
+    }
+}
+
 public enum Split {
     public static func equal(_ total: Money, participants: [String]) throws -> SplitResult {
         try byWeight(total, participants: participants, weights: participants.map { _ in 1 })
@@ -33,8 +42,13 @@ public enum Split {
         var balance: [String: Int64] = [:]
         for s in shares { balance[s.participantId, default: 0] -= s.amount.minor }
         for p in payments { guard p.amount.currency == ccy else { throw MoneyError.currencyMismatch(ccy, p.amount.currency) }; balance[p.payerId, default: 0] += p.amount.minor }
-        var debtors = balance.filter { $0.value < 0 }.map { (id: $0.key, v: -$0.value) }.sorted { $0.v == $1.v ? $0.id < $1.id : $0.v > $1.v }
-        var creditors = balance.filter { $0.value > 0 }.map { (id: $0.key, v: $0.value) }.sorted { $0.v == $1.v ? $0.id < $1.id : $0.v > $1.v }
+        var debtors: [Side] = []
+        var creditors: [Side] = []
+        for (id, v) in balance {
+            if v < 0 { debtors.append(Side(id: id, v: -v)) } else if v > 0 { creditors.append(Side(id: id, v: v)) }
+        }
+        debtors.sort(by: Side.order)
+        creditors.sort(by: Side.order)
         var out: [Transfer] = []
         var i = 0, j = 0
         while i < debtors.count && j < creditors.count {

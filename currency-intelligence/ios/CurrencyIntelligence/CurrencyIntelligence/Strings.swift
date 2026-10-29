@@ -100,7 +100,6 @@ enum Strings {
         "(your rate)": ("(あなたのレート)", "(อัตราของคุณ)"),
         "Record this as a real exchange you made?": ("実際に行った両替として記録しますか?", "บันทึกเป็นการแลกเงินจริงที่คุณทำหรือไม่?"),
         "This changes the balances recorded on this device.": ("この端末に記録した残高が変わります。", "ยอดที่บันทึกในเครื่องนี้จะเปลี่ยน"),
-        "Exchange recorded": ("両替を記録しました", "บันทึกการแลกเงินแล้ว"),
         "Receipt": ("レシート", "ใบเสร็จ"),
         "Share": ("共有", "แชร์"),
         "EXCHANGE RECORD": ("両替記録", "บันทึกการแลกเงิน"),
