@@ -48,7 +48,7 @@
 | ストレージの版管理・バックアップ・移行・書き出し/読み込み | ✅ | ✅ | **Q-06 対応**: `schemaVersion 4`、`ci.v4.bak`、v3→v4 移行、Export/Import(検証・確認付き)。ブラウザ試験 28 項目 |
 | stale-while-revalidate、provenance 付き永続化 | ✅ | ✅ | `RateCache` |
 | 不明要素を 0 とみなさない比較 | ✅ | ✅ | `comparePayments()` |
-| 多言語(ja/en/th) | 🟡 | ✅ | `apps/web/i18n.js`(約 230 語句)。静的テキストとプレースホルダは起動時に置換、動的文字列は `t()`。Playwright で ja / th / auto(en-US)を確認。**未訳**: 一部の固定文(印字ラベル GENERATING/PRINTING/DONE、ブランド名、「Your exchange receipt」等の出典行)、通貨名の th |
+| 多言語(ja/en/th) | 🟡 | ✅ | `apps/web/i18n.js`(239 語句、iOS は同じ表を `Strings.swift` に生成)。静的テキストとプレースホルダは起動時に置換、動的文字列は `t()`。Playwright で ja / th / auto(en-US)を確認。**未訳**: 一部の固定文(印字ラベル GENERATING/PRINTING/DONE、ブランド名、「Your exchange receipt」等の出典行)、通貨名の th |
 | アクセシビリティ(44pt、Reduce Motion) | 🟡 | 🟡 | **Q-03 対応**: OS の Reduce Motion を既定で尊重、アプリ内で On/Off。Playwright の `reducedMotion: "reduce"` で確認。VoiceOver は実機未確認 |
-| ダーク/ライト | ✅ | 🟡 | システム連動(ダークは目視未確認) |
+| ダーク/ライト | ✅ | ✅ | システム連動。ダークは Playwright で確認(ホームの見出しが消える不具合を修正、`docs/screenshots/spec02/home-dark.png`) |
 | 本番配信 | ⬜ | — | 独立(private)リポジトリと Pages はオーナー操作待ち(MIGRATION_PLAN.md) |
