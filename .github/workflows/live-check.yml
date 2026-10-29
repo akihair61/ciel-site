@@ -1,0 +1,42 @@
+# Verifies the real rate APIs and the ISO 4217 table from a runner with internet access
+# (the authoring container cannot reach them). Branch only; never touches main or Pages.
+name: live-check-currency-intelligence
+on:
+  push:
+    branches: [currency-intelligence]
+    paths: ["currency-intelligence/packages/core/**", "currency-intelligence/scripts/**", ".github/workflows/live-check.yml"]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1" # weekly, so a provider change is noticed
+permissions:
+  contents: write
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: currency-intelligence }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: node --version
+      - name: Core tests (fake responses)
+        working-directory: currency-intelligence/packages/core
+        run: node --test test/*.test.ts
+      - name: Web checks (Playwright, reference flow + Phase 1/2 verification)
+        working-directory: currency-intelligence
+        run: |
+          npm i --no-save playwright@1.56.1 >/dev/null 2>&1 || npm i --no-save playwright >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          (cd apps/web && python3 -m http.server 8765 >/dev/null 2>&1 &) ; sleep 1
+          node docs/verify_p1.js | tail -3
+          node docs/verify_p2.js | tail -3
+      - name: Live APIs + ISO 4217
+        working-directory: currency-intelligence
+        run: node scripts/live-check.mjs
+      - name: Commit results to the branch
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add currency-intelligence/docs/ci
+          git commit -m "ci: live API + ISO 4217 check results (run $GITHUB_RUN_ID)" || exit 0
+          git pull --rebase origin currency-intelligence
+          git push origin HEAD:currency-intelligence

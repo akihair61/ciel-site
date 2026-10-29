@@ -1,7 +1,7 @@
 // Phase 1 verification: migration v3→v4, simulation vs record, honest labels, reduced motion, export/import.
 const { chromium } = require("playwright");
 const fs = require("fs");
-const OUT = "/tmp/claude-0/-home-user-ciel-site/c3f9458a-fa99-5dc2-ae2e-2d6105fbee30/scratchpad/p1";
+const OUT = process.env.VERIFY_OUT || require("path").join(require("os").tmpdir(), "ci-verify-p1");
 fs.mkdirSync(OUT, { recursive: true });
 const URL = "http://localhost:8765/";
 const results = [];

@@ -1,7 +1,7 @@
 // Phase 2 verification: trips + rate snapshots (F11), pins (F01), all rates (F03), chart definitions (F02), language ja/en/th.
 const { chromium } = require("playwright");
 const fs = require("fs");
-const OUT = "/tmp/claude-0/-home-user-ciel-site/c3f9458a-fa99-5dc2-ae2e-2d6105fbee30/scratchpad/p2";
+const OUT = process.env.VERIFY_OUT || require("path").join(require("os").tmpdir(), "ci-verify-p2");
 fs.mkdirSync(OUT, { recursive: true });
 const URL = "http://localhost:8765/";
 const results = [];
