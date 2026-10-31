@@ -6,6 +6,9 @@ on:
     branches: [currency-intelligence]
     paths: ["currency-intelligence/ios/**", ".github/workflows/ios.yml"]
   workflow_dispatch:
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: write # the app-build job commits the simulator screenshot and build summary to this branch
 jobs:
@@ -71,14 +74,20 @@ jobs:
       - name: Commit the screenshot and build summary to the branch
         run: |
           cd "$GITHUB_WORKSPACE"
-          mkdir -p currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
-          cp shots/*.png currency-intelligence/docs/screenshots/ios/
-          { echo "run: $GITHUB_RUN_ID  commit: $GITHUB_SHA  date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"; xcodebuild -version; echo; grep -E "warning:|error:|BUILD" xcodebuild.log | sed 's#/Users/runner/work/ciel-site/ciel-site/##' | sort | uniq -c; echo; echo "UI tests:"; grep -E "Test Case .* (passed|failed)|Executed|TEST (SUCCEEDED|FAILED)" xctest.log | sed 's/^.*Test Case/Test Case/' | sort | uniq; } > currency-intelligence/docs/ci/ios-build-summary.txt
+          { echo "run: $GITHUB_RUN_ID  commit: $GITHUB_SHA  date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"; xcodebuild -version; echo; grep -E "warning:|error:|BUILD" xcodebuild.log | sed 's#/Users/runner/work/ciel-site/ciel-site/##' | sort | uniq -c; echo; echo "UI tests:"; grep -E "Test Case .* (passed|failed)|Executed|TEST (SUCCEEDED|FAILED)" xctest.log | sed 's/^.*Test Case/Test Case/' | sort | uniq; } > /tmp/ios-build-summary.txt
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
-          git commit -m "ci: iOS simulator screenshot and build summary (run $GITHUB_RUN_ID)" || exit 0
-          git pull --rebase origin currency-intelligence
-          git push origin HEAD:currency-intelligence
+          for attempt in 1 2 3 4; do
+            git fetch origin currency-intelligence
+            git checkout -q -B currency-intelligence FETCH_HEAD
+            mkdir -p currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
+            cp shots/*.png currency-intelligence/docs/screenshots/ios/
+            cp /tmp/ios-build-summary.txt currency-intelligence/docs/ci/ios-build-summary.txt
+            git add currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
+            git commit -q -m "ci: iOS simulator screenshots and build summary (run $GITHUB_RUN_ID)" || { echo "nothing to commit"; exit 0; }
+            if git push origin HEAD:currency-intelligence; then exit 0; fi
+            echo "push raced (attempt $attempt), retrying"; sleep $((attempt * 10))
+          done
+          exit 1
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: ios-screenshots, path: shots/ }

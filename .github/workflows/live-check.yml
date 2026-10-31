@@ -8,6 +8,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 1" # weekly, so a provider change is noticed
+concurrency:
+  group: live-check-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
@@ -36,8 +39,15 @@ jobs:
         run: node scripts/live-check.mjs
       - name: Commit results to the branch
         run: |
+          cp -r currency-intelligence/docs/ci /tmp/ci-results
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add currency-intelligence/docs/ci
-          git commit -m "ci: live API + ISO 4217 check results (run $GITHUB_RUN_ID)" || exit 0
-          git pull --rebase origin currency-intelligence
-          git push origin HEAD:currency-intelligence
+          for attempt in 1 2 3 4; do
+            git fetch origin currency-intelligence
+            git checkout -q -B currency-intelligence FETCH_HEAD
+            cp /tmp/ci-results/live-check.* currency-intelligence/docs/ci/
+            git add currency-intelligence/docs/ci
+            git commit -q -m "ci: live API + ISO 4217 check results (run $GITHUB_RUN_ID)" || { echo "nothing to commit"; exit 0; }
+            if git push origin HEAD:currency-intelligence; then exit 0; fi
+            echo "push raced (attempt $attempt), retrying"; sleep $((attempt * 10))
+          done
+          exit 1
