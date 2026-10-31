@@ -1,4 +1,4 @@
-run: 41219323953  commit: 1a75fd0fc927321d84a59631954069bbb64a6976  date: 2026-10-31T16:44:11Z
+run: 41242124927  commit: 92d0ce583091818ef70bfa13c9a9ad60a3b73c8c  date: 2026-10-31T21:14:00Z
 Xcode 16.4
 Build version 16F6
 
@@ -6,8 +6,8 @@ Build version 16F6
    1 currency-intelligence/ios/CurrencyIntelligence/CurrencyIntelligence/Assets.xcassets: warning: Could not get trait set for device iPhone18,2 with version 26.2
 
 UI tests:
-	 Executed 1 test, with 0 failures (0 unexpected) in 55.255 (55.258) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 55.255 (55.261) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 55.255 (55.264) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.885 (37.885) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.885 (37.886) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.885 (37.887) seconds
 ** TEST SUCCEEDED **
-Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (55.255 seconds).
+Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (37.885 seconds).
