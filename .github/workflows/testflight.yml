@@ -118,7 +118,7 @@ jobs:
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0"><dict>
             <key>method</key><string>app-store-connect</string>
-            <key>destination</key><string>${{ (inputs.upload == false) && 'export' || 'upload' }}</string>
+            <key>destination</key><string>${{ (github.event_name == 'workflow_dispatch' && inputs.upload == false) && 'export' || 'upload' }}</string>
             <key>signingStyle</key><string>automatic</string>
             <key>teamID</key><string>${APPLE_TEAM_ID}</string>
             <key>uploadSymbols</key><true/>
@@ -136,7 +136,7 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/export.log" | grep -E "error:|Upload|EXPORT (SUCCEEDED|FAILED)|\*\* |ITMS|App Store Connect" || true
           if grep -q "EXPORT SUCCEEDED" "$RUNNER_TEMP/export.log"; then
             echo "## TestFlight" >> "$GITHUB_STEP_SUMMARY"
-            echo "Build ${{ github.run_number }} (0.1.${{ github.run_number }}) ${{ (inputs.upload == false) && 'exported (not uploaded).' || 'uploaded to App Store Connect. It appears in TestFlight after Apple processing (usually 5–30 minutes).' }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "Build ${{ github.run_number }} (0.1.${{ github.run_number }}) ${{ (github.event_name == 'workflow_dispatch' && inputs.upload == false) && 'exported (not uploaded).' || 'uploaded to App Store Connect. It appears in TestFlight after Apple processing (usually 5–30 minutes).' }}" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "## TestFlight upload failed" >> "$GITHUB_STEP_SUMMARY"
             grep -E "error|ITMS" "$RUNNER_TEMP/export.log" | head -20 >> "$GITHUB_STEP_SUMMARY" || true
