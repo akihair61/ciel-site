@@ -12,6 +12,7 @@
 | B-06 | コードが **美容室サイト `ciel-site` のブランチ内**にある。 | リポジトリの責務が混ざる。CI・権限・公開設定を分けられない | 新リポジトリ(例 `akihair61/currency-intelligence`、**private 既定**)をオーナーが作成し、`docs/MIGRATION_PLAN.md` の手順で移す。このセッションからの作成は GitHub API が 403(権限なし) | 未解決(計画書あり) |
 | B-07 | 対応通貨の ISO 4217 小数桁。 | — | **解決**: live-check が ISO 4217 list one(165 通貨)と `currencies.ts` 43 通貨を突合、**不一致なし**(`docs/ci/live-check.md`) | 解決 |
 | B-08 | 仕様の「iOS 27 / Apple Foundation Models」は **公式ドキュメント未確認**。 | 存在しない API を前提にした実装をしないため、AI ルーティング層は未着手 | B-02 解消後、`docs/TECH_VALIDATION.md` に確認結果を記録してから着手 | 未解決 |
+| B-09 | **TestFlight 配信には Apple の署名鍵が必要**で、オーナーの Apple Developer アカウントでしか作れない。 | 実機で試せない | **鍵なしで進められる所は完了(2026-10-31 JST)**: ワークフロー `testflight-currency-intelligence` が GitHub の Mac で **Release 版・実機向け(arm64)の無署名アーカイブ**を作り、App Store Connect が弾く項目を検査して通過(1024px 不透明アイコン、バージョン `0.1.<実行番号>`、暗号化申告 `ITSAppUsesNonExemptEncryption=false`、ウィジェット同梱、`MinimumOSVersion 17.0`)。残りは **オーナー作業のみ**: GitHub Secrets 4 件(`ASC_KEY_ID` `ASC_ISSUER_ID` `ASC_KEY_P8` `APPLE_TEAM_ID`)と App Store Connect のアプリ登録(`ios/TESTFLIGHT.md`)。鍵が入れば同じワークフローが署名→アップロードまで進む | 未解決(オーナー操作待ち。署名以外は完了) |
 
 ## SPEC 02 との対応表(2026-10-28)
 
