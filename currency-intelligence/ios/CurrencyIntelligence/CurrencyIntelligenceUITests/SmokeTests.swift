@@ -40,8 +40,12 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["EXCHANGE RECORD"].exists)
         XCTAssertTrue(app.staticTexts["¥47,000"].exists, "JPY balance went down by 1000")
         shot(app, "ui-04-receipt-recorded")
-        app.buttons["Done"].firstMatch.tap()
-
+        // Close the receipt, then the result sheet underneath it, until the tab bar is reachable.
+        for _ in 0..<3 where !app.tabBars.buttons["More"].isHittable {
+            let done = app.buttons["Done"].firstMatch
+            if done.waitForExistence(timeout: 3) { done.tap() }
+        }
+        XCTAssertTrue(app.tabBars.buttons["More"].waitForExistence(timeout: 5))
         app.tabBars.buttons["More"].tap()
         XCTAssertTrue(app.staticTexts["Split a bill"].waitForExistence(timeout: 5))
         shot(app, "ui-05-more")
