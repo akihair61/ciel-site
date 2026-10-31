@@ -28,5 +28,6 @@
 | Q-06 ストレージの原子性・移行・Export/Import | schemaVersion 4、`.bak`、Export/Import | 修正・試験済み |
 | Phase 2 F13 割り勘 UI | ホーム MORE → Split a bill | 作成・ブラウザ試験済み |
 | Phase 2 F11 旅行・予算(スナップショット)、F01 ピン・ja/en/th、F02 定義、F03 12 通貨一覧 | ホーム MORE → Trips & budget / All rates、ピッカーの ★、レート詳細の定義文、設定の Language | 作成・ブラウザ試験済み(`docs/verify_p2.js` 20 項目) |
-| Phase 3 iOS | SwiftUI アプリ + CoreMoney 拡張。macOS ランナーでビルド・テスト・起動確認 | 作成・ビルド・試験(単体 11 件 + 起動)済み |
+| Phase 3 iOS | SwiftUI アプリ + CoreMoney 拡張。macOS ランナーでビルド・テスト・起動確認・XCUITest 画面操作 | 作成・ビルド・試験(単体 15 件 + 画面操作)済み |
+| F06 為替アラート | Web + iOS、端末内通知のみ(バックグラウンド/プッシュはサーバーが必要なため未) | 作成・試験済み |
 | 外部 API の実疎通 | GitHub Actions の live-check で実応答をアプリのプロバイダで解析(`docs/ci/live-check.md`) | 解決(3 社とも OK、ISO 突合も一致) |

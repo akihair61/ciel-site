@@ -15,7 +15,7 @@ AI Currency & Global Money Super App の実装リポジトリ(作業ブランチ
 | 設計判断記録 | `docs/adr/` | 3件(0003 = SPEC 02 との衝突と決定) |
 | 現物監査・回帰基準 / 分離計画 | `docs/BASELINE.md`, `docs/MIGRATION_PLAN.md` | 作成済み(分離は未実行) |
 | 計算エンジン(Shared Core) | `packages/core` (TypeScript, 依存ゼロ) | **作成・ビルド・試験済み: 36 テスト通過**。数値を double に通さない JSON パーサ(Q-01)、観測時刻 null 対応(Q-02) |
-| Web クライアント(PWA) | `apps/web` | **作成・ビルド・ブラウザ試験済み**(Playwright: 参照フロー録画 + 28 項目の自動確認)。オンボーディング → ホーム → 財布 → Convert(**シミュレーション**)→ 結果シート →「Record as a real exchange」で実両替記録 → レシート(記録控え/シミュレーション控え)。割り勘(F13)、旅行と予算(F11、記録時レートのスナップショット)、ピン留めと All rates(F01/F03)、UI 言語 en/ja/th。設定: 自分レート、ホーム通貨、Language、Motion(Auto/On/Off)、Export/Import JSON。localStorage は schema v4 + バックアップ |
+| Web クライアント(PWA) | `apps/web` | **作成・ビルド・ブラウザ試験済み**(Playwright: 参照フロー録画 + 28 項目の自動確認)。オンボーディング → ホーム → 財布 → Convert(**シミュレーション**)→ 結果シート →「Record as a real exchange」で実両替記録 → レシート(記録控え/シミュレーション控え)。割り勘(F13)、旅行と予算(F11、記録時レートのスナップショット)、ピン留めと All rates(F01/F03)、為替アラート(F06、開いている間の端末内通知)、UI 言語 en/ja/th。設定: 自分レート、ホーム通貨、Language、Motion(Auto/On/Off)、Export/Import JSON。localStorage は schema v4 + バックアップ |
 | iOS Shared Core | `ios/CoreMoney` (Swift Package) | **作成・ビルド・試験済み**(GitHub Actions macOS: `swift test` 14/14)。Web と同じ schema v4 の状態ストア、Coinbase、invert/cross、割り勘 |
 | SwiftUI アプリ | `ios/CurrencyIntelligence` | **作成・ビルド・画面操作試験済み**(macOS ランナーで BUILD SUCCEEDED、XCUITest で換算 → 記録 → レシートまで通過、各画面 `docs/screenshots/ios/`)。Web 版と同じ機能範囲(チャート・旅行・割り勘・一括換算・3 言語)。実機は未。手元でビルドするなら `ios/README_MAC.md` |
 
