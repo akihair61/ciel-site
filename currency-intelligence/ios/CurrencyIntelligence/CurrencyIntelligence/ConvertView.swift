@@ -6,6 +6,7 @@ struct ConvertView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var input = ""
+    @State private var prefilled = false
     @State private var showResult = false
     @State private var showRate = false
     @State private var pick: PickTarget? = nil
@@ -52,6 +53,7 @@ struct ConvertView: View {
             }
             .padding()
             .navigationTitle(L("Convert"))
+            .onAppear { if !prefilled { prefilled = true; if input.isEmpty { input = model.prefillAmount } } }
             .sheet(isPresented: $showResult) { if let tx = model.lastConversion { ResultSheet(tx: tx).environmentObject(model) } }
             .sheet(isPresented: $showRate) { RateInfoView().environmentObject(model) }
             .sheet(item: $pick) { which in

@@ -58,12 +58,22 @@ jobs:
           xcrun simctl io "$UDID" screenshot ../../../shots/ios-home.png
           xcrun simctl terminate "$UDID" com.akihair.currencyintelligence || true
           ls -la ../../../shots
+      - name: UI smoke test (XCUITest) with screenshots
+        run: |
+          set -o pipefail
+          rm -rf /tmp/ci-shots; mkdir -p /tmp/ci-shots
+          xcodebuild test -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" -derivedDataPath ../../../dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | tee ../../../xctest.log | grep -E "Test Case|error:|\*\* TEST|Executed" || true
+          grep -q "TEST SUCCEEDED" ../../../xctest.log
+          cp /tmp/ci-shots/*.png ../../../shots/ 2>/dev/null || true
+          ls -la ../../../shots
       - name: Commit the screenshot and build summary to the branch
         run: |
           cd "$GITHUB_WORKSPACE"
           mkdir -p currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
-          cp shots/ios-home.png currency-intelligence/docs/screenshots/ios/ios-home.png
-          { echo "run: $GITHUB_RUN_ID  commit: $GITHUB_SHA  date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"; xcodebuild -version; echo; grep -E "warning:|error:|BUILD" xcodebuild.log | sed 's#/Users/runner/work/ciel-site/ciel-site/##' | sort | uniq -c; } > currency-intelligence/docs/ci/ios-build-summary.txt
+          cp shots/*.png currency-intelligence/docs/screenshots/ios/
+          { echo "run: $GITHUB_RUN_ID  commit: $GITHUB_SHA  date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"; xcodebuild -version; echo; grep -E "warning:|error:|BUILD" xcodebuild.log | sed 's#/Users/runner/work/ciel-site/ciel-site/##' | sort | uniq -c; echo; echo "UI tests:"; grep -E "Test Case .* (passed|failed)|Executed|TEST (SUCCEEDED|FAILED)" xctest.log | sed 's/^.*Test Case/Test Case/' | sort | uniq; } > currency-intelligence/docs/ci/ios-build-summary.txt
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add currency-intelligence/docs/screenshots/ios currency-intelligence/docs/ci
           git commit -m "ci: iOS simulator screenshot and build summary (run $GITHUB_RUN_ID)" || exit 0

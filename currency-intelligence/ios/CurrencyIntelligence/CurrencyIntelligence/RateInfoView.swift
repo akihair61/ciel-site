@@ -1,5 +1,6 @@
 // 未ビルド: macOS + Xcode で確認してください(ios/README_MAC.md)。
 import SwiftUI
+import Charts
 import CoreMoney
 
 struct RateInfoView: View {
@@ -7,6 +8,10 @@ struct RateInfoView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var paid = ""
     @State private var got = ""
+    @State private var period = "1M"
+    @State private var points: [RatePoint] = []
+    @State private var loadingChart = false
+    private let periodDays = ["1W": 7, "1M": 30, "3M": 91, "1Y": 365]
     var pair: (quote: RateQuote, mine: Bool)? { model.quote(from: model.state.from, to: model.state.to) }
 
     var body: some View {
@@ -17,7 +22,17 @@ struct RateInfoView: View {
                         Text("1 \(model.state.from) = \(Format.rate(p.quote.rate)) \(model.state.to)").font(.title3.weight(.heavy)).monospacedDigit()
                         Text(model.sourceLabel(p.quote) + model.statusSuffix).font(.footnote).foregroundStyle(.secondary)
                     }
-                    Section("Provenance") {
+                    Section {
+                        Picker("", selection: $period) { ForEach(["1W", "1M", "3M", "1Y"], id: \.self) { Text($0).tag($0) } }.pickerStyle(.segmented)
+                        if points.count >= 2 {
+                            Chart(points) { p in LineMark(x: .value("Date", p.date), y: .value("Rate", p.rate)).interpolationMethod(.monotone) }
+                                .chartXAxis(.hidden).chartYScale(domain: .automatic(includesZero: false)).frame(height: 120)
+                            let first = points.first!.rate, last = points.last!.rate, ch = (last - first) / first * 100
+                            Text("\(points.first!.date) → \(points.last!.date) · \(points.count) \(L("daily")) · \(ch >= 0 ? "▲" : "▼") \(String(format: "%.2f", abs(ch)))%").font(.caption).foregroundStyle(.secondary)
+                        } else if loadingChart { ProgressView() } else { Text(L("History loads when online (daily)")).font(.caption).foregroundStyle(.secondary) }
+                        Text(L("Change = last point vs first point of the period. Daily points are ECB reference rates (one per working day, no weekend or holiday points). 1D = ticks collected while the app is open.")).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Section(L("Provenance")) {
                         row(L("Source"), sourceText(p.quote))
                         row("Type", "\(p.quote.rateKind.rawValue) · \(p.quote.confidence.rawValue)")
                         row(L("Freshness"), freshness)
@@ -43,13 +58,17 @@ struct RateInfoView: View {
                         ForEach(Currencies.all.keys.sorted(), id: \.self) { Text("\(Format.flag($0)) \($0)").tag($0) }
                     }
                 }
-                Section { Text("Change = last point vs first point of the period. Daily points are ECB reference rates (one per working day, no weekend or holiday points). Charts are not yet implemented in the iOS client.").font(.footnote).foregroundStyle(.secondary) }
             }
             .navigationTitle(L("About this rate"))
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } } }
             .onAppear { if let m = model.state.mine["\(model.state.from)/\(model.state.to)"] { paid = m.paid; got = m.received } }
+            .task(id: period) { await loadChart() }
             .refreshable { await model.refreshRates() }
         }
+    }
+    func loadChart() async {
+        loadingChart = true; defer { loadingChart = false }
+        points = (try? await model.history.fetch(from: model.state.from, to: model.state.to, days: periodDays[period] ?? 30)) ?? []
     }
     var freshness: String {
         switch model.rates.status { case "fresh": return "Fresh"; case "stale": return "Stale · older than its refresh window"; case "sample": return "Sample · shipped with the app, not current"; default: return model.rates.status }

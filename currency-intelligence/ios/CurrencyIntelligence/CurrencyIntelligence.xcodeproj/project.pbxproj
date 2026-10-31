@@ -12,10 +12,12 @@
 
 /* Begin PBXFileReference section */
 		C1A0000000000000000000A2 /* CurrencyIntelligence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurrencyIntelligence.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C1A0000000000000000000C2 /* CurrencyIntelligenceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CurrencyIntelligenceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C1A0000000000000000000A3 /* CurrencyIntelligence */ = {isa = PBXFileSystemSynchronizedRootGroup; path = CurrencyIntelligence; sourceTree = "<group>"; };
+		C1A0000000000000000000C1 /* CurrencyIntelligenceUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = CurrencyIntelligenceUITests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,6 +29,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C1A0000000000000000000C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -34,6 +43,7 @@
 			isa = PBXGroup;
 			children = (
 				C1A0000000000000000000A3 /* CurrencyIntelligence */,
+				C1A0000000000000000000C1 /* CurrencyIntelligenceUITests */,
 				C1A0000000000000000000A6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -42,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				C1A0000000000000000000A2 /* CurrencyIntelligence.app */,
+				C1A0000000000000000000C2 /* CurrencyIntelligenceUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -72,6 +83,27 @@
 			productReference = C1A0000000000000000000A2 /* CurrencyIntelligence.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C1A0000000000000000000C3 /* CurrencyIntelligenceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1A0000000000000000000C9 /* Build configuration list for PBXNativeTarget "CurrencyIntelligenceUITests" */;
+			buildPhases = (
+				C1A0000000000000000000C4 /* Sources */,
+				C1A0000000000000000000C5 /* Frameworks */,
+				C1A0000000000000000000C6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C1A0000000000000000000C7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C1A0000000000000000000C1 /* CurrencyIntelligenceUITests */,
+			);
+			name = CurrencyIntelligenceUITests;
+			productName = CurrencyIntelligenceUITests;
+			productReference = C1A0000000000000000000C2 /* CurrencyIntelligenceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -84,6 +116,10 @@
 				TargetAttributes = {
 					C1A0000000000000000000A7 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					C1A0000000000000000000C3 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = C1A0000000000000000000A7;
 					};
 				};
 			};
@@ -106,12 +142,20 @@
 			projectRoot = "";
 			targets = (
 				C1A0000000000000000000A7 /* CurrencyIntelligence */,
+				C1A0000000000000000000C3 /* CurrencyIntelligenceUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		C1A0000000000000000000AA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1A0000000000000000000C6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -128,7 +172,33 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C1A0000000000000000000C4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+
+/* Begin PBXContainerItemProxy section */
+		C1A0000000000000000000C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C1A0000000000000000000AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C1A0000000000000000000A7;
+			remoteInfo = CurrencyIntelligence;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		C1A0000000000000000000C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C1A0000000000000000000A7 /* CurrencyIntelligence */;
+			targetProxy = C1A0000000000000000000C8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		C1A0000000000000000000AD /* Debug */ = {
@@ -238,6 +308,42 @@
 			};
 			name = Release;
 		};
+		C1A0000000000000000000CA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akihair.currencyintelligence.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CurrencyIntelligence;
+			};
+			name = Debug;
+		};
+		C1A0000000000000000000CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.akihair.currencyintelligence.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CurrencyIntelligence;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -255,6 +361,15 @@
 			buildConfigurations = (
 				C1A0000000000000000000AF /* Debug */,
 				C1A0000000000000000000B2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1A0000000000000000000C9 /* Build configuration list for PBXNativeTarget "CurrencyIntelligenceUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1A0000000000000000000CA /* Debug */,
+				C1A0000000000000000000CB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

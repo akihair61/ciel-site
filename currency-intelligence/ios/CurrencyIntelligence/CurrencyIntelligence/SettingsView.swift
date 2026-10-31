@@ -15,7 +15,7 @@ struct SettingsView: View {
                     Picker(L("Motion"), selection: Binding(get: { model.state.motion }, set: { model.state.motion = $0; model.save() })) {
                         Text(L("Auto")).tag("auto"); Text(L("On")).tag("on"); Text(L("Off")).tag("off")
                     }.pickerStyle(.segmented)
-                    Text("\"Auto\" follows your device's Reduce Motion setting. \"Off\" shows every result in one short step.").font(.footnote).foregroundStyle(.secondary)
+                    Text(L("\"Auto\" follows your device's Reduce Motion setting. \"Off\" shows every result in one short step.")).font(.footnote).foregroundStyle(.secondary)
                 }
                 Section(L("Language")) {
                     Picker("", selection: Binding(get: { model.state.lang }, set: { model.state.lang = $0; model.save() })) {
@@ -24,7 +24,7 @@ struct SettingsView: View {
                     Text(L("Follows your device unless you pick one.")).font(.footnote).foregroundStyle(.secondary)
                 }
                 Section(L("Your data")) {
-                    Text("Everything stays on this device (one backup copy is kept). Export a JSON file to move it to another device or the web app; import replaces what is here after you confirm.").font(.footnote).foregroundStyle(.secondary)
+                    Text(L("Everything stays on this device (one backup copy is kept). Export a JSON file to move it to another device or browser; import replaces what is here after you confirm.")).font(.footnote).foregroundStyle(.secondary)
                     Button(L("Export JSON")) { export() }
                     if let url = exportURL { ShareLink(item: url) { Label("Share the exported file", systemImage: "square.and.arrow.up") } }
                     Button(L("Import JSON")) { importing = true }

@@ -89,3 +89,13 @@ final class SplitTests: XCTestCase {
         XCTAssertEqual(net, r.total.minor - r.shares[1].amount.minor)
     }
 }
+
+
+final class HistoryTests: XCTestCase {
+    func testFrankfurterHistoryParsesAndSortsByDate() throws {
+        let json = #"{"amount":1,"base":"JPY","start_date":"2026-10-01","end_date":"2026-10-03","rates":{"2026-10-03":{"THB":0.2138},"2026-10-01":{"THB":0.2141},"2026-10-02":{"THB":0.2140}}}"#.data(using: .utf8)!
+        let pts = try FrankfurterHistory.parse(json, to: "THB")
+        XCTAssertEqual(pts.map { $0.date }, ["2026-10-01", "2026-10-02", "2026-10-03"])
+        XCTAssertEqual(pts.last?.rate, 0.2138)
+    }
+}

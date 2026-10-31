@@ -19,11 +19,21 @@ final class AppModel: ObservableObject {
     let store: StateStore
     let rounding: RoundingMode = .halfEven
     private let coinbase = CoinbaseProvider()
+    let history = FrankfurterHistory()
     private let pollSeconds: TimeInterval = 60
 
-    init(store: StateStore = .documents()) {
-        self.store = store
-        let (s, how) = store.load()
+    /// Set by the UI test runner (-ui-testing): isolated store, seeded balances, and a prefilled amount so tests do not type.
+    static let uiTesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+    var prefillAmount: String { AppModel.uiTesting ? "1000" : "" }
+
+    init(store: StateStore? = nil) {
+        if AppModel.uiTesting {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("ui-testing-\(UUID().uuidString)")
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            self.store = StateStore(directory: dir)
+        } else { self.store = store ?? .documents() }
+        var (s, how) = self.store.load()
+        if AppModel.uiTesting { s.onboarded = true; s.balances = ["JPY": "48000", "THB": "9870.00"]; s.motion = "off"; s.lang = "en"; how = .fresh }
         state = s
         rates = RateTable(quotes: SampleRates.quotes(), source: "embedded", status: "sample")
         Lang.current = Lang.resolve(setting: s.lang)
