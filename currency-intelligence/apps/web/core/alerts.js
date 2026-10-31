@@ -7,10 +7,10 @@
  */
 import { cmpDec, parseDec } from "./dec.js";
 export function alertStatus(a, nowMs) {
-    if (!a.active)
-        return "paused";
     if (a.expiresAt && Date.parse(a.expiresAt) <= nowMs)
         return "expired";
+    if (!a.active)
+        return "paused";
     return "active";
 }
 /** True when the quote satisfies the alert's condition (inclusive). */

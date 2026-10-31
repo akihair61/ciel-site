@@ -32,8 +32,8 @@ public enum Alerts {
     public static func parse(_ s: String?) -> Date? { guard let s else { return nil }; return iso.date(from: s) ?? ISO8601DateFormatter().date(from: s) }
 
     public static func status(_ a: RateAlert, now: Date) -> String {
-        if !a.active { return "paused" }
         if let e = parse(a.expiresAt), e <= now { return "expired" }
+        if !a.active { return "paused" }
         return "active"
     }
     public static func conditionMet(_ a: RateAlert, rate: String) -> Bool {

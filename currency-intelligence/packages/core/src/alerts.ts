@@ -48,8 +48,8 @@ export interface AlertEvaluation {
 }
 
 export function alertStatus(a: RateAlert, nowMs: number): "active" | "expired" | "paused" {
-  if (!a.active) return "paused";
   if (a.expiresAt && Date.parse(a.expiresAt) <= nowMs) return "expired";
+  if (!a.active) return "paused";
   return "active";
 }
 

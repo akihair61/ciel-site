@@ -34,7 +34,7 @@ test("expired alerts are deactivated and never fire; paused alerts are skipped; 
   assert.equal(r.fires.length, 0);
   assert.deepEqual(r.expired, ["a1"]);
   assert.equal(r.alerts[0].active, false);
-  assert.equal(alertStatus(r.alerts[0], T0), "paused");
+  assert.equal(alertStatus(r.alerts[0], T0), "expired"); // expiry wins over the auto-pause
   assert.equal(alertStatus(alert({ expiresAt: new Date(T0 + 1).toISOString() }), T0), "active");
   assert.equal(evaluateAlerts([alert({ active: false })], () => q("0.23"), T0).fires.length, 0);
   assert.equal(evaluateAlerts([alert()], () => null, T0).fires.length, 0);

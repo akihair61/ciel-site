@@ -115,6 +115,6 @@ final class AlertTests: XCTestCase {
         var e = a; e.expiresAt = ISO8601DateFormatter().string(from: t0.addingTimeInterval(-1))
         let r4 = Alerts.evaluate([e], now: t0) { _, _ in self.q("0.23", now: t0) }
         XCTAssertEqual(r4.fires.count, 0); XCTAssertEqual(r4.expired, ["a1"]); XCTAssertFalse(r4.alerts[0].active)
-        XCTAssertEqual(Alerts.status(r4.alerts[0], now: t0), "paused")
+        XCTAssertEqual(Alerts.status(r4.alerts[0], now: t0), "expired")
     }
 }
