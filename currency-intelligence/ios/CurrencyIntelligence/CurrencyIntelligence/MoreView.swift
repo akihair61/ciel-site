@@ -29,7 +29,8 @@ struct TripsView: View {
     @State private var end = Date().addingTimeInterval(7 * 86400)
     @State private var useDates = false
 
-    var body: some View {
+    var body: some View { content.keyboardDoneButton() }
+    @ViewBuilder private var content: some View {
         List {
             Section {
                 if model.state.trips.isEmpty { Text(L("No trips yet.")).foregroundStyle(.secondary) }
@@ -88,7 +89,8 @@ struct SplitView: View {
         return (r, tr)
     }
 
-    var body: some View {
+    var body: some View { content.keyboardDoneButton() }
+    @ViewBuilder private var content: some View {
         List {
             Section {
                 HStack { Text("\(Format.flag(currency)) \(currency)").font(.headline); TextField("0", text: $total).keyboardType(.decimalPad).multilineTextAlignment(.trailing).font(.title2.weight(.heavy)) }
@@ -195,7 +197,8 @@ struct AlertsView: View {
     @State private var cooldownMin = 60
     @State private var permission = "unknown"
 
-    var body: some View {
+    var body: some View { content.keyboardDoneButton() }
+    @ViewBuilder private var content: some View {
         List {
             Section {
                 Text(L("Alerts are checked only while this app is open, each time rates are refreshed. Reference rates are published about once a day (Frankfurter). Nothing runs in the background.")).font(.footnote).foregroundStyle(.secondary)

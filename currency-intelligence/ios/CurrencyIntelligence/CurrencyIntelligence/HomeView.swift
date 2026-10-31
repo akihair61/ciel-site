@@ -101,7 +101,8 @@ struct CashSheet: View {
     @State private var error: String? = nil
     private let cats = ["food", "transport", "shop", "stay", "fun", "other"]
 
-    var body: some View {
+    var body: some View { content.keyboardDoneButton() }
+    @ViewBuilder private var content: some View {
         NavigationStack {
             Form {
                 Picker("Currency", selection: $code) { ForEach(Currencies.all.keys.sorted(), id: \.self) { Text("\(Format.flag($0)) \($0)").tag($0) } }

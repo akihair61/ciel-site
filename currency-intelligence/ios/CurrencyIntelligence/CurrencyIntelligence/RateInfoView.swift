@@ -14,7 +14,8 @@ struct RateInfoView: View {
     private let periodDays = ["1W": 7, "1M": 30, "3M": 91, "1Y": 365]
     var pair: (quote: RateQuote, mine: Bool)? { model.quote(from: model.state.from, to: model.state.to) }
 
-    var body: some View {
+    var body: some View { content.keyboardDoneButton() }
+    @ViewBuilder private var content: some View {
         NavigationStack {
             List {
                 if let p = pair {

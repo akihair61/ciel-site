@@ -8,3 +8,4 @@ requested: 6 (2026-10-31 17:19 JST, icon-name check fixed)
 App Store submission build 2026-10-31T16:21:49Z
 2026-10-31T21:07:29Z frankfurter rates (build for review resubmission)
 2026-10-31T21:14:06Z keyboard Done button
+2026-10-31T21:19:11Z keyboard Done on pushed screens and sheets

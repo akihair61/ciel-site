@@ -21,15 +21,22 @@ struct RootView: View {
             ConvertView().tabItem { Label(L("Convert"), systemImage: "arrow.left.arrow.right") }
             MoreView().tabItem { Label(L("More"), systemImage: "ellipsis.circle") }
         }
-        // Decimal pads have no return key; without this the keyboard covers the tab bar with no way to close it.
-        .toolbar {
+        .keyboardDoneButton()
+        .alert("Notice", isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } })) {
+            Button("OK") { model.notice = nil }
+        } message: { Text(model.notice ?? "") }
+    }
+}
+
+extension View {
+    /// Decimal pads have no return key; without this the keyboard covers the tab bar with no way to close it.
+    /// Keyboard toolbars do not reach pushed navigation destinations or sheets, so each screen with a text field applies it.
+    func keyboardDoneButton() -> some View {
+        toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L("Done")) { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
             }
         }
-        .alert("Notice", isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } })) {
-            Button("OK") { model.notice = nil }
-        } message: { Text(model.notice ?? "") }
     }
 }
