@@ -1,20 +1,20 @@
 {
-  "ranAt": "2026-10-31T01:28:30.364Z",
+  "ranAt": "2026-10-31T01:38:41.834Z",
   "providers": {
     "coinbase": {
       "ok": true,
-      "ms": 136,
+      "ms": 112,
       "quotes": 42,
       "missing": [],
       "sample": {
         "jpy": {
-          "quoteId": "coinbase:USDJPY:2026-10-31T01:28:30.499Z",
+          "quoteId": "coinbase:USDJPY:2026-10-31T01:38:41.942Z",
           "base": "USD",
           "quote": "JPY",
           "rate": "157.592037235",
           "source": "coinbase",
           "observedAt": null,
-          "receivedAt": "2026-10-31T01:28:30.499Z",
+          "receivedAt": "2026-10-31T01:38:41.942Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "intraday",
@@ -23,13 +23,13 @@
           ]
         },
         "thb": {
-          "quoteId": "coinbase:USDTHB:2026-10-31T01:28:30.499Z",
+          "quoteId": "coinbase:USDTHB:2026-10-31T01:38:41.942Z",
           "base": "USD",
           "quote": "THB",
           "rate": "33.7485",
           "source": "coinbase",
           "observedAt": null,
-          "receivedAt": "2026-10-31T01:28:30.499Z",
+          "receivedAt": "2026-10-31T01:38:41.942Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "intraday",
@@ -51,7 +51,7 @@
     },
     "open-er-api": {
       "ok": true,
-      "ms": 90,
+      "ms": 105,
       "quotes": 42,
       "missing": [],
       "sample": {
@@ -62,7 +62,7 @@
           "rate": "157.494371",
           "source": "open-er-api",
           "observedAt": "2026-10-31T00:02:31.000Z",
-          "receivedAt": "2026-10-31T01:28:30.591Z",
+          "receivedAt": "2026-10-31T01:38:42.050Z",
           "expiresAt": "2026-11-01T00:06:21.000Z",
           "rateKind": "indicative",
           "confidence": "estimated",
@@ -75,7 +75,7 @@
           "rate": "33.744351",
           "source": "open-er-api",
           "observedAt": "2026-10-31T00:02:31.000Z",
-          "receivedAt": "2026-10-31T01:28:30.591Z",
+          "receivedAt": "2026-10-31T01:38:42.050Z",
           "expiresAt": "2026-11-01T00:06:21.000Z",
           "rateKind": "indicative",
           "confidence": "estimated",
@@ -94,7 +94,7 @@
     },
     "frankfurter": {
       "ok": true,
-      "ms": 520,
+      "ms": 323,
       "quotes": 27,
       "missing": [
         "TWD",
@@ -121,7 +121,7 @@
           "rate": "157.25",
           "source": "frankfurter",
           "observedAt": "2026-10-30T00:00:00Z",
-          "receivedAt": "2026-10-31T01:28:31.111Z",
+          "receivedAt": "2026-10-31T01:38:42.373Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily",
@@ -136,7 +136,7 @@
           "rate": "33.73",
           "source": "frankfurter",
           "observedAt": "2026-10-30T00:00:00Z",
-          "receivedAt": "2026-10-31T01:28:31.111Z",
+          "receivedAt": "2026-10-31T01:38:42.373Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily",

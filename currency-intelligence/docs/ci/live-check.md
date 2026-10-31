@@ -1,25 +1,25 @@
-# Live check (GitHub Actions, 2026-10-31T01:28:30.364Z)
+# Live check (GitHub Actions, 2026-10-31T01:38:41.834Z)
 
 Real API responses parsed by the app's own provider code (no mocks). Re-run by pushing to the branch.
 
 ## coinbase
 
-- OK in 136 ms · 42 quotes · missing: none
-- USD→JPY 157.592037235 (observedAt null (not published), receivedAt 2026-10-31T01:28:30.499Z, kind indicative, estimated)
+- OK in 112 ms · 42 quotes · missing: none
+- USD→JPY 157.592037235 (observedAt null (not published), receivedAt 2026-10-31T01:38:41.942Z, kind indicative, estimated)
 - USD→THB 33.7485
 - JPY→THB cross 0.214151048442 (estimated) → 1000 JPY = 214.15 THB
 
 ## open-er-api
 
-- OK in 90 ms · 42 quotes · missing: none
-- USD→JPY 157.494371 (observedAt 2026-10-31T00:02:31.000Z, receivedAt 2026-10-31T01:28:30.591Z, kind indicative, estimated)
+- OK in 105 ms · 42 quotes · missing: none
+- USD→JPY 157.494371 (observedAt 2026-10-31T00:02:31.000Z, receivedAt 2026-10-31T01:38:42.050Z, kind indicative, estimated)
 - USD→THB 33.744351
 - JPY→THB cross 0.214257505114 (estimated) → 1000 JPY = 214.26 THB
 
 ## frankfurter
 
-- OK in 520 ms · 27 quotes · missing: TWD, VND, LAK, KHR, MMK, AED, SAR, KWD, BHD, OMR, JOD, CLP, EGP, LKR, NPR
-- USD→JPY 157.25 (observedAt 2026-10-30T00:00:00Z, receivedAt 2026-10-31T01:28:31.111Z, kind indicative, estimated)
+- OK in 323 ms · 27 quotes · missing: TWD, VND, LAK, KHR, MMK, AED, SAR, KWD, BHD, OMR, JOD, CLP, EGP, LKR, NPR
+- USD→JPY 157.25 (observedAt 2026-10-30T00:00:00Z, receivedAt 2026-10-31T01:38:42.373Z, kind indicative, estimated)
 - USD→THB 33.73
 - JPY→THB cross 0.214499205087 (estimated) → 1000 JPY = 214.50 THB
 
