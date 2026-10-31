@@ -25,17 +25,17 @@ iPhone 実機に入れるには Apple の署名が必要で、それはあなた
 
 ## 2. App Store Connect にアプリを 1 件登録する(初回だけ、3 分)
 
-1. まず GitHub の **Actions** タブ → `testflight-currency-intelligence` → **Run workflow**(upload = true のまま)を 1 回実行します。
+1. まずビルドを 1 回実行します。実行の仕方は「Claude に『TestFlight ビルドして』と言う」だけです(Claude がブランチ上の `ios/testflight.trigger` を更新すると GitHub の Mac が動きます。自分でやる場合は GitHub でそのファイルを編集して保存しても同じ)。
    初回は「App Store Connect にアプリがない」という理由で最後のアップロードだけ失敗しますが、この実行で Apple 側に Bundle ID(`com.akihair.currencyintelligence` とウィジェット用の `.widget`)と App Group が自動登録されます。
 2. https://appstoreconnect.apple.com → **マイ App** → **＋** → **新規 App**:
    - プラットフォーム: iOS、名前: `Currency Intelligence`(重複なら `Currency Intelligence CI` など)、プライマリ言語: 日本語、
    - バンドル ID: `com.akihair.currencyintelligence`(1 の実行後に一覧に出ます)、SKU: `currency-intelligence`。
-3. もう一度 **Run workflow**。成功すると、5〜30 分で TestFlight に「0.1.<番号>」が現れます。
+3. もう一度ビルドを実行(Claude に言う、またはトリガーファイルを編集)。成功すると、5〜30 分で TestFlight に「0.1.<番号>」が現れます。
 
 ## 3. iPhone で受け取る
 
 - App Store Connect → TestFlight → 内部テスト → グループを作って自分の Apple ID を追加 → iPhone の **TestFlight** アプリにインストール案内が届きます。
-- 以後は、私(Claude)がコードを更新するたびにこのワークフローを実行すれば、新しいビルドが TestFlight に届きます(手動実行。自動化もできますが、まず手動で)。
+- 以後は「TestFlight ビルドして」と言えば新しいビルドが届きます。
 
 ## うまくいかない時
 
