@@ -1,12 +1,12 @@
-run: 41158377954  commit: 4dda3ef0576b8662016c6bda696ed7164318a09b  date: 2026-10-31T02:12:08Z
+run: 41158599253  commit: 331ff47ccf0832e6904407d973598333dbf7575b  date: 2026-10-31T02:22:38Z
 Xcode 16.4
 Build version 16F6
 
    1 ** BUILD SUCCEEDED **
 
 UI tests:
-	 Executed 1 test, with 0 failures (0 unexpected) in 39.196 (39.197) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 39.196 (39.198) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 39.196 (39.199) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 58.932 (58.934) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 58.932 (58.935) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 58.932 (58.937) seconds
 ** TEST SUCCEEDED **
-Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (39.196 seconds).
+Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (58.932 seconds).
