@@ -21,6 +21,13 @@ struct RootView: View {
             ConvertView().tabItem { Label(L("Convert"), systemImage: "arrow.left.arrow.right") }
             MoreView().tabItem { Label(L("More"), systemImage: "ellipsis.circle") }
         }
+        // Decimal pads have no return key; without this the keyboard covers the tab bar with no way to close it.
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(L("Done")) { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+            }
+        }
         .alert("Notice", isPresented: Binding(get: { model.notice != nil }, set: { if !$0 { model.notice = nil } })) {
             Button("OK") { model.notice = nil }
         } message: { Text(model.notice ?? "") }
