@@ -92,7 +92,7 @@ jobs:
           check CFBundleShortVersionString "$(get CFBundleShortVersionString)" "0.1.${{ github.run_number }}"
           check CFBundleVersion "$(get CFBundleVersion)" "${{ github.run_number }}"
           check ITSAppUsesNonExemptEncryption "$(get ITSAppUsesNonExemptEncryption)" false
-          check CFBundleIconName "$(get CFBundleIconName)" AppIcon
+          check CFBundleIconName "$(get CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName)" AppIcon  # actool nests it under CFBundlePrimaryIcon
           check NSCameraUsageDescription-present "$([ "$(get NSCameraUsageDescription)" != "<missing>" ] && echo yes)" yes
           check MinimumOSVersion "$(get MinimumOSVersion)" 17.0
           check Assets.car-present "$([ -f "$APP/Assets.car" ] && echo yes)" yes
