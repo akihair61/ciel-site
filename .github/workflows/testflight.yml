@@ -1,0 +1,91 @@
+# Archives the iOS app on GitHub's macOS runner, signs it with App Store Connect API credentials and uploads
+# the build to TestFlight. Manual trigger only. Needs these repository secrets (see currency-intelligence/ios/TESTFLIGHT.md):
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (contents of the AuthKey_XXXX.p8 file), APPLE_TEAM_ID
+name: testflight-currency-intelligence
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Upload to TestFlight (false = archive and export only, to check signing)"
+        type: boolean
+        default: true
+concurrency:
+  group: testflight-${{ github.ref }}
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  testflight:
+    name: Archive, sign and upload
+    runs-on: macos-15
+    defaults: { run: { working-directory: currency-intelligence/ios/CurrencyIntelligence } }
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        run: |
+          missing=""
+          [ -n "$ASC_KEY_ID" ] || missing="$missing ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ] || missing="$missing ASC_ISSUER_ID"
+          [ -n "$APPLE_TEAM_ID" ] || missing="$missing APPLE_TEAM_ID"
+          [ -n "${{ secrets.ASC_KEY_P8 }}" ] || missing="$missing ASC_KEY_P8"
+          if [ -n "$missing" ]; then echo "::error::Missing repository secrets:$missing — see currency-intelligence/ios/TESTFLIGHT.md"; exit 1; fi
+      - name: Install the App Store Connect API key
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s' "${{ secrets.ASC_KEY_P8 }}" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          chmod 600 ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          echo "KEY_PATH=$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" >> "$GITHUB_ENV"
+      - run: xcodebuild -version
+      - name: Archive (automatic signing via the API key; registers bundle IDs, app group and profiles)
+        run: |
+          set -o pipefail
+          xcodebuild archive -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
+            -destination 'generic/platform=iOS' -configuration Release \
+            -archivePath "$RUNNER_TEMP/CurrencyIntelligence.xcarchive" \
+            -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" MARKETING_VERSION="0.1.${{ github.run_number }}" \
+            2>&1 | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*(sign|provision|entitle)|ARCHIVE (SUCCEEDED|FAILED)|\*\* " || true
+          grep -q "ARCHIVE SUCCEEDED" "$RUNNER_TEMP/archive.log"
+      - name: Export options
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>${{ inputs.upload && 'upload' || 'export' }}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><true/>
+          </dict></plist>
+          EOF
+      - name: Export${{ inputs.upload && ' and upload to TestFlight' || '' }}
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/CurrencyIntelligence.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee "$RUNNER_TEMP/export.log" | grep -E "error:|Upload|EXPORT (SUCCEEDED|FAILED)|\*\* |ITMS|App Store Connect" || true
+          if grep -q "EXPORT SUCCEEDED" "$RUNNER_TEMP/export.log"; then
+            echo "## TestFlight" >> "$GITHUB_STEP_SUMMARY"
+            echo "Build ${{ github.run_number }} (0.1.${{ github.run_number }}) ${{ inputs.upload && 'uploaded to App Store Connect. It appears in TestFlight after Apple processing (usually 5–30 minutes).' || 'exported (not uploaded).' }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## TestFlight upload failed" >> "$GITHUB_STEP_SUMMARY"
+            grep -E "error|ITMS" "$RUNNER_TEMP/export.log" | head -20 >> "$GITHUB_STEP_SUMMARY" || true
+            echo "If the error says the app record does not exist: create the app in App Store Connect (My Apps → + → New App, bundle ID com.akihair.currencyintelligence) and run this workflow again." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: testflight-logs, path: "${{ runner.temp }}/*.log" }
+      - name: Remove the API key
+        if: always()
+        run: rm -f ~/private_keys/AuthKey_*.p8
