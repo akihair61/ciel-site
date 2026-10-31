@@ -24,7 +24,7 @@ permissions:
 jobs:
   testflight:
     name: Archive, sign and upload
-    runs-on: macos-15
+    runs-on: macos-26
     defaults: { run: { working-directory: currency-intelligence/ios/CurrencyIntelligence } }
     env:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
