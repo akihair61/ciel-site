@@ -30,12 +30,12 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      ARCHIVE: ${{ runner.temp }}/CurrencyIntelligence.xcarchive
     steps:
       - uses: actions/checkout@v4
       - name: Check secrets
         id: secrets
         run: |
+          echo "ARCHIVE=$RUNNER_TEMP/CurrencyIntelligence.xcarchive" >> "$GITHUB_ENV"
           missing=""
           [ -n "$ASC_KEY_ID" ] || missing="$missing ASC_KEY_ID"
           [ -n "$ASC_ISSUER_ID" ] || missing="$missing ASC_ISSUER_ID"
