@@ -1,31 +1,31 @@
-# Live check (GitHub Actions, 2026-10-29T02:35:59.335Z)
+# Live check (GitHub Actions, 2026-10-31T01:28:30.364Z)
 
 Real API responses parsed by the app's own provider code (no mocks). Re-run by pushing to the branch.
 
 ## coinbase
 
-- OK in 145 ms · 42 quotes · missing: none
-- USD→JPY 157.6525606066666667 (observedAt null (not published), receivedAt 2026-10-29T02:35:59.478Z, kind indicative, estimated)
-- USD→THB 33.7275
-- JPY→THB cross 0.213935630796 (estimated) → 1000 JPY = 213.94 THB
+- OK in 136 ms · 42 quotes · missing: none
+- USD→JPY 157.592037235 (observedAt null (not published), receivedAt 2026-10-31T01:28:30.499Z, kind indicative, estimated)
+- USD→THB 33.7485
+- JPY→THB cross 0.214151048442 (estimated) → 1000 JPY = 214.15 THB
 
 ## open-er-api
 
-- OK in 105 ms · 42 quotes · missing: none
-- USD→JPY 157.90537 (observedAt 2026-10-29T00:02:31.000Z, receivedAt 2026-10-29T02:35:59.584Z, kind indicative, estimated)
-- USD→THB 33.772095
-- JPY→THB cross 0.213875531909 (estimated) → 1000 JPY = 213.88 THB
+- OK in 90 ms · 42 quotes · missing: none
+- USD→JPY 157.494371 (observedAt 2026-10-31T00:02:31.000Z, receivedAt 2026-10-31T01:28:30.591Z, kind indicative, estimated)
+- USD→THB 33.744351
+- JPY→THB cross 0.214257505114 (estimated) → 1000 JPY = 214.26 THB
 
 ## frankfurter
 
-- OK in 261 ms · 27 quotes · missing: TWD, VND, LAK, KHR, MMK, AED, SAR, KWD, BHD, OMR, JOD, CLP, EGP, LKR, NPR
-- USD→JPY 157.96 (observedAt 2026-10-28T00:00:00Z, receivedAt 2026-10-29T02:35:59.846Z, kind indicative, estimated)
-- USD→THB 33.775
-- JPY→THB cross 0.213819954419 (estimated) → 1000 JPY = 213.82 THB
+- OK in 520 ms · 27 quotes · missing: TWD, VND, LAK, KHR, MMK, AED, SAR, KWD, BHD, OMR, JOD, CLP, EGP, LKR, NPR
+- USD→JPY 157.25 (observedAt 2026-10-30T00:00:00Z, receivedAt 2026-10-31T01:28:31.111Z, kind indicative, estimated)
+- USD→THB 33.73
+- JPY→THB cross 0.214499205087 (estimated) → 1000 JPY = 214.50 THB
 
 ## frankfurter history (30 days JPY→THB)
 
-- 22 daily points from 2026-09-29 to 2026-10-28 (working days only) · last: {"THB":0.21382}
+- 22 daily points from 2026-10-01 to 2026-10-30 (working days only) · last: {"THB":0.2145}
 
 ## ISO 4217 list one vs currencies.ts
 

@@ -1,20 +1,20 @@
 {
-  "ranAt": "2026-10-29T02:35:59.335Z",
+  "ranAt": "2026-10-31T01:28:30.364Z",
   "providers": {
     "coinbase": {
       "ok": true,
-      "ms": 145,
+      "ms": 136,
       "quotes": 42,
       "missing": [],
       "sample": {
         "jpy": {
-          "quoteId": "coinbase:USDJPY:2026-10-29T02:35:59.478Z",
+          "quoteId": "coinbase:USDJPY:2026-10-31T01:28:30.499Z",
           "base": "USD",
           "quote": "JPY",
-          "rate": "157.6525606066666667",
+          "rate": "157.592037235",
           "source": "coinbase",
           "observedAt": null,
-          "receivedAt": "2026-10-29T02:35:59.478Z",
+          "receivedAt": "2026-10-31T01:28:30.499Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "intraday",
@@ -23,13 +23,13 @@
           ]
         },
         "thb": {
-          "quoteId": "coinbase:USDTHB:2026-10-29T02:35:59.478Z",
+          "quoteId": "coinbase:USDTHB:2026-10-31T01:28:30.499Z",
           "base": "USD",
           "quote": "THB",
-          "rate": "33.7275",
+          "rate": "33.7485",
           "source": "coinbase",
           "observedAt": null,
-          "receivedAt": "2026-10-29T02:35:59.478Z",
+          "receivedAt": "2026-10-31T01:28:30.499Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "intraday",
@@ -39,7 +39,7 @@
         }
       },
       "crossJPYTHB": {
-        "rate": "0.213935630796",
+        "rate": "0.214151048442",
         "confidence": "estimated",
         "observedAt": null,
         "notes": [
@@ -47,54 +47,54 @@
           "observation time unknown for at least one leg; marked estimated"
         ]
       },
-      "convert1000JPY": "213.94"
+      "convert1000JPY": "214.15"
     },
     "open-er-api": {
       "ok": true,
-      "ms": 105,
+      "ms": 90,
       "quotes": 42,
       "missing": [],
       "sample": {
         "jpy": {
-          "quoteId": "open-er-api:USDJPY:1793232151",
+          "quoteId": "open-er-api:USDJPY:1793404951",
           "base": "USD",
           "quote": "JPY",
-          "rate": "157.90537",
+          "rate": "157.494371",
           "source": "open-er-api",
-          "observedAt": "2026-10-29T00:02:31.000Z",
-          "receivedAt": "2026-10-29T02:35:59.584Z",
-          "expiresAt": "2026-10-30T00:07:41.000Z",
+          "observedAt": "2026-10-31T00:02:31.000Z",
+          "receivedAt": "2026-10-31T01:28:30.591Z",
+          "expiresAt": "2026-11-01T00:06:21.000Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily"
         },
         "thb": {
-          "quoteId": "open-er-api:USDTHB:1793232151",
+          "quoteId": "open-er-api:USDTHB:1793404951",
           "base": "USD",
           "quote": "THB",
-          "rate": "33.772095",
+          "rate": "33.744351",
           "source": "open-er-api",
-          "observedAt": "2026-10-29T00:02:31.000Z",
-          "receivedAt": "2026-10-29T02:35:59.584Z",
-          "expiresAt": "2026-10-30T00:07:41.000Z",
+          "observedAt": "2026-10-31T00:02:31.000Z",
+          "receivedAt": "2026-10-31T01:28:30.591Z",
+          "expiresAt": "2026-11-01T00:06:21.000Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily"
         }
       },
       "crossJPYTHB": {
-        "rate": "0.213875531909",
+        "rate": "0.214257505114",
         "confidence": "estimated",
-        "observedAt": "2026-10-29T00:02:31.000Z",
+        "observedAt": "2026-10-31T00:02:31.000Z",
         "notes": [
           "cross via USD"
         ]
       },
-      "convert1000JPY": "213.88"
+      "convert1000JPY": "214.26"
     },
     "frankfurter": {
       "ok": true,
-      "ms": 261,
+      "ms": 520,
       "quotes": 27,
       "missing": [
         "TWD",
@@ -115,13 +115,13 @@
       ],
       "sample": {
         "jpy": {
-          "quoteId": "frankfurter:USDJPY:2026-10-28",
+          "quoteId": "frankfurter:USDJPY:2026-10-30",
           "base": "USD",
           "quote": "JPY",
-          "rate": "157.96",
+          "rate": "157.25",
           "source": "frankfurter",
-          "observedAt": "2026-10-28T00:00:00Z",
-          "receivedAt": "2026-10-29T02:35:59.846Z",
+          "observedAt": "2026-10-30T00:00:00Z",
+          "receivedAt": "2026-10-31T01:28:31.111Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily",
@@ -130,13 +130,13 @@
           ]
         },
         "thb": {
-          "quoteId": "frankfurter:USDTHB:2026-10-28",
+          "quoteId": "frankfurter:USDTHB:2026-10-30",
           "base": "USD",
           "quote": "THB",
-          "rate": "33.775",
+          "rate": "33.73",
           "source": "frankfurter",
-          "observedAt": "2026-10-28T00:00:00Z",
-          "receivedAt": "2026-10-29T02:35:59.846Z",
+          "observedAt": "2026-10-30T00:00:00Z",
+          "receivedAt": "2026-10-31T01:28:31.111Z",
           "rateKind": "indicative",
           "confidence": "estimated",
           "granularity": "daily",
@@ -146,23 +146,23 @@
         }
       },
       "crossJPYTHB": {
-        "rate": "0.213819954419",
+        "rate": "0.214499205087",
         "confidence": "estimated",
-        "observedAt": "2026-10-28T00:00:00.000Z",
+        "observedAt": "2026-10-30T00:00:00.000Z",
         "notes": [
           "cross via USD"
         ]
       },
-      "convert1000JPY": "213.82"
+      "convert1000JPY": "214.50"
     }
   },
   "history": {
     "ok": true,
     "points": 22,
-    "first": "2026-09-29",
-    "last": "2026-10-28",
+    "first": "2026-10-01",
+    "last": "2026-10-30",
     "sample": {
-      "THB": 0.21382
+      "THB": 0.2145
     }
   },
   "iso4217": {
