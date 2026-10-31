@@ -35,7 +35,7 @@ jobs:
         id: sim
         run: |
           xcrun simctl list runtimes
-          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin)["devices"]; import re; c=[x for k,v in d.items() if "iOS" in k for x in v if re.match(r"iPhone \\d+", x["name"])]; c.sort(key=lambda x: (int(re.search(r"\\d+", x["name"]).group()), "Pro" in x["name"], x["name"])); print(c[-1]["udid"] if c else "")')
+          UDID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin)["devices"]; import re; c=[x for k,v in d.items() if "iOS" in k for x in v if re.match(r"iPhone \d+", x["name"])]; c.sort(key=lambda x: (int(re.search(r"\d+", x["name"]).group()), "Pro" in x["name"], x["name"])); print(c[-1]["udid"] if c else "")')
           echo "udid: $UDID"; test -n "$UDID"
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
       - name: Build for the simulator
