@@ -1,13 +1,13 @@
-run: 41155404145  commit: 4da5b56dcdaa8f9b0ea8d74ec0713ff200adb776  date: 2026-10-31T01:34:00Z
+run: 41156211242  commit: abffdb72ee4d53d5d8fc489b216ec5f2733ea0a5  date: 2026-10-31T01:45:55Z
 Xcode 16.4
 Build version 16F6
 
    1 ** BUILD SUCCEEDED **
-   1 2026-10-31 01:28:39.432 appintentsmetadataprocessor[2610:11542] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+   1 2026-10-31 01:38:25.809 appintentsmetadataprocessor[3992:15666] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
 
 UI tests:
-	 Executed 1 test, with 0 failures (0 unexpected) in 29.986 (29.987) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 29.986 (29.988) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 29.986 (29.989) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.705 (37.707) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.705 (37.708) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 37.705 (37.711) seconds
 ** TEST SUCCEEDED **
-Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (29.986 seconds).
+Test Case '-[CurrencyIntelligenceUITests.SmokeTests testConvertIsSimulationThenRecordChangesBalances]' passed (37.705 seconds).
