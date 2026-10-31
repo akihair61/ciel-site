@@ -11,6 +11,7 @@ struct ConvertView: View {
     @State private var showRate = false
     @State private var pick: PickTarget? = nil
     @State private var loading = false
+    @State private var showScan = false
     enum PickTarget: Identifiable { case from, to; var id: Int { self == .from ? 0 : 1 } }
 
     var amount: Money? { try? Money(input.replacingOccurrences(of: ",", with: ""), currency: model.state.from, rounding: .down) }
@@ -53,6 +54,8 @@ struct ConvertView: View {
             }
             .padding()
             .navigationTitle(L("Convert"))
+            .toolbar { ToolbarItem(placement: .primaryAction) { Button { showScan = true } label: { Image(systemName: "camera.viewfinder") }.accessibilityLabel(L("Scan a price tag")) } }
+            .sheet(isPresented: $showScan) { ScanView { v in input = v } }
             .onAppear { if !prefilled { prefilled = true; if input.isEmpty { input = model.prefillAmount } } }
             .sheet(isPresented: $showResult) { if let tx = model.lastConversion { ResultSheet(tx: tx).environmentObject(model) } }
             .sheet(isPresented: $showRate) { RateInfoView().environmentObject(model) }

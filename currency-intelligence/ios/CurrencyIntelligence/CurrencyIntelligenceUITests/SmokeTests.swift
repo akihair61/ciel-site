@@ -52,5 +52,12 @@ final class SmokeTests: XCTestCase {
         app.staticTexts["Split a bill"].tap()
         XCTAssertTrue(app.navigationBars["Split a bill"].waitForExistence(timeout: 5))
         shot(app, "ui-06-split")
+
+        // F05 price scanner: the simulator has no camera, so the honest fallback must show and nothing is entered.
+        app.tabBars.buttons["Convert"].tap()
+        app.buttons["Scan a price tag"].tap()
+        XCTAssertTrue(app.staticTexts["Camera not available on this device"].waitForExistence(timeout: 5))
+        shot(app, "ui-07-scan-fallback")
+        app.buttons["Close"].firstMatch.tap()
     }
 }

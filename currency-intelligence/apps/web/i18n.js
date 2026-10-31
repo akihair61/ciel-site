@@ -152,6 +152,11 @@ const D = {
   "Notification history": ["通知履歴", "ประวัติการแจ้งเตือน"], "Nothing fired yet.": ["まだ通知はありません。", "ยังไม่มีการแจ้งเตือน"],
   "Rate alert": ["為替アラート", "แจ้งเตือนอัตรา"], "Alert created": ["アラートを作成しました", "สร้างการแจ้งเตือนแล้ว"], "Alert deleted": ["アラートを削除しました", "ลบการแจ้งเตือนแล้ว"],
   "Enter a valid threshold": ["正しいしきい値を入力してください", "กรอกเกณฑ์ที่ถูกต้อง"], "Pause": ["停止", "หยุด"], "Resume": ["再開", "ดำเนินต่อ"],
+  // camera (F05) / widget (F15)
+  "Scan a price tag": ["値札を読み取る", "สแกนป้ายราคา"], "Point the camera at a price. Tap a number to use it.": ["カメラを値札に向けてください。数字をタップすると使えます。", "หันกล้องไปที่ราคา แตะตัวเลขเพื่อใช้"],
+  "Camera not available on this device": ["この端末ではカメラを使えません", "อุปกรณ์นี้ไม่มีกล้อง"],
+  "Price scanning needs a camera and iOS 16 or later. Nothing is uploaded; recognised numbers are only suggestions you confirm.": ["値札の読み取りにはカメラと iOS 16 以降が必要です。画像は送信しません。読み取った数字は候補で、確定はあなたが行います。", "การสแกนราคาต้องใช้กล้องและ iOS 16 ขึ้นไป ไม่มีการอัปโหลด ตัวเลขที่อ่านได้เป็นเพียงข้อเสนอที่คุณยืนยันเอง"],
+  "Close": ["閉じる", "ปิด"],
   // history
   "Conversions": ["換算の控え", "การแปลง"], "Nothing yet. Tap Convert and it shows up here.": ["まだありません。換算するとここに表示されます。", "ยังไม่มี กดแปลงแล้วจะแสดงที่นี่"],
   "Clear history": ["履歴を消去", "ล้างประวัติ"], "recorded": ["記録", "บันทึก"], "simulation": ["シミュレーション", "จำลอง"], "legacy": ["旧形式", "รุ่นเก่า"],

@@ -7,6 +7,7 @@
 import Foundation
 import SwiftUI
 import UserNotifications
+import WidgetKit
 import CoreMoney
 
 @MainActor
@@ -49,6 +50,20 @@ final class AppModel: ObservableObject {
     func save() {
         Lang.current = Lang.resolve(setting: state.lang)
         do { try store.save(state) } catch { notice = "Could not save: \(error.localizedDescription)" }
+        writeWidgetSnapshot()
+    }
+    /// F15: the widget shows only what the app last saw, with the rate's source and time; it never fetches on its own.
+    func writeWidgetSnapshot() {
+        let sel = balance(state.sel) ?? Money.zero(state.sel)
+        let q = quote(from: state.from, to: state.to)
+        let iso = ISO8601DateFormatter()
+        let snap = WidgetSnapshot(selCode: state.sel, selBalanceText: Format.money(sel), homeCode: state.home,
+                                  homeEquivText: state.sel == state.home ? nil : toHome(sel).map { "≈ " + Format.money($0) },
+                                  pairText: q.map { "1 \(state.from) = \(Format.rate($0.quote.rate)) \(state.to)" } ?? "",
+                                  sourceLabel: q.map { $0.quote.source == "coinbase" ? "Coinbase · " + L("observation time not published") : $0.quote.source == "embedded" ? L("Sample rate") : $0.quote.source } ?? "",
+                                  rateReceivedAt: q.map { iso.string(from: $0.quote.receivedAt) } ?? iso.string(from: Date()), updatedAt: iso.string(from: Date()))
+        snap.save()
+        if !AppModel.uiTesting { WidgetCenter.shared.reloadAllTimelines() }
     }
 
     // MARK: trips (F11)
@@ -77,7 +92,7 @@ final class AppModel: ObservableObject {
         let symbols = Set(Currencies.all.keys)
         do {
             let q = try await coinbase.fetchLatest(base: "USD", symbols: symbols)
-            if !q.isEmpty { rates = RateTable(quotes: q, source: "coinbase", status: "fresh"); rateError = nil; checkAlerts(); return }
+            if !q.isEmpty { rates = RateTable(quotes: q, source: "coinbase", status: "fresh"); rateError = nil; checkAlerts(); writeWidgetSnapshot(); return }
         } catch { rateError = "\(error)" }
         if rates.source == "coinbase" { rates = RateTable(quotes: rates.quotes, source: "coinbase", status: "stale") }
         checkAlerts()
