@@ -195,9 +195,12 @@ public struct Money: Hashable, Sendable, CustomStringConvertible {
         guard total > 0 else { throw MoneyError.allocation("zero weights") }
         let sign: Int64 = minor < 0 ? -1 : 1
         let abs = minor.magnitude
-        var base = weights.map { Int64(abs * UInt64($0) / UInt64(total)) }
-        let rem = weights.enumerated().map { (i: $0.offset, r: abs * UInt64($0.element) % UInt64(total)) }
-            .sorted { $0.r == $1.r ? $0.i < $1.i : $0.r > $1.r }
+        let t = UInt64(total)
+        var base: [Int64] = weights.map { w in Int64(abs * UInt64(w) / t) }
+        // Built step by step: the chained map/sorted form exceeds Xcode 26's type-check time limit.
+        var rem: [(i: Int, r: UInt64)] = []
+        for (i, w) in weights.enumerated() { rem.append((i: i, r: abs * UInt64(w) % t)) }
+        rem.sort { a, b in a.r == b.r ? a.i < b.i : a.r > b.r }
         var left = Int64(abs) - base.reduce(0, +)
         for item in rem where left > 0 {
             base[item.i] += 1
