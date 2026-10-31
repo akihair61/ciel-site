@@ -30,6 +30,7 @@ jobs:
           (cd apps/web && python3 -m http.server 8765 >/dev/null 2>&1 &) ; sleep 1
           node docs/verify_p1.js | tail -3
           node docs/verify_p2.js | tail -3
+          node docs/verify_p3.js | tail -3
       - name: Live APIs + ISO 4217
         working-directory: currency-intelligence
         run: node scripts/live-check.mjs

@@ -6,6 +6,7 @@
 // - Balances are cash the user recorded by hand, not a financial account.
 import Foundation
 import SwiftUI
+import UserNotifications
 import CoreMoney
 
 @MainActor
@@ -76,10 +77,46 @@ final class AppModel: ObservableObject {
         let symbols = Set(Currencies.all.keys)
         do {
             let q = try await coinbase.fetchLatest(base: "USD", symbols: symbols)
-            if !q.isEmpty { rates = RateTable(quotes: q, source: "coinbase", status: "fresh"); rateError = nil; return }
+            if !q.isEmpty { rates = RateTable(quotes: q, source: "coinbase", status: "fresh"); rateError = nil; checkAlerts(); return }
         } catch { rateError = "\(error)" }
         if rates.source == "coinbase" { rates = RateTable(quotes: rates.quotes, source: "coinbase", status: "stale") }
+        checkAlerts()
     }
+
+    // MARK: rate alerts (F06) — checked only while the app is open, after each refresh; no background work.
+    func checkAlerts() {
+        guard !state.alerts.isEmpty else { return }
+        let now = Date()
+        let r = Alerts.evaluate(state.alerts, now: now) { f, t in self.rates.quote(from: f, to: t) }
+        state.alerts = r.alerts; state.alertsCheckedAt = ISO8601DateFormatter().string(from: now)
+        if !r.fires.isEmpty {
+            state.alertLog = Array((r.fires + state.alertLog).prefix(100))
+            for f in r.fires { postLocalNotification(f) }
+        }
+        save()
+    }
+    func fireText(_ f: AlertFire) -> String { "1 \(f.from) = \(Format.rate(f.rate)) \(f.to) · \(f.direction == "above" ? L("rises above") : L("falls below")) \(Format.rate(f.threshold))" }
+    var unseenFires: Bool { let seen = state.alertsSeenAt.flatMap { ISO8601DateFormatter().date(from: $0) } ?? .distantPast; return state.alertLog.contains { (Alerts.parse($0.at) ?? .distantPast) > seen } }
+    private func postLocalNotification(_ f: AlertFire) {
+        guard !AppModel.uiTesting else { return }
+        let c = UNMutableNotificationContent()
+        c.title = L("Rate alert")
+        c.body = "\(fireText(f)) · \(f.source) · \(L("fetched")) \(Format.dateTime(f.receivedAt))\(f.observedAt == nil ? " · " + L("observation time not published") : "")"
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: f.id, content: c, trigger: nil))
+    }
+    func requestNotificationPermission() async -> Bool {
+        (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+    }
+    func createAlert(from: String, to: String, threshold: String, direction: String, expiryDays: Int, cooldownMinutes: Int) -> Bool {
+        guard from != to, let t = Decimal(string: threshold.replacingOccurrences(of: ",", with: ""), locale: Locale(identifier: "en_US_POSIX")), t > 0 else { return false }
+        let iso = ISO8601DateFormatter()
+        let a = RateAlert(id: "al-" + String(Int(Date().timeIntervalSince1970), radix: 36), from: from, to: to, threshold: threshold.replacingOccurrences(of: ",", with: ""), direction: direction,
+                          createdAt: iso.string(from: Date()), expiresAt: expiryDays > 0 ? iso.string(from: Date().addingTimeInterval(Double(expiryDays) * 86400)) : nil, cooldownMs: cooldownMinutes * 60_000)
+        state.alerts.insert(a, at: 0); save(); checkAlerts(); return true
+    }
+    func deleteAlert(_ id: String) { state.alerts.removeAll { $0.id == id }; save() }
+    func toggleAlert(_ id: String) { state.alerts = state.alerts.map { var a = $0; if a.id == id { a.active.toggle() }; return a }; save() }
+    func markAlertsSeen() { state.alertsSeenAt = ISO8601DateFormatter().string(from: Date()); save() }
 
     /// Market quote (direct / inverted / crossed) or the user's realized rate for the pair.
     func quote(from: String, to: String) -> (quote: RateQuote, mine: Bool)? {

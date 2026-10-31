@@ -2,6 +2,7 @@
 import {
   Money, MoneyError, CURRENCIES, currency, convert, invert, cross, realizedRate, spreadPercent,
   parseDec, RateCache, OpenErApiProvider, FrankfurterProvider, CoinbaseProvider, splitEqual, splitByWeight, settle,
+  evaluateAlerts, alertStatus, validateAlertInput,
 } from "./core/index.js";
 import { DICT, LANGS, LOCALE } from "./i18n.js";
 
@@ -56,7 +57,7 @@ const catOf = (id) => CATS.find((c) => c[0] === id) || CATS[5];
 const EMBEDDED = { observedAt: "2026-10-27T00:00:00Z", rates: { USD:1, JPY:150.12, THB:33.47, EUR:0.9201, GBP:0.7742, KRW:1378.5, TWD:32.18, CNY:7.18, HKD:7.79, SGD:1.336, MYR:4.42, IDR:16080, PHP:57.1, VND:25410, LAK:21900, KHR:4080, MMK:2100, INR:84.1, AUD:1.512, NZD:1.66, CAD:1.372, CHF:0.879, SEK:10.6, NOK:10.9, DKK:6.86, CZK:23.2, PLN:3.98, HUF:372, ISK:138, TRY:34.2, AED:3.6725, SAR:3.75, KWD:0.3066, BHD:0.376, OMR:0.3845, JOD:0.709, MXN:19.6, BRL:5.62, CLP:940, ZAR:17.9, EGP:48.6, LKR:299, NPR:134.6 } };
 
 // ---------- state ----------
-function defaults() { return { schemaVersion: SCHEMA_VERSION, onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M", motion: "auto", migrations: [], split: null, lang: "auto", pins: [], trips: [], trip: null, convBasis: "snapshot" }; }
+function defaults() { return { schemaVersion: SCHEMA_VERSION, onboarded: false, home: "JPY", sel: "THB", from: "JPY", to: "THB", balances: {}, mine: {}, history: [], ledger: [], rateCache: null, liveCache: null, ticks: {}, series: {}, cardColor: {}, period: "1M", motion: "auto", migrations: [], split: null, lang: "auto", pins: [], trips: [], trip: null, convBasis: "snapshot", alerts: [], alertLog: [], alertsSeenAt: null, alertsCheckedAt: null }; }
 const DEC_RE = /^-?\d+(\.\d+)?$/;
 /** Shape check for stored / imported state. Returns { ok, errors }. Never throws. */
 function validateState(d) {
@@ -71,6 +72,7 @@ function validateState(d) {
   if (d.motion !== undefined && !["auto", "on", "off"].includes(d.motion)) errors.push("motion must be auto/on/off");
   if (d.lang !== undefined && !["auto", "en", "ja", "th"].includes(d.lang)) errors.push("lang must be auto/en/ja/th");
   if (d.pins !== undefined && (!Array.isArray(d.pins) || d.pins.some((c) => !CURRENCIES.has(c)))) errors.push("pins must be known currency codes");
+  if (d.alerts !== undefined && (!Array.isArray(d.alerts) || d.alerts.some((a) => !a || typeof a !== "object" || typeof a.id !== "string" || !CURRENCIES.has(a.from) || !CURRENCIES.has(a.to) || typeof a.threshold !== "string" || !DEC_RE.test(a.threshold) || !["above", "below"].includes(a.direction)))) errors.push("alerts must be a list of {id, from, to, threshold, direction}");
   if (d.trips !== undefined && (!Array.isArray(d.trips) || d.trips.some((x) => !x || typeof x !== "object" || typeof x.id !== "string" || typeof x.name !== "string" || (x.budget !== null && (typeof x.budget !== "string" || !DEC_RE.test(x.budget)))))) errors.push("trips must be a list of {id, name, budget}");
   return { ok: errors.length === 0, errors };
 }
@@ -161,6 +163,7 @@ function applyRates(quotes, source, status) {
   }
   lastRateShown = shown;
   render(); if (S.period === "1D") { buildTickSeries(); renderRate(); }
+  checkAlerts();
 }
 async function loadRates(poll = false) {
   const symbols = [...CURRENCIES.keys()].filter((c) => c !== PIVOT);
@@ -706,7 +709,7 @@ $("addCur").addEventListener("click", () => openPicker("any", (c) => { addCcy = 
 $("spCur").addEventListener("click", () => openPicker("any", (c) => { spCcy = c; $("spFlag").textContent = flag(c); $("spCode").textContent = c; }));
 
 // ---------- sheets ----------
-const SHEETS = ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend", "sheetMore", "sheetSplit", "sheetTrip", "sheetRates"];
+const SHEETS = ["sheetDone", "sheetPick", "sheetRate", "sheetHistory", "sheetSpend", "sheetMore", "sheetSplit", "sheetTrip", "sheetRates", "sheetAlerts"];
 function closeSheets() { for (const id of SHEETS) $(id).hidden = true; }
 function openPicker(which, onPick) {
   $("pickTitle").textContent = which === "from" ? t("Convert from") : which === "to" ? t("Convert to") : t("Choose currency");
@@ -786,6 +789,71 @@ $("btnMoreTrips").addEventListener("click", () => { closeSheets(); openTrips(); 
 $("btnMoreRates").addEventListener("click", () => { closeSheets(); openAllRates(); });
 $("btnAllRates").addEventListener("click", () => { closeSheets(); openAllRates(); });
 $("langChips").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; S.lang = b.dataset.v; save(); applyLang(); render(); renderRateSheet(); });
+
+// ---------- rate alerts (F06) ----------
+// Checked after every rate refresh while the page is open (no background work, no server). Evaluation is in packages/core.
+const al = { from: "JPY", to: "THB", dir: "above", expiryDays: 30, cooldownMin: 60 };
+function checkAlerts() {
+  if (!S.alerts || !S.alerts.length) return;
+  const now = Date.now();
+  const r = evaluateAlerts(S.alerts, (f, to) => marketQuote(f, to), now);
+  S.alerts = r.alerts; S.alertsCheckedAt = new Date(now).toISOString();
+  if (r.fires.length) {
+    S.alertLog = [...r.fires, ...(S.alertLog || [])].slice(0, 100);
+    for (const f of r.fires) notifyFire(f);
+  }
+  save(); updateBell();
+  if (!$("sheetAlerts").hidden) renderAlerts();
+}
+function fireText(f) { return `1 ${f.from} = ${rateStr(f.rate)} ${f.to} · ${f.direction === "above" ? t("rises above") : t("falls below")} ${rateStr(f.threshold)}`; }
+function notifyFire(f) {
+  const body = `${fireText(f)} · ${f.source} · ${t("fetched")} ${dateTime(f.receivedAt)}${f.observedAt ? "" : " · " + t("observation time not published")}`;
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") { try { new Notification(t("Rate alert"), { body, tag: f.alertId }); } catch {} }
+  toast(`${t("Rate alert")}: ${fireText(f)}`);
+}
+function updateBell() { const seen = S.alertsSeenAt ? Date.parse(S.alertsSeenAt) : 0; const unseen = (S.alertLog || []).some((f) => Date.parse(f.at) > seen); $("btnBell").querySelector(".dotn").style.display = unseen ? "" : "none"; }
+function openAlerts() {
+  al.from = S.from; al.to = S.to; S.alertsSeenAt = new Date().toISOString(); save(); updateBell();
+  const q = marketQuote(al.from, al.to); $("alThreshold").value = q ? rateStr(q.rate) : "";
+  renderAlerts(); stagger($("sheetAlerts").querySelector(".sheetbox")); $("sheetAlerts").hidden = false;
+}
+function renderAlerts() {
+  const now = Date.now();
+  $("alFromFlag").textContent = flag(al.from); $("alFromCode").textContent = al.from; $("alToFlag").textContent = flag(al.to); $("alToCode").textContent = al.to;
+  const q = marketQuote(al.from, al.to); $("alNow").textContent = q ? `${t("Current")}: 1 ${al.from} = ${rateStr(q.rate)} ${al.to} · ${sourceLabel(q)}` : t("No rate for this pair");
+  $("alDir").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === al.dir));
+  $("alExpiry").querySelectorAll("button").forEach((b) => b.classList.toggle("on", Number(b.dataset.v) === al.expiryDays));
+  $("alCooldown").querySelectorAll("button").forEach((b) => b.classList.toggle("on", Number(b.dataset.v) === al.cooldownMin));
+  const perm = typeof Notification === "undefined" ? "unsupported" : Notification.permission;
+  $("btnNotifPerm").querySelector("span").textContent = perm === "granted" ? t("Notifications enabled") : perm === "denied" ? t("Notifications blocked in the browser") : perm === "unsupported" ? t("Notifications are not supported here") : t("Enable notifications");
+  $("btnNotifPerm").disabled = perm !== "default";
+  const list = $("alertList");
+  if (!S.alerts.length) list.innerHTML = `<div class="empty">${t("No alerts yet.")}</div>`;
+  else list.innerHTML = S.alerts.map((a) => {
+    const st = alertStatus(a, now); const cur = marketQuote(a.from, a.to);
+    const stText = st === "expired" ? t("Expired") : st === "paused" ? t("Paused") : a.fireCount ? `${t("Fired")} ×${a.fireCount}` : t("Waiting");
+    return `<div class="alert" data-id="${esc(a.id)}"><div class="t"><b>${esc(a.from)} → ${esc(a.to)} ${a.direction === "above" ? t("rises above") : t("falls below")} ${esc(rateStr(a.threshold))}</b><span>${cur ? `${t("Current")} ${esc(rateStr(cur.rate))} · ` : ""}${S.alertsCheckedAt ? `${t("Last checked")} ${esc(ago(S.alertsCheckedAt))}` : t("Not checked yet")}${a.expiresAt ? ` · ${t("Expires")} ${esc(dateJa(a.expiresAt))}` : ""}</span></div><span class="st ${st === "active" && a.fireCount ? "fired" : st}">${esc(stText)}</span><div class="btns">${st === "expired" ? "" : `<button type="button" data-act="toggle">${a.active ? t("Pause") : t("Resume")}</button>`}<button type="button" data-act="del">${t("Delete")}</button></div></div>`;
+  }).join("");
+  const log = $("alertLog"); log.innerHTML = (S.alertLog || []).slice(0, 30).map((f) => `<li><div class="flags2"><span class="flag">${flag(f.from)}</span><span class="flag">${flag(f.to)}</span></div><div><div>${esc(fireText(f))}</div><div class="t">${esc(dateTime(f.at))} · ${esc(f.source)}${f.observedAt ? "" : ` · ${t("observation time not published")}`}</div></div></li>`).join("");
+  $("alertLogEmpty").hidden = (S.alertLog || []).length > 0;
+}
+$("alFrom").addEventListener("click", () => openPicker("any", (c) => { if (c === al.to) al.to = al.from; al.from = c; const q = marketQuote(al.from, al.to); $("alThreshold").value = q ? rateStr(q.rate) : ""; renderAlerts(); $("sheetAlerts").hidden = false; }));
+$("alTo").addEventListener("click", () => openPicker("any", (c) => { if (c === al.from) al.from = al.to; al.to = c; const q = marketQuote(al.from, al.to); $("alThreshold").value = q ? rateStr(q.rate) : ""; renderAlerts(); $("sheetAlerts").hidden = false; }));
+$("alDir").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (b) { al.dir = b.dataset.v; renderAlerts(); } });
+$("alExpiry").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (b) { al.expiryDays = Number(b.dataset.v); renderAlerts(); } });
+$("alCooldown").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (b) { al.cooldownMin = Number(b.dataset.v); renderAlerts(); } });
+$("btnAlertCreate").addEventListener("click", () => {
+  const threshold = $("alThreshold").value.trim().replace(/,/g, "");
+  const expiresAt = al.expiryDays ? new Date(Date.now() + al.expiryDays * 864e5).toISOString() : null;
+  const input = { from: al.from, to: al.to, threshold, direction: al.dir, cooldownMs: al.cooldownMin * 60_000, expiresAt };
+  if (validateAlertInput(input)) { toast(t("Enter a valid threshold")); return; }
+  S.alerts = [{ id: "al-" + Date.now().toString(36), ...input, createdAt: new Date().toISOString(), active: true, lastFiredAt: null, fireCount: 0 }, ...S.alerts];
+  save(); toast(t("Alert created")); checkAlerts(); renderAlerts();
+});
+$("alertList").addEventListener("click", (e) => { const b = e.target.closest("button[data-act]"); if (!b) return; const id = b.closest(".alert").dataset.id; if (b.dataset.act === "del") { S.alerts = S.alerts.filter((a) => a.id !== id); toast(t("Alert deleted")); } else S.alerts = S.alerts.map((a) => (a.id === id ? { ...a, active: !a.active } : a)); save(); renderAlerts(); });
+$("btnNotifPerm").addEventListener("click", async () => { if (typeof Notification === "undefined") return; try { await Notification.requestPermission(); } catch {} renderAlerts(); });
+$("btnMoreAlerts").addEventListener("click", () => { closeSheets(); openAlerts(); });
+setInterval(() => { if (!$("sheetAlerts").hidden) renderAlerts(); }, 30_000);
 
 // ---------- split a bill (F13) ----------
 // Pure UI over packages/core split.ts: shares always sum to the total; the settlement is a proposal that REDUCES the number
@@ -911,7 +979,7 @@ $("btnMoreCards").addEventListener("click", () => { closeSheets(); go("wallet");
 $("btnMoreSettings").addEventListener("click", () => { closeSheets(); openRate(); });
 $("btnAllTx").addEventListener("click", () => { const body = $("s-home"); body.scrollTo({ top: $("txcard").offsetTop + $("txcard").offsetHeight - 8, behavior: reduced() ? "auto" : "smooth" }); });
 $("btnSearch").addEventListener("click", () => openPicker("any", (c) => { S.sel = c; if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); save(); renderHome(); }));
-$("btnBell").addEventListener("click", () => toast(t("No notifications yet")));
+$("btnBell").addEventListener("click", openAlerts);
 $("btnWAdd").addEventListener("click", () => openAdd(S.sel)); $("btnWSpend").addEventListener("click", () => openSpend(S.sel));
 $("btnWalletAdd").addEventListener("click", () => openPicker("any", (c) => { if (!S.balances[c]) S.balances[c] = Money.zero(c).toDecimalString(); S.sel = c; save(); renderWallet(); openAdd(c); }));
 function renderHistory() { const ul = $("histList"); ul.innerHTML = ""; $("histEmpty").hidden = S.history.length > 0; for (const h of S.history) { const li = document.createElement("li"); li.innerHTML = `<div class="flags2"><span class="flag">${flag(h.from)}</span><span class="flag">${flag(h.to)}</span></div><div><div>${esc(h.from)} → ${esc(h.to)} <small class="kind">${h.kind === "exchange" ? t("recorded") : h.kind === "simulation" ? t("simulation") : t("legacy")}</small></div><div class="t">${dateTime(h.at)}</div></div><div class="a">${esc(h.toText)}<small>for ${esc(h.fromText)}</small></div>`; li.addEventListener("click", () => { closeSheets(); showReceipt(h); }); ul.appendChild(li); } }
@@ -922,7 +990,7 @@ window.addEventListener("resize", () => { moveTabHl(); const on = $("ticker").qu
 // ---------- boot ----------
 // Splash plays on every cold open (as in the reference). Returning users skip the copy and land on home after the bands.
 buildBurst();
-applyMotion(); applyLang();
+applyMotion(); applyLang(); updateBell(); checkAlerts(); // expiry is processed at start even before any rate arrives
 const ob = $("s-onboard"); ob.classList.add("play"); if (S.onboarded) ob.classList.add("auto");
 route();
 if (S.onboarded) { if (reduced()) leaveOnboarding(false); else setTimeout(() => leaveOnboarding(false), 2150); }

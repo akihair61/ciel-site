@@ -353,6 +353,7 @@
     <button class="listbtn" id="btnMoreSplit" type="button"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 20a5 5 0 0 1 10 0M11 20a5 5 0 0 1 10 0"/></svg><span>Split a bill</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreTrips" type="button"><svg viewBox="0 0 24 24"><path d="M3 11l18-7-7 18-2-8z"/></svg><span>Trips &amp; budget</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreRates" type="button"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>All rates</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <button class="listbtn" id="btnMoreAlerts" type="button"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span>Rate alerts</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreHistory" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21Z"/><path d="M9 8h6M9 12h6"/></svg><span>Conversion notes</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreCards" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg><span>Cards</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
     <button class="listbtn" id="btnMoreSettings" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.5L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 1.7 1l.3 2.6h5l.3-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1z"/></svg><span>Rate, motion &amp; data</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
@@ -412,6 +413,31 @@
     <div class="ratehero"><div class="num" id="arAmount"></div><div class="sub" id="arSub"></div></div>
     <ul class="picklist" id="arList"></ul>
     <p class="sub">Pinned currencies (up to 12). Pin more from the currency picker.</p>
+  </div>
+</div>
+
+<!-- ============ Rate alerts (F06) ============ -->
+<div class="sheet" id="sheetAlerts" hidden>
+  <div class="sheetbox tall">
+    <div class="sheethead"><h2>Rate alerts</h2><button class="round small" data-close type="button" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <p class="sub defs">Alerts are checked only while this app is open. Rates refresh about once a minute (Coinbase, no published observation time) or daily (ECB). Nothing runs in the background.</p>
+    <button class="listbtn" id="btnNotifPerm" type="button"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span>Enable notifications</span><svg class="chev" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5"/></svg></button>
+    <div class="alertlist" id="alertList"></div>
+    <div class="mine">
+      <div class="minehead"><b>New alert</b><span id="alNow"></span></div>
+      <div class="two">
+        <button class="curpill" id="alFrom" type="button"><span class="flag" id="alFromFlag"></span><b id="alFromCode">JPY</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+        <button class="curpill" id="alTo" type="button"><span class="flag" id="alToFlag"></span><b id="alToCode">THB</b><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+      </div>
+      <div class="chips" id="alDir"><button type="button" data-v="above" class="on">rises above</button><button type="button" data-v="below">falls below</button></div>
+      <label class="acfield"><span>Threshold</span><input id="alThreshold" class="num" type="text" inputmode="decimal" placeholder="0.2200" autocomplete="off"></label>
+      <div class="splrow"><span>Expires</span><div class="chips" id="alExpiry"><button type="button" data-v="7">7 days</button><button type="button" data-v="30" class="on">30 days</button><button type="button" data-v="0">Never</button></div></div>
+      <div class="splrow"><span>Repeat at most every</span><div class="chips" id="alCooldown"><button type="button" data-v="15">15 min</button><button type="button" data-v="60" class="on">1 hour</button><button type="button" data-v="360">6 hours</button><button type="button" data-v="1440">24 hours</button></div></div>
+      <button class="cta small" id="btnAlertCreate" type="button">Create alert</button>
+    </div>
+    <div class="minehead"><b>Notification history</b></div>
+    <ul class="histlist" id="alertLog"></ul>
+    <p class="sub" id="alertLogEmpty">Nothing fired yet.</p>
   </div>
 </div>
 

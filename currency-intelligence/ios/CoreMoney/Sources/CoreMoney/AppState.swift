@@ -77,10 +77,14 @@ public struct AppState: Codable, Sendable {
     public var motion = "auto"
     public var lang = "auto"
     public var convBasis = "snapshot"
+    public var alerts: [RateAlert] = []
+    public var alertLog: [AlertFire] = []
+    public var alertsSeenAt: String? = nil
+    public var alertsCheckedAt: String? = nil
     public var migrations: [Migration] = []
     public init() {}
 
-    enum CodingKeys: String, CodingKey { case schemaVersion, onboarded, home, sel, from, to, balances, mine, history, ledger, pins, trips, trip, motion, lang, convBasis, migrations }
+    enum CodingKeys: String, CodingKey { case schemaVersion, onboarded, home, sel, from, to, balances, mine, history, ledger, pins, trips, trip, motion, lang, convBasis, migrations, alerts, alertLog, alertsSeenAt, alertsCheckedAt }
     public init(from d: Decoder) throws {
         let c = try d.container(keyedBy: CodingKeys.self)
         schemaVersion = try c.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 3
@@ -100,6 +104,10 @@ public struct AppState: Codable, Sendable {
         lang = try c.decodeIfPresent(String.self, forKey: .lang) ?? "auto"
         convBasis = try c.decodeIfPresent(String.self, forKey: .convBasis) ?? "snapshot"
         migrations = try c.decodeIfPresent([Migration].self, forKey: .migrations) ?? []
+        alerts = try c.decodeIfPresent([RateAlert].self, forKey: .alerts) ?? []
+        alertLog = try c.decodeIfPresent([AlertFire].self, forKey: .alertLog) ?? []
+        alertsSeenAt = try c.decodeIfPresent(String.self, forKey: .alertsSeenAt)
+        alertsCheckedAt = try c.decodeIfPresent(String.self, forKey: .alertsCheckedAt)
     }
 
     /// Same v3 → v4 rule as the web client: pre-v4 conversions changed balances; keep them, mark them legacy.
@@ -126,6 +134,7 @@ public struct AppState: Codable, Sendable {
         if !["auto", "on", "off"].contains(motion) { errors.append("motion must be auto/on/off") }
         if !["auto", "en", "ja", "th"].contains(lang) { errors.append("lang must be auto/en/ja/th") }
         if pins.contains(where: { Currencies.all[$0] == nil }) { errors.append("pins must be known currency codes") }
+        for a in alerts where Currencies.all[a.from] == nil || Currencies.all[a.to] == nil || Decimal(string: a.threshold, locale: Locale(identifier: "en_US_POSIX")) == nil || !["above", "below"].contains(a.direction) { errors.append("alerts must be a list of {id, from, to, threshold, direction}"); break }
         return errors
     }
 }

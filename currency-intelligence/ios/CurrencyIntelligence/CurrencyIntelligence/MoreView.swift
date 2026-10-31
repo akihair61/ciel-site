@@ -1,5 +1,6 @@
 // 未ビルド: CI(GitHub Actions macOS)で確認。More tab: trips & budget, split a bill, all rates, conversion notes, settings.
 import SwiftUI
+import UserNotifications
 import CoreMoney
 
 struct MoreView: View {
@@ -10,6 +11,7 @@ struct MoreView: View {
                 NavigationLink { TripsView() } label: { Label(L("Trips & budget"), systemImage: "airplane") }
                 NavigationLink { SplitView() } label: { Label(L("Split a bill"), systemImage: "person.2") }
                 NavigationLink { AllRatesView() } label: { Label(L("All rates"), systemImage: "list.bullet") }
+                NavigationLink { AlertsView() } label: { Label(L("Rate alerts"), systemImage: "bell").badge(model.unseenFires ? "●" : nil) }
                 NavigationLink { HistoryView() } label: { Label(L("Conversion notes"), systemImage: "doc.text") }
                 NavigationLink { SettingsView() } label: { Label(L("Rate, motion & data"), systemImage: "gearshape") }
             }
@@ -178,5 +180,68 @@ struct HistoryView: View {
         }
         .navigationTitle(L("Conversions"))
         .sheet(item: $open) { ReceiptView(tx: $0).environmentObject(model) }
+    }
+}
+
+
+// MARK: - Rate alerts (F06)
+struct AlertsView: View {
+    @EnvironmentObject var model: AppModel
+    @State private var from = "JPY"
+    @State private var to = "THB"
+    @State private var direction = "above"
+    @State private var threshold = ""
+    @State private var expiryDays = 30
+    @State private var cooldownMin = 60
+    @State private var permission = "unknown"
+
+    var body: some View {
+        List {
+            Section {
+                Text(L("Alerts are checked only while this app is open. Rates refresh about once a minute (Coinbase, no published observation time) or daily (ECB). Nothing runs in the background.")).font(.footnote).foregroundStyle(.secondary)
+                Button(permission == "authorized" ? L("Notifications enabled") : L("Enable notifications")) { Task { _ = await model.requestNotificationPermission(); await refreshPermission() } }.disabled(permission == "authorized")
+            }
+            Section {
+                if model.state.alerts.isEmpty { Text(L("No alerts yet.")).foregroundStyle(.secondary) }
+                ForEach(model.state.alerts) { a in
+                    let st = Alerts.status(a, now: Date())
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("\(a.from) → \(a.to) \(a.direction == "above" ? L("rises above") : L("falls below")) \(Format.rate(a.threshold))").font(.headline)
+                            Spacer()
+                            Text(st == "expired" ? L("Expired") : st == "paused" ? L("Paused") : a.fireCount > 0 ? "\(L("Fired")) ×\(a.fireCount)" : L("Waiting")).font(.caption.weight(.bold)).foregroundStyle(a.fireCount > 0 && st == "active" ? .green : .secondary)
+                        }
+                        if let q = model.quote(from: a.from, to: a.to) { Text("\(L("Current")) \(Format.rate(q.quote.rate)) · \(model.state.alertsCheckedAt.map { L("Last checked") + " " + Format.dateTime($0) } ?? L("Not checked yet"))").font(.caption).foregroundStyle(.secondary) }
+                        HStack { if st != "expired" { Button(a.active ? L("Pause") : L("Resume")) { model.toggleAlert(a.id) } }; Button(L("Delete"), role: .destructive) { model.deleteAlert(a.id) } }.buttonStyle(.bordered).font(.caption)
+                    }
+                }
+            }
+            Section(L("New alert")) {
+                if let q = model.quote(from: from, to: to) { Text("\(L("Current")): 1 \(from) = \(Format.rate(q.quote.rate)) \(to) · \(model.sourceLabel(q.quote))").font(.caption).foregroundStyle(.secondary) }
+                Picker(L("From"), selection: $from) { ForEach(Currencies.all.keys.sorted(), id: \.self) { Text("\(Format.flag($0)) \($0)").tag($0) } }
+                Picker(L("To"), selection: $to) { ForEach(Currencies.all.keys.sorted(), id: \.self) { Text("\(Format.flag($0)) \($0)").tag($0) } }
+                Picker("", selection: $direction) { Text(L("rises above")).tag("above"); Text(L("falls below")).tag("below") }.pickerStyle(.segmented)
+                TextField(L("Threshold"), text: $threshold).keyboardType(.decimalPad)
+                Picker(L("Expires"), selection: $expiryDays) { Text(L("7 days")).tag(7); Text(L("30 days")).tag(30); Text(L("Never")).tag(0) }
+                Picker(L("Repeat at most every"), selection: $cooldownMin) { Text(L("15 min")).tag(15); Text(L("1 hour")).tag(60); Text(L("6 hours")).tag(360); Text(L("24 hours")).tag(1440) }
+                Button(L("Create alert")) {
+                    if model.createAlert(from: from, to: to, threshold: threshold, direction: direction, expiryDays: expiryDays, cooldownMinutes: cooldownMin) { model.notice = L("Alert created") } else { model.notice = L("Enter a valid threshold") }
+                }
+            }
+            Section(L("Notification history")) {
+                if model.state.alertLog.isEmpty { Text(L("Nothing fired yet.")).foregroundStyle(.secondary) }
+                ForEach(model.state.alertLog.prefix(30)) { f in
+                    VStack(alignment: .leading) { Text(model.fireText(f)).font(.subheadline); Text("\(Format.dateTime(f.at)) · \(f.source)\(f.observedAt == nil ? " · " + L("observation time not published") : "")").font(.caption).foregroundStyle(.secondary) }
+                }
+            }
+        }
+        .navigationTitle(L("Rate alerts"))
+        .onAppear { from = model.state.from; to = model.state.to; if let q = model.quote(from: from, to: to) { threshold = Format.rate(q.quote.rate) }; model.markAlertsSeen(); Task { await refreshPermission() } }
+        .onChange(of: from) { _, _ in if let q = model.quote(from: from, to: to) { threshold = Format.rate(q.quote.rate) } }
+        .onChange(of: to) { _, _ in if let q = model.quote(from: from, to: to) { threshold = Format.rate(q.quote.rate) } }
+    }
+    func refreshPermission() async {
+        let s = await UNUserNotificationCenter.current().notificationSettings()
+        permission = s.authorizationStatus == .authorized || s.authorizationStatus == .provisional ? "authorized" : s.authorizationStatus == .denied ? "denied" : "notDetermined"
     }
 }

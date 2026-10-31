@@ -99,3 +99,22 @@ final class HistoryTests: XCTestCase {
         XCTAssertEqual(pts.last?.rate, 0.2138)
     }
 }
+
+final class AlertTests: XCTestCase {
+    func q(_ rate: String, now: Date) -> RateQuote { RateQuote(quoteId: "x", base: "JPY", quote: "THB", rate: rate, source: "coinbase", observedAt: nil, receivedAt: now, rateKind: .indicative, confidence: .estimated) }
+    func testFiresInclusiveAndHonoursCooldownAndExpiry() {
+        let t0 = Date(timeIntervalSince1970: 1_800_000_000)
+        let a = RateAlert(id: "a1", from: "JPY", to: "THB", threshold: "0.2200", direction: "above", createdAt: "2026-10-31T00:00:00Z", expiresAt: nil, cooldownMs: 3_600_000)
+        XCTAssertTrue(Alerts.conditionMet(a, rate: "0.2200")); XCTAssertFalse(Alerts.conditionMet(a, rate: "0.2199"))
+        let r1 = Alerts.evaluate([a], now: t0) { _, _ in self.q("0.2234", now: t0) }
+        XCTAssertEqual(r1.fires.count, 1); XCTAssertNil(r1.fires[0].observedAt); XCTAssertEqual(r1.alerts[0].fireCount, 1)
+        let r2 = Alerts.evaluate(r1.alerts, now: t0.addingTimeInterval(600)) { _, _ in self.q("0.23", now: t0) }
+        XCTAssertEqual(r2.fires.count, 0, "cooldown")
+        let r3 = Alerts.evaluate(r1.alerts, now: t0.addingTimeInterval(3_660)) { _, _ in self.q("0.23", now: t0) }
+        XCTAssertEqual(r3.fires.count, 1); XCTAssertEqual(r3.alerts[0].fireCount, 2)
+        var e = a; e.expiresAt = ISO8601DateFormatter().string(from: t0.addingTimeInterval(-1))
+        let r4 = Alerts.evaluate([e], now: t0) { _, _ in self.q("0.23", now: t0) }
+        XCTAssertEqual(r4.fires.count, 0); XCTAssertEqual(r4.expired, ["a1"]); XCTAssertFalse(r4.alerts[0].active)
+        XCTAssertEqual(Alerts.status(r4.alerts[0], now: t0), "paused")
+    }
+}
