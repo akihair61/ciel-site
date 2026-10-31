@@ -17,7 +17,7 @@
 | F02 | レート・チャート | P1 | 🟡 | ✅ | 🟡 | ⬜ | 1D(開いている間に集めたティック)と 1W/1M/3M/1Y(Frankfurter 日次、取れない時は端末蓄積)。レート詳細に **定義文**(変動率 = 期間の最初と最後の点、日次点 = ECB 参考レート、週末・休日は点なし、1D = 収集ティック)。外部 API はこの環境から到達不可のため日次チャートは **モック応答でのみ試験** |
 | F03 | マルチ通貨同時換算 | P1 | ✅ | ✅ | ✅ | ⬜ | **All rates シート**: 入力中の金額(未入力なら 1 単位)をピン留め通貨(最大 12)へ同時換算、各行に出典・鮮度、タップで換算先に設定。ホームのティッカー/カードも複数通貨を同時表示。**未**: 並び替え(ピン順のみ) |
 | F04 | スマート検索・音声 | P2 | ⬜ | — | — | ⬜ | |
-| F05 | カメラ・AR 換算 | P2 | ⬜ | — | — | ⬜ | iOS Vision が必要(B-01) |
+| F05 | カメラ・AR 換算 | P2 | 🟡 | ✅ | 🟡 | ⬜ | iOS: Convert 画面のカメラボタン → VisionKit(DataScanner)で値札の数字を候補表示、**確定は手動タップ**、画像は端末外に送らない。カメラがない環境(シミュレータ)は「Camera not available on this device」と正直に表示(UI テストで確認、`ui-07-scan-fallback.png`)。**未**: 実機での認識精度、AR オーバーレイ |
 | F06 | 為替アラート | P2 | ✅ | ✅ | ✅ | ⬜ | **Web + iOS**: ペア・方向(以上/以下)・しきい値・期限(7日/30日/なし)・再通知間隔(15分〜24時間)・通知履歴・一時停止/削除。アプリを開いている間のレート更新ごとに判定(`packages/core/src/alerts.ts`、Swift は `Alerts.swift`)。Web は Notification API、iOS は UNUserNotificationCenter のローカル通知。通知本文に出典・取得時刻・「観測時刻は未公表」を含む。**正直な注記**: 「確認はアプリを開いている間だけ。バックグラウンドでは動かない」。試験: core 4 件、Swift 1 件、ブラウザ 13 項目(`docs/verify_p3.js`)。**未**: バックグラウンド/プッシュ通知(サーバーが必要) |
 | F07 | 為替 AI 解説 | P2 | ⬜ | — | — | ⬜ | |
 | F08 | 両替所検索 | P3 | 🔒 | — | — | ⬜ | データ契約なし(B-04)。`RateKind.cash_buy/cash_sell` は型のみ |
@@ -27,7 +27,7 @@
 | F12 | レシート認識 | P3 | ⬜ | — | — | ⬜ | |
 | F13 | グループ割り勘 | P3 | ✅ | ✅ | ✅ | ⬜ | **今回 UI 追加**: ホーム MORE → Split a bill。人数(最大 20)、均等/重み、支払者、各人の分担(丸め差の割当を表示)、「精算回数を減らす提案」(最少とは言わない)、共有テキスト、支払者の支出として記録へ連携。残高・台帳は変更しない。計算は `split.ts`(不変条件テスト 4 件) |
 | F14 | 世界の物価情報 | P3 | ⬜ | — | — | ⬜ | ライセンス済みデータなし |
-| F15 | ホーム/ロック画面/Watch | P3 | ⬜ | — | — | ⬜ | iOS アプリ本体の後(下記 iOS 行) |
+| F15 | ホーム/ロック画面/Watch | P3 | 🟡 | ✅ | ⬜ | ⬜ | iOS: WidgetKit 拡張(ホーム小/中、ロック画面 rectangular/inline)。アプリが保存した残高と最後のレートを出典と「as of 時刻」付きで表示し、自前では取得しない(Live と言わない)。App Group 経由。macOS ランナーでビルド成功。**未**: ウィジェット表示の自動試験、watchOS、App Intents/Siri |
 | iOS | SwiftUI アプリ(Phase 3) | P3 | ✅ | ✅ | ✅ | ⬜ | Home / Cards / Convert(シミュレーション)/ 実両替記録 / レシート / レート詳細(**ECB 日次チャート 1W〜1Y**)/ **More: 旅行と予算(F11)・割り勘(F13)・All rates(F03)・換算の控え** / 設定(言語 en・ja・th、Motion、Export/Import)。**GitHub Actions の macOS ランナー(macos-15, Xcode 16.4)で確認**: `swift test` 14/14 通過、**XCUITest 画面操作テスト**(起動 → Convert → シミュレーション表示 → 実両替記録 → レシート RECORDED・残高 ¥47,000 → More → 割り勘)通過、各画面を撮影(`docs/screenshots/ios/ui-*.png`)。ランナー上では実際の Coinbase レートで動作、`xcodebuild` BUILD SUCCEEDED(iOS Simulator)、シミュレータで起動してスクリーンショット取得(`docs/screenshots/ios/ios-home.png`、`docs/ci/ios-build-summary.txt`)。画面操作の自動試験(XCUITest)と実機は未。`ios/CoreMoney`(Money / RateQuote(observedAt null 可・invert / cross)/ Coinbase プロバイダ / Web と同じ schema v4 の状態ストア(バックアップ・原子的書込・Export/Import)/ テスト 2 ファイル)と `ios/CurrencyIntelligence`(Xcode 16 形式の手書き project.pbxproj + XcodeGen 用 project.yml。Home / Cards / Convert(シミュレーション)/ 結果シート / 実両替記録 / レシート / レート詳細 / 設定: Motion・Export・Import)。ワークフロー `.github/workflows/ios.yml`(このブランチへの push で実行)。手元の Mac で確認する場合は `ios/README_MAC.md` |
 | F16 | マルチ通貨残高 | P4 | 🔒 | — | — | ⬜ | B-05。着手しない |
 | F17 | 外貨交換 | P4 | 🔒 | — | — | ⬜ | B-05。アプリ内の「実両替記録」は利用者が外で行った両替の **手動記録** であり、交換の実行ではない |
