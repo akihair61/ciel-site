@@ -31,7 +31,7 @@ struct SettingsView: View {
                     Text("Schema v\(model.state.schemaVersion) · \(model.state.balances.count) balances · \(model.state.ledger.count) transactions · \(model.state.history.count) conversions").font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Rates") {
-                    Text("Coinbase (fetched about once a minute while open; no observation time published) → sample snapshot shipped with the app. Never called \"Live\".").font(.footnote).foregroundStyle(.secondary)
+                    Text("Frankfurter daily reference rates (fetched when the app opens or you refresh) → sample snapshot shipped with the app. Never called \"Live\".").font(.footnote).foregroundStyle(.secondary)
                     Button("Refresh now") { Task { await model.refreshRates() } }
                     if let e = model.rateError { Text(e).font(.caption).foregroundStyle(.red) }
                 }

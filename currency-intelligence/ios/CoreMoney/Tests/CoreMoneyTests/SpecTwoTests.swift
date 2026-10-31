@@ -3,15 +3,15 @@ import XCTest
 @testable import CoreMoney
 
 final class SpecTwoTests: XCTestCase {
-    func testCoinbasePayloadKeepsEveryDigitAndHasNoObservationTime() throws {
-        let json = #"{"data":{"currency":"USD","rates":{"JPY":"150.000000000000000001","THB":"33.41","BTC":"0.0000142","XYZ":"1"}}}"#.data(using: .utf8)!
-        let q = try CoinbaseProvider.parse(json, base: "USD", symbols: ["JPY", "THB", "BTC"], now: Date())
-        XCTAssertEqual(q.count, 2) // BTC is not a known fiat currency; XYZ not requested
+    func testFrankfurterPayloadKeepsDigitsAndCarriesPublishedDate() throws {
+        let json = #"[{"date":"2026-10-31","base":"USD","quote":"JPY","rate":157.66},{"date":"2026-10-30","base":"USD","quote":"LAK","rate":22314},{"date":"2026-10-29","base":"USD","quote":"BTC","rate":0.000012293},{"date":"2026-10-31","base":"EUR","quote":"THB","rate":37.7}]"#.data(using: .utf8)!
+        let q = try FrankfurterProvider.parse(json, base: "USD", symbols: ["JPY", "LAK", "BTC", "THB"], now: Date())
+        XCTAssertEqual(q.map { $0.quote }, ["JPY", "LAK"]) // BTC is not a known fiat currency; the EUR row has another base
         let jpy = try XCTUnwrap(q.first { $0.quote == "JPY" })
-        XCTAssertEqual(jpy.rate, "150.000000000000000001")
-        XCTAssertNil(jpy.observedAt)
-        XCTAssertEqual(jpy.staleness(now: jpy.receivedAt.addingTimeInterval(30), ttl: 45).basis, .receivedAt)
-        XCTAssertEqual(jpy.staleness(now: jpy.receivedAt.addingTimeInterval(30), ttl: 45).status, .fresh)
+        XCTAssertEqual(jpy.rate, "157.66")
+        XCTAssertEqual(jpy.observedAt, ISO8601DateFormatter().date(from: "2026-10-31T00:00:00Z"))
+        XCTAssertEqual(jpy.source, "frankfurter")
+        XCTAssertEqual(jpy.staleness(now: jpy.observedAt!.addingTimeInterval(3600), ttl: 36 * 3600).basis, .observedAt)
     }
 
     func testCrossWithUnknownObservationTimeIsEstimated() throws {
@@ -93,7 +93,7 @@ final class SplitTests: XCTestCase {
 
 final class HistoryTests: XCTestCase {
     func testFrankfurterHistoryParsesAndSortsByDate() throws {
-        let json = #"{"amount":1,"base":"JPY","start_date":"2026-10-01","end_date":"2026-10-03","rates":{"2026-10-03":{"THB":0.2138},"2026-10-01":{"THB":0.2141},"2026-10-02":{"THB":0.2140}}}"#.data(using: .utf8)!
+        let json = #"[{"date":"2026-10-03","base":"JPY","quote":"THB","rate":0.2138},{"date":"2026-10-01","base":"JPY","quote":"THB","rate":0.2141},{"date":"2026-10-02","base":"JPY","quote":"THB","rate":0.2140}]"#.data(using: .utf8)!
         let pts = try FrankfurterHistory.parse(json, to: "THB")
         XCTAssertEqual(pts.map { $0.date }, ["2026-10-01", "2026-10-02", "2026-10-03"])
         XCTAssertEqual(pts.last?.rate, 0.2138)

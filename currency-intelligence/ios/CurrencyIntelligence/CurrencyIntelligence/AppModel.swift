@@ -20,9 +20,8 @@ final class AppModel: ObservableObject {
 
     let store: StateStore
     let rounding: RoundingMode = .halfEven
-    private let coinbase = CoinbaseProvider()
+    private let rateProvider = FrankfurterProvider()
     let history = FrankfurterHistory()
-    private let pollSeconds: TimeInterval = 60
 
     /// Set by the UI test runner (-ui-testing): isolated store, seeded balances, and a prefilled amount so tests do not type.
     static let uiTesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
@@ -60,7 +59,7 @@ final class AppModel: ObservableObject {
         let snap = WidgetSnapshot(selCode: state.sel, selBalanceText: Format.money(sel), homeCode: state.home,
                                   homeEquivText: state.sel == state.home ? nil : toHome(sel).map { "≈ " + Format.money($0) },
                                   pairText: q.map { "1 \(state.from) = \(Format.rate($0.quote.rate)) \(state.to)" } ?? "",
-                                  sourceLabel: q.map { $0.quote.source == "coinbase" ? "Coinbase · " + L("observation time not published") : $0.quote.source == "embedded" ? L("Sample rate") : $0.quote.source } ?? "",
+                                  sourceLabel: q.map { sourceLabel($0.quote) } ?? "",
                                   rateReceivedAt: q.map { iso.string(from: $0.quote.receivedAt) } ?? iso.string(from: Date()), updatedAt: iso.string(from: Date()))
         snap.save()
         if !AppModel.uiTesting { WidgetCenter.shared.reloadAllTimelines() }
@@ -91,10 +90,10 @@ final class AppModel: ObservableObject {
     func refreshRates() async {
         let symbols = Set(Currencies.all.keys)
         do {
-            let q = try await coinbase.fetchLatest(base: "USD", symbols: symbols)
-            if !q.isEmpty { rates = RateTable(quotes: q, source: "coinbase", status: "fresh"); rateError = nil; checkAlerts(); writeWidgetSnapshot(); return }
+            let q = try await rateProvider.fetchLatest(base: "USD", symbols: symbols)
+            if !q.isEmpty { rates = RateTable(quotes: q, source: "frankfurter", status: "fresh"); rateError = nil; checkAlerts(); writeWidgetSnapshot(); return }
         } catch { rateError = "\(error)" }
-        if rates.source == "coinbase" { rates = RateTable(quotes: rates.quotes, source: "coinbase", status: "stale") }
+        if rates.source == "frankfurter" { rates = RateTable(quotes: rates.quotes, source: "frankfurter", status: "stale") }
         checkAlerts()
     }
 
@@ -149,7 +148,6 @@ final class AppModel: ObservableObject {
     func sourceLabel(_ q: RateQuote) -> String {
         switch q.source {
         case "user": return L("Your rate")
-        case "coinbase": return "Coinbase · \(L("fetched")) \(Format.ago(q.receivedAt)) · \(L("observation time not published"))"
         case "embedded": return "\(L("Sample rate")) · \(Format.date(q.observedAt ?? q.receivedAt)) · \(L("not current"))"
         default: return "\(L("Reference rate")) · \(L("daily")) · \(Format.date(q.observedAt ?? q.receivedAt))"
         }

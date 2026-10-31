@@ -198,7 +198,7 @@ struct AlertsView: View {
     var body: some View {
         List {
             Section {
-                Text(L("Alerts are checked only while this app is open. Rates refresh about once a minute (Coinbase, no published observation time) or daily (ECB). Nothing runs in the background.")).font(.footnote).foregroundStyle(.secondary)
+                Text(L("Alerts are checked only while this app is open, each time rates are refreshed. Reference rates are published about once a day (Frankfurter). Nothing runs in the background.")).font(.footnote).foregroundStyle(.secondary)
                 Button(permission == "authorized" ? L("Notifications enabled") : L("Enable notifications")) { Task { _ = await model.requestNotificationPermission(); await refreshPermission() } }.disabled(permission == "authorized")
             }
             Section {

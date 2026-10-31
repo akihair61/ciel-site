@@ -11,7 +11,7 @@ public struct WidgetSnapshot: Codable, Sendable {
     public var homeCode: String
     public var homeEquivText: String?   // "≈ ¥44,269"
     public var pairText: String         // "1 JPY = 0.2142 THB"
-    public var sourceLabel: String      // "Coinbase · observation time not published"
+    public var sourceLabel: String      // e.g. "Reference rate · daily · 31 Oct 2026"
     public var rateReceivedAt: String   // ISO
     public var updatedAt: String        // ISO, when the app wrote the snapshot
 

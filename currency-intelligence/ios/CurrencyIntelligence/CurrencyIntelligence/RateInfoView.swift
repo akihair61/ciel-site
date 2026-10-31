@@ -30,7 +30,7 @@ struct RateInfoView: View {
                             let first = points.first!.rate, last = points.last!.rate, ch = (last - first) / first * 100
                             Text("\(points.first!.date) → \(points.last!.date) · \(points.count) \(L("daily")) · \(ch >= 0 ? "▲" : "▼") \(String(format: "%.2f", abs(ch)))%").font(.caption).foregroundStyle(.secondary)
                         } else if loadingChart { ProgressView() } else { Text(L("History loads when online (daily)")).font(.caption).foregroundStyle(.secondary) }
-                        Text(L("Change = last point vs first point of the period. Daily points are ECB reference rates (one per working day, no weekend or holiday points). 1D = ticks collected while the app is open.")).font(.footnote).foregroundStyle(.secondary)
+                        Text(L("Change = last point vs first point of the period. Daily points are Frankfurter reference rates, one per published day.")).font(.footnote).foregroundStyle(.secondary)
                     }
                     Section(L("Provenance")) {
                         row(L("Source"), sourceText(p.quote))
@@ -77,7 +77,7 @@ struct RateInfoView: View {
         switch q.source {
         case "user": return "Your exchange receipt"
         case "embedded": return "Sample snapshot shipped with the app (not current)"
-        case "coinbase": return "Coinbase exchange rates (indicative; refreshed about once a minute while open; no observation time published)"
+        case "frankfurter": return "Frankfurter blended reference rates (frankfurter.dev), including European Central Bank data; published about once a day. For information only, not the rate a bank or exchange counter will give."
         default: return q.source
         }
     }

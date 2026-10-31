@@ -1,33 +1,35 @@
 // 未ビルド: macOS で `swift test` を実行して確認してください(ios/README_MAC.md)。
 import Foundation
 
-/// Coinbase public exchange rates. Rates arrive as JSON *strings*, so Decimal(string:) keeps every digit
-/// (no double in between). The payload carries no observation time → observedAt = nil (spec 02 Q-02).
-public struct CoinbaseProvider: Sendable {
-    public let id = "coinbase"
+/// Frankfurter v2 blended reference rates (frankfurter.dev): free for commercial use, no key, and every quote carries the
+/// date it was published for, so observedAt is known. Published about once a day — never real time, and the UI says so.
+public struct FrankfurterProvider: Sendable {
+    public let id = "frankfurter"
     public let baseURL: URL
-    public init(baseURL: URL = URL(string: "https://api.coinbase.com/v2")!) { self.baseURL = baseURL }
+    public init(baseURL: URL = URL(string: "https://api.frankfurter.dev/v2")!) { self.baseURL = baseURL }
 
     public enum ProviderError: Error { case http(Int), shape, transport(String) }
 
-    /// Decodes the payload without passing rates through Double.
+    /// Payload is an array of {date, base, quote, rate}. Rates arrive as JSON numbers; NSNumber.stringValue gives the shortest
+    /// round-trip text, so the Decimal is built from what the provider sent rather than from a binary double's expansion.
     public static func parse(_ data: Data, base: String, symbols: Set<String>, now: Date) throws -> [RateQuote] {
-        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let d = root["data"] as? [String: Any], (d["currency"] as? String) == base,
-              let rates = d["rates"] as? [String: Any] else { throw ProviderError.shape }
+        guard let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { throw ProviderError.shape }
+        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"; df.locale = Locale(identifier: "en_US_POSIX"); df.timeZone = TimeZone(identifier: "UTC")
         var out: [RateQuote] = []
-        for (code, v) in rates where code != base && symbols.contains(code) && Currencies.all[code] != nil {
-            guard let s = v as? String, let dec = Decimal(string: s, locale: Locale(identifier: "en_US_POSIX")), dec > 0 else { continue }
-            out.append(RateQuote(quoteId: "coinbase:\(base)\(code):\(Int(now.timeIntervalSince1970))", base: base, quote: code, rate: s,
-                                 source: "coinbase", observedAt: nil, receivedAt: now, rateKind: .indicative, confidence: .estimated,
-                                 notes: ["Coinbase does not publish an observation time; age is measured from receivedAt"]))
+        for row in rows {
+            guard (row["base"] as? String) == base, let code = row["quote"] as? String, code != base, symbols.contains(code), Currencies.all[code] != nil,
+                  let n = row["rate"] as? NSNumber, let dec = Decimal(string: n.stringValue, locale: Locale(identifier: "en_US_POSIX")), dec > 0 else { continue }
+            let day = (row["date"] as? String) ?? ""
+            out.append(RateQuote(quoteId: "frankfurter:\(base)\(code):\(day)", base: base, quote: code, rate: n.stringValue,
+                                 source: "frankfurter", observedAt: df.date(from: day), receivedAt: now, rateKind: .indicative, confidence: .confirmed,
+                                 notes: ["Frankfurter blended daily reference rate; not a bank or exchange counter rate"]))
         }
         return out.sorted { $0.quote < $1.quote }
     }
 
     public func fetchLatest(base: String, symbols: Set<String>, session: URLSession = .shared) async throws -> [RateQuote] {
-        var comps = URLComponents(url: baseURL.appendingPathComponent("exchange-rates"), resolvingAgainstBaseURL: false)!
-        comps.queryItems = [URLQueryItem(name: "currency", value: base)]
+        var comps = URLComponents(url: baseURL.appendingPathComponent("rates"), resolvingAgainstBaseURL: false)!
+        comps.queryItems = [URLQueryItem(name: "base", value: base), URLQueryItem(name: "quotes", value: symbols.subtracting([base]).sorted().joined(separator: ","))]
         let (data, resp) = try await session.data(from: comps.url!)
         if let http = resp as? HTTPURLResponse, !(200..<300).contains(http.statusCode) { throw ProviderError.http(http.statusCode) }
         return try Self.parse(data, base: base, symbols: symbols, now: Date())

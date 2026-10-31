@@ -1,0 +1,4 @@
+module CoreMoney {
+header "CoreMoney-Swift.h"
+export *
+}

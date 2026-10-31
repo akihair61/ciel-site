@@ -18,7 +18,7 @@ public struct RateQuote: Codable, Hashable, Sendable {
     public let ask: String?
     public let mid: String?
     public let source: String
-    /// nil when the provider publishes no observation time (Coinbase). UI must say so and never show receivedAt as the observation time.
+    /// nil when the provider publishes no observation time. UI must say so and never show receivedAt as the observation time.
     public let observedAt: Date?
     public let receivedAt: Date
     public let expiresAt: Date?
