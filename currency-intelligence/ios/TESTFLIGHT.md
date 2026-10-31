@@ -5,6 +5,10 @@ iPhone 実機に入れるには Apple の署名が必要で、それはあなた
 
 前提: Apple Developer Program(有料、年 99 USD)に加入済みであること。
 
+## 0. 鍵なしでも動く部分(すでに自動)
+
+Secrets が無い状態で実行すると、ワークフローは **署名だけを飛ばした Release 版アーカイブ**(実機向け、ウィジェット同梱)を作り、App Store Connect が弾く定番(1024px アイコンの有無とアルファ、バージョン番号、暗号化申告 `ITSAppUsesNonExemptEncryption`、ウィジェットの埋め込み)を検査して Summary に書き出します。アーカイブは Artifacts に 14 日残ります。鍵が入ると同じワークフローが署名とアップロードまで進みます。
+
 ## 1. App Store Connect の API キーを作って、GitHub に登録する(初回だけ、10 分)
 
 1. https://appstoreconnect.apple.com → **ユーザとアクセス** → **統合**(Integrations)→ **App Store Connect API** → 「チームキー」で **＋**。

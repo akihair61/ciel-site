@@ -1,13 +1,15 @@
-# Archives the iOS app on GitHub's macOS runner, signs it with App Store Connect API credentials and uploads
-# the build to TestFlight. Manual trigger only. Needs these repository secrets (see currency-intelligence/ios/TESTFLIGHT.md):
-#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (contents of the AuthKey_XXXX.p8 file), APPLE_TEAM_ID
+# Archives the iOS app on GitHub's macOS runner (Release, real-device SDK). With the App Store Connect API key in
+# the repository secrets it signs the archive and uploads the build to TestFlight. Without the secrets it still
+# builds an UNSIGNED archive and checks everything App Store Connect rejects builds for (icon, versions,
+# export-compliance key, widget embedding), so only signing + upload remain once the secrets exist.
+# Secrets (see currency-intelligence/ios/TESTFLIGHT.md): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, APPLE_TEAM_ID
 name: testflight-currency-intelligence
 # Manual dispatch is only offered by GitHub for workflows on the default branch, and main must stay untouched,
 # so a build is requested by changing currency-intelligence/ios/testflight.trigger on this branch.
 on:
   push:
     branches: [currency-intelligence]
-    paths: ["currency-intelligence/ios/testflight.trigger"]
+    paths: ["currency-intelligence/ios/testflight.trigger", ".github/workflows/testflight.yml"]
   workflow_dispatch:
     inputs:
       upload:
@@ -28,38 +30,90 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ARCHIVE: ${{ runner.temp }}/CurrencyIntelligence.xcarchive
     steps:
       - uses: actions/checkout@v4
       - name: Check secrets
+        id: secrets
         run: |
           missing=""
           [ -n "$ASC_KEY_ID" ] || missing="$missing ASC_KEY_ID"
           [ -n "$ASC_ISSUER_ID" ] || missing="$missing ASC_ISSUER_ID"
           [ -n "$APPLE_TEAM_ID" ] || missing="$missing APPLE_TEAM_ID"
           [ -n "${{ secrets.ASC_KEY_P8 }}" ] || missing="$missing ASC_KEY_P8"
-          if [ -n "$missing" ]; then echo "::error::Missing repository secrets:$missing — see currency-intelligence/ios/TESTFLIGHT.md"; exit 1; fi
+          if [ -n "$missing" ]; then
+            echo "::warning::Missing repository secrets:$missing — building an UNSIGNED archive only (see currency-intelligence/ios/TESTFLIGHT.md)"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            { echo "## Unsigned archive (secrets missing:$missing)"; echo; echo "Signing and the TestFlight upload were skipped. Everything else below ran for real."; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install the App Store Connect API key
+        if: steps.secrets.outputs.signed == 'true'
         run: |
           mkdir -p ~/private_keys
           printf '%s' "${{ secrets.ASC_KEY_P8 }}" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
           chmod 600 ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
           echo "KEY_PATH=$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" >> "$GITHUB_ENV"
       - run: xcodebuild -version
-      - name: Archive (automatic signing via the API key; registers bundle IDs, app group and profiles)
+      - name: App icon must be opaque (App Store rejects alpha)
+        run: |
+          sips -g hasAlpha -g pixelWidth -g pixelHeight CurrencyIntelligence/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png | tee /tmp/icon.txt
+          grep -q "hasAlpha: no" /tmp/icon.txt && grep -q "pixelWidth: 1024" /tmp/icon.txt && grep -q "pixelHeight: 1024" /tmp/icon.txt
+      - name: Archive (signed; automatic signing via the API key registers bundle IDs, app group and profiles)
+        if: steps.secrets.outputs.signed == 'true'
         run: |
           set -o pipefail
           xcodebuild archive -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
-            -destination 'generic/platform=iOS' -configuration Release \
-            -archivePath "$RUNNER_TEMP/CurrencyIntelligence.xcarchive" \
+            -destination 'generic/platform=iOS' -configuration Release -archivePath "$ARCHIVE" \
             -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
             -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
             CURRENT_PROJECT_VERSION="${{ github.run_number }}" MARKETING_VERSION="0.1.${{ github.run_number }}" \
             2>&1 | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning: .*(sign|provision|entitle)|ARCHIVE (SUCCEEDED|FAILED)|\*\* " || true
           grep -q "ARCHIVE SUCCEEDED" "$RUNNER_TEMP/archive.log"
-      - name: Export options
+      - name: Archive (unsigned; proves the Release device build and the bundle contents)
+        if: steps.secrets.outputs.signed != 'true'
         run: |
-          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          set -o pipefail
+          xcodebuild archive -project CurrencyIntelligence.xcodeproj -scheme CurrencyIntelligence \
+            -destination 'generic/platform=iOS' -configuration Release -archivePath "$ARCHIVE" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" MARKETING_VERSION="0.1.${{ github.run_number }}" \
+            2>&1 | tee "$RUNNER_TEMP/archive.log" | grep -E "error:|warning:|ARCHIVE (SUCCEEDED|FAILED)|\*\* " || true
+          grep -q "ARCHIVE SUCCEEDED" "$RUNNER_TEMP/archive.log"
+      - name: Validate the archive the way App Store Connect will
+        run: |
+          APP="$ARCHIVE/Products/Applications/CurrencyIntelligence.app"; test -d "$APP"
+          PL="$APP/Info.plist"
+          get() { /usr/libexec/PlistBuddy -c "Print :$1" "$PL" 2>/dev/null || echo "<missing>"; }
+          fail=0; check() { if [ "$2" = "$3" ]; then echo "ok   $1 = $2"; else echo "FAIL $1 = $2 (expected $3)"; fail=1; fi; }
+          check CFBundleIdentifier "$(get CFBundleIdentifier)" com.akihair.currencyintelligence
+          check CFBundleShortVersionString "$(get CFBundleShortVersionString)" "0.1.${{ github.run_number }}"
+          check CFBundleVersion "$(get CFBundleVersion)" "${{ github.run_number }}"
+          check ITSAppUsesNonExemptEncryption "$(get ITSAppUsesNonExemptEncryption)" false
+          check CFBundleIconName "$(get CFBundleIconName)" AppIcon
+          check NSCameraUsageDescription-present "$([ "$(get NSCameraUsageDescription)" != "<missing>" ] && echo yes)" yes
+          check MinimumOSVersion "$(get MinimumOSVersion)" 17.0
+          check Assets.car-present "$([ -f "$APP/Assets.car" ] && echo yes)" yes
+          check AppIcon60x60@2x.png-present "$([ -f "$APP/AppIcon60x60@2x.png" ] && echo yes)" yes
+          check 1024-icon-in-catalog "$(xcrun assetutil --info "$APP/Assets.car" 2>/dev/null | grep -c '"Name" : "AppIcon"' | awk '{print ($1>0)?"yes":"no"}')" yes
+          check widget-embedded "$([ -d "$APP/PlugIns/CurrencyWidgetExtension.appex" ] && echo yes)" yes
+          WPL="$APP/PlugIns/CurrencyWidgetExtension.appex/Info.plist"
+          check widget-CFBundleShortVersionString "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$WPL")" "0.1.${{ github.run_number }}"
+          check widget-CFBundleVersion "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$WPL")" "${{ github.run_number }}"
+          check widget-NSExtensionPointIdentifier "$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionPointIdentifier' "$WPL")" com.apple.widgetkit-extension
+          check arm64-slice "$(lipo -archs "$APP/CurrencyIntelligence" | grep -c arm64 | awk '{print ($1>0)?"yes":"no"}')" yes
+          check no-simulator-build "$(/usr/libexec/PlistBuddy -c 'Print :DTPlatformName' "$PL")" iphoneos
+          lipo -info "$APP/CurrencyIntelligence"
+          du -sh "$APP" | tee -a /tmp/validate.txt
+          echo "fail=$fail"
+          { echo "## Archive contents (build ${{ github.run_number }}, 0.1.${{ github.run_number }})"; echo '```'; /usr/libexec/PlistBuddy -c Print "$PL" | grep -E "CFBundle(Identifier|ShortVersionString|Version|IconName|DisplayName)|ITSApp|Minimum|DTPlatformName|DTXcode\b"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $fail
+      - name: Export options
+        if: steps.secrets.outputs.signed == 'true'
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOT
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0"><dict>
@@ -70,11 +124,12 @@ jobs:
             <key>uploadSymbols</key><true/>
             <key>manageAppVersionAndBuildNumber</key><true/>
           </dict></plist>
-          EOF
+          EOT
       - name: Export and upload to TestFlight
+        if: steps.secrets.outputs.signed == 'true'
         run: |
           set -o pipefail
-          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/CurrencyIntelligence.xcarchive" \
+          xcodebuild -exportArchive -archivePath "$ARCHIVE" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
@@ -88,9 +143,17 @@ jobs:
             echo "If the error says the app record does not exist: create the app in App Store Connect (My Apps → + → New App, bundle ID com.akihair.currencyintelligence) and run this workflow again." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+      - name: Keep the unsigned archive as an artifact (14 days)
+        if: steps.secrets.outputs.signed != 'true'
+        run: |
+          cd "$RUNNER_TEMP" && ditto -c -k --keepParent CurrencyIntelligence.xcarchive CurrencyIntelligence-unsigned.xcarchive.zip && ls -la *.zip
+          echo "Remaining for TestFlight: add the 4 secrets (TESTFLIGHT.md §1), then re-run. The unsigned .xcarchive is attached to this run." >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: testflight-logs, path: "${{ runner.temp }}/*.log" }
+      - uses: actions/upload-artifact@v4
+        if: steps.secrets.outputs.signed != 'true'
+        with: { name: unsigned-xcarchive, path: "${{ runner.temp }}/CurrencyIntelligence-unsigned.xcarchive.zip", retention-days: 14 }
       - name: Remove the API key
         if: always()
         run: rm -f ~/private_keys/AuthKey_*.p8

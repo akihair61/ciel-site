@@ -19,7 +19,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C1A0000000000000000000A3 /* CurrencyIntelligence */ = {isa = PBXFileSystemSynchronizedRootGroup; path = CurrencyIntelligence; sourceTree = "<group>"; };
+		C1A0000000000000000000A3 /* CurrencyIntelligence */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C1A0000000000000000000DF /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); path = CurrencyIntelligence; sourceTree = "<group>"; };
 		C1A0000000000000000000C1 /* CurrencyIntelligenceUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = CurrencyIntelligenceUITests; sourceTree = "<group>"; };
 		C1A0000000000000000000D5 /* CurrencyWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (C1A0000000000000000000DE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); path = CurrencyWidget; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +31,13 @@
 				Info.plist,
 			);
 			target = C1A0000000000000000000D6 /* CurrencyWidgetExtension */;
+		};
+		C1A0000000000000000000DF /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C1A0000000000000000000A7 /* CurrencyIntelligence */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -354,6 +361,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CurrencyIntelligence/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Currency Intelligence";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -385,6 +393,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CurrencyIntelligence/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Currency Intelligence";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

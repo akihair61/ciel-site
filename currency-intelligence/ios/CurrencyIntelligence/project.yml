@@ -22,6 +22,8 @@ targets:
         CFBundleDisplayName: Currency Intelligence
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleLocalizations: [en, ja, th]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.akihair.currencyintelligence
