@@ -148,8 +148,8 @@ final class AppModel: ObservableObject {
     func sourceLabel(_ q: RateQuote) -> String {
         switch q.source {
         case "user": return L("Your rate")
-        case "embedded": return "\(L("Sample rate")) · \(Format.date(q.observedAt ?? q.receivedAt)) · \(L("not current"))"
-        default: return "\(L("Reference rate")) · \(L("daily")) · \(Format.date(q.observedAt ?? q.receivedAt))"
+        case "embedded": return "\(L("Sample rate")) · \(q.observedAt.map(Format.day) ?? Format.date(q.receivedAt)) · \(L("not current"))"
+        default: return "\(L("Reference rate")) · \(L("daily")) · \(q.observedAt.map(Format.day) ?? Format.date(q.receivedAt))"
         }
     }
     var statusSuffix: String {

@@ -37,7 +37,7 @@ struct RateInfoView: View {
                         row(L("Source"), sourceText(p.quote))
                         row("Type", "\(p.quote.rateKind.rawValue) · \(p.quote.confidence.rawValue)")
                         row(L("Freshness"), freshness)
-                        row(L("Observed"), p.quote.observedAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? "Not published by provider; age is counted from the fetch")
+                        row(L("Observed"), p.quote.observedAt.map { Format.day($0) } ?? "Not published by provider; age is counted from the fetch")
                         row(L("Fetched"), Format.dateTime(ISO8601DateFormatter().string(from: p.quote.receivedAt)))
                         row(L("Expires"), p.quote.expiresAt.map { Format.dateTime(ISO8601DateFormatter().string(from: $0)) } ?? L("Not stated by provider"))
                         row("Math", (p.quote.derivedFrom != nil ? "Cross rate via USD · " : "") + "rounding \(model.rounding.rawValue)")

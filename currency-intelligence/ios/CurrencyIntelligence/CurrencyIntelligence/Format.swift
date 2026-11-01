@@ -23,6 +23,15 @@ enum Format {
     static func date(_ d: Date) -> String {
         let f = DateFormatter(); f.locale = Lang.locale; f.dateStyle = .medium; f.timeStyle = .none; return f.string(from: d)
     }
+    /// Published day of a daily reference rate. Providers stamp it as UTC midnight, so format in UTC with no time:
+    /// local time would show a fake "7:00 AM" in Bangkok and the previous day west of Greenwich.
+    static func day(_ d: Date) -> String {
+        let f = DateFormatter(); f.locale = Lang.locale; f.timeZone = TimeZone(identifier: "UTC"); f.dateStyle = .medium; f.timeStyle = .none; return f.string(from: d)
+    }
+    static func day(_ iso: String?) -> String {
+        guard let iso, let d = ISO8601DateFormatter().date(from: iso) ?? ISO8601DateFormatter.withFraction.date(from: iso) else { return L("Not published by provider") }
+        return day(d)
+    }
     static func dateTime(_ iso: String?) -> String {
         guard let iso, let d = ISO8601DateFormatter().date(from: iso) ?? ISO8601DateFormatter.withFraction.date(from: iso) else { return L("Not published by provider") }
         let f = DateFormatter(); f.locale = Lang.locale; f.dateStyle = .medium; f.timeStyle = .short; return f.string(from: d)

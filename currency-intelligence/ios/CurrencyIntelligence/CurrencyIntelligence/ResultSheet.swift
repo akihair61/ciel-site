@@ -75,7 +75,7 @@ struct ReceiptView: View {
                     Text(sim ? L("BALANCES (UNCHANGED)") : L("NEW BALANCES")).font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
                     rows([(tx.from, tx.balFrom ?? "No balance recorded"), (tx.to, tx.balTo ?? "No balance recorded")])
                     Text(L("RATE SOURCE")).font(.caption.weight(.heavy)).frame(maxWidth: .infinity, alignment: .leading)
-                    rows([(L("Source"), tx.source), ("Type", "\(tx.rateKind ?? "") · \(tx.confidence ?? "")"), (L("Observed"), Format.dateTime(tx.observedAt)), (L("Fetched"), Format.dateTime(tx.receivedAt)), (L("Rounding"), tx.rounding ?? "")])
+                    rows([(L("Source"), tx.source), ("Type", "\(tx.rateKind ?? "") · \(tx.confidence ?? "")"), (L("Observed"), Format.day(tx.observedAt)), (L("Fetched"), Format.dateTime(tx.receivedAt)), (L("Rounding"), tx.rounding ?? "")])
                     Text(kind == "exchange" ? L("A record you entered of a real exchange. Balances on this device were updated.") : sim ? L("A simulation at the rate shown. No balance changed and no money moved.") : L("Made before v4, when Convert changed balances. Kept as it was."))
                         .font(.footnote).padding(10).background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
                     Text(L("A note kept on your device (record or simulation), not a statement from an exchange, bank or card issuer.")).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
