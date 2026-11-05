@@ -1,15 +1,31 @@
 {
+  "id": "/",
   "name": "Ciel — Japanese Hair Studio by Aki",
   "short_name": "Ciel",
   "description": "Japanese hair salon in Phrom Phong, Bangkok. Cut, colour, head spa. JP/EN/TH.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "any",
+  "lang": "ja",
+  "dir": "ltr",
+  "categories": ["beauty", "lifestyle", "health"],
   "background_color": "#1d1e20",
   "theme_color": "#1d1e20",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+  ],
+  "shortcuts": [
+    { "name": "ご予約 / Book", "url": "/booking.html", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "メニュー・料金 / Menu", "url": "/menu.html", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "ヘッドスパ / Head Spa", "url": "/headspa.html", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "アクセス・連絡 / Contact", "url": "/contact.html", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "related_applications": [
+    { "platform": "itunes", "url": "https://apps.apple.com/app/id6781139293", "id": "6781139293" },
+    { "platform": "play", "url": "https://play.google.com/store/apps/details?id=com.cielhairstudio.app.official", "id": "com.cielhairstudio.app.official" }
+  ],
+  "prefer_related_applications": false
 }

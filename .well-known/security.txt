@@ -1,0 +1,6 @@
+Contact: mailto:ciel.hair@icloud.com
+Contact: tel:+66926923578
+Preferred-Languages: ja, en, th
+Canonical: https://www.ciel-japanesehairstudio-bkk.com/.well-known/security.txt
+Policy: https://www.ciel-japanesehairstudio-bkk.com/privacy.en.html
+Expires: 2027-11-05T00:00:00.000Z
