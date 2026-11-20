@@ -105,7 +105,7 @@
   addEventListener('error',function(e){if(errs++<5&&e.message)__trk('js_error',{msg:String(e.message).slice(0,100),src:String(e.filename||'').split('/').pop().slice(0,60),line:e.lineno,page:location.pathname});});
 
   /* AI コンシェルジュ（assets/ciel-ai.js）: 右下のボタン・[data-ai-q] のボタン・contact ページの埋め込み。初めて使う時だけ読む */
-  var AIV='2026112102';
+  var AIV='2026112103';
   function loadAi(cb){
     if(W.CielAI){cb&&cb();return;}
     if(!D.getElementById('cai-css')){var l=D.createElement('link');l.id='cai-css';l.rel='stylesheet';l.href='/assets/ciel-ai.css?v='+AIV;D.head.appendChild(l);}
