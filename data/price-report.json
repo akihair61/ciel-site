@@ -1,5 +1,5 @@
 {
- "at": "2026-11-20T22:40:29.247Z",
+ "at": "2026-11-20T23:25:19.723Z",
  "menus": 43,
  "orphans": [],
  "broken": [
@@ -25,6 +25,18 @@
    "f": "service.th.html",
    "id": "min:headspa",
    "seg": "from ฿2,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "hair-treatment-bangkok.th.html",
+   "id": "fs29",
+   "seg": "<li><strong>TOKIO Inkarami 4 ขั้นตอน (฿2,290 · 1 ช",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "hair-treatment-bangkok.en.html",
+   "id": "fs29",
+   "seg": "<li><strong>TOKIO Inkarami 4-step (฿2,290 · 1 hr)<",
    "why": "セグメントの目印が見つからない"
   },
   {
@@ -74,6 +86,27 @@
    "id": "min:headspa",
    "seg": "from ฿2,000",
    "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "hair-treatment-bangkok.en.html",
+   "id": "fs30",
+   "cur": "1,990",
+   "pre": "i><li><strong>Olaplex (฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "hair-treatment-bangkok.html",
+   "id": "fs30",
+   "cur": "1,990",
+   "pre": "li><li><strong>Olaplex（฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "hair-treatment-bangkok.th.html",
+   "id": "fs30",
+   "cur": "1,990",
+   "pre": "i><li><strong>Olaplex (฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
   },
   {
    "f": "service.en.html",
@@ -184,6 +217,18 @@
    "why": "セグメントの目印が見つからない（後）"
   },
   {
+   "f": "hair-treatment-bangkok.th.html",
+   "id": "fs29",
+   "seg": "<li><strong>TOKIO Inkarami 4 ขั้นตอน (฿2,290 · 1 ช",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "hair-treatment-bangkok.en.html",
+   "id": "fs29",
+   "seg": "<li><strong>TOKIO Inkarami 4-step (฿2,290 · 1 hr)<",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
    "f": "service.en.html",
    "id": "fs31",
    "seg": "from ฿3,990",
@@ -233,11 +278,36 @@
   }
  ],
  "changed": [
-  "menu.en.html",
-  "menu.html",
-  "menu.th.html"
+  "faq.en.html",
+  "faq.html",
+  "faq.th.html",
+  "hair-salon-phrom-phong.html",
+  "hair-salon-phrom-phong.th.html",
+  "japanese-hair-salon-bangkok.html",
+  "price-guide.en.html",
+  "price-guide.html",
+  "service.en.html",
+  "straight-perm-bangkok.en.html",
+  "straight-perm-bangkok.html",
+  "llms.txt",
+  "llms-full.txt"
  ],
  "unregistered": [
+  {
+   "f": "hair-treatment-bangkok.en.html",
+   "price": "฿1,990",
+   "context": "he home-care line.   Olaplex (from ฿"
+  },
+  {
+   "f": "hair-treatment-bangkok.html",
+   "price": "฿1,990",
+   "context": "強くなる」実感。3〜4週間、ホームケア併用で延長   Olaplex（฿"
+  },
+  {
+   "f": "hair-treatment-bangkok.th.html",
+   "price": "฿1,990",
+   "context": "ขึ้นถ้าใช้โฮมแคร์   Olaplex (เริ่ม ฿"
+  },
   {
    "f": "service.en.html",
    "price": "฿1,000",

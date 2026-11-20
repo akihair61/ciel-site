@@ -38,7 +38,9 @@ const report = { at: new Date().toISOString(), menus: visIds.size, orphans: [], 
 // カテゴリの最安（文章の「カット ฿1,000〜」など。特別 id min:xxx）
 // 前髪・キッズ・既存客のみ（Returning Client Only）は「〜から」の代表に入れない（「カット ฿1,000〜」が前髪の ฿400 にならないように）
 const MIN_CATS = { cut: ['Hair Cut'], colour: ['Hair Colour'], straight: ['Perm'], headspa: ['Japanese Head Spa'], treatment: ['Treatment'] };
-const MIN_SKIP = /fringe|kid|returning|前髪|キッズ|既存/i;
+const MIN_SKIP = /fringe|kid|returning|前髪|キッズ|既存|retouch|リタッチ|根元|root/i;
+// min:straight は Perm カテゴリの中でも縮毛矯正・ストレートだけ（レディースパーマ ฿3,490 が「縮毛矯正 ฿3,490〜」になっていた 2026-11-21）
+const MIN_ONLY = { straight: /縮毛|straight|ストレート|ยืด/i };
 function resolve(id) {
   if (id.startsWith('set:')) { // 割引率の幅「15〜20%」: 公開中のセットの割引率の最小・最大
     const vs = id.slice(4).split(',').map((x) => resolve(x)).filter(Boolean).filter((v) => v.pct);
@@ -52,6 +54,7 @@ function resolve(id) {
     const keys = MIN_CATS[id.slice(4)] || [];
     const all = cats.filter((c) => keys.includes(c.key)).flatMap((c) => c.items);
     let its = all.filter((i) => !MIN_SKIP.test(i.name.en + ' ' + i.name.ja));
+    const only = MIN_ONLY[id.slice(4)]; if (only) its = its.filter((i) => only.test(i.name.en + ' ' + i.name.ja));
     if (!its.length) its = all; // 代表メニューが全部非公開なら、残っている物の最安
     if (!its.length) return null;
     const lo = its.reduce((a, b) => (b.price < a.price ? b : a));
