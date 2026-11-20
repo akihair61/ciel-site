@@ -156,7 +156,9 @@
     if (!el) return;
     fetchAll().then(function (rows) {
       var m = model(rows);
-      if (m.length) el.innerHTML = html(m, lang);
+      if (!m.length) return;
+      var h = html(m, lang), tmp = document.createElement('div'); tmp.innerHTML = h;
+      if (tmp.innerHTML !== el.innerHTML) el.innerHTML = h; // 静的 HTML と同じなら触らない（レイアウトのずれを出さない 2026-11-21）
     }).catch(function () { /* 静的HTMLのまま */ });
   }
 

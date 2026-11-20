@@ -1,9 +1,303 @@
 {
- "at": "2026-11-05T01:09:14.508Z",
+ "at": "2026-11-20T22:40:29.247Z",
  "menus": 43,
  "orphans": [],
- "broken": [],
- "changed": [],
- "unregistered": [],
+ "broken": [
+  {
+   "f": "service.th.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:headspa",
+   "seg": "from ฿2,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs13",
+   "seg": "from ฿1,200",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.html",
+   "id": "min:headspa",
+   "seg": "from ฿2,000",
+   "why": "セグメントの目印が見つからない"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:cut",
+   "cur": "1,000",
+   "pre": "504069f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:colour",
+   "cur": "2,500",
+   "pre": "93bfc1f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs31",
+   "cur": "3,990",
+   "pre": "93d257f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs13",
+   "cur": "1,200",
+   "pre": "289fbecef\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:cut",
+   "cur": "1,000",
+   "pre": "f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:colour",
+   "cur": "2,500",
+   "pre": "93bfc1f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.html",
+   "id": "fs31",
+   "cur": "3,990",
+   "pre": "93d257f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:headspa",
+   "cur": "2,000",
+   "pre": "289fbecef\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:cut",
+   "cur": "1,000",
+   "pre": "504069f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:colour",
+   "cur": "2,500",
+   "pre": "93bfc1f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "fs31",
+   "cur": "3,990",
+   "pre": "93d257f~mv2.jpg\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:headspa",
+   "cur": "2,000",
+   "pre": "289fbecef\",price:\"from ฿",
+   "why": "目印が見つからない（ページの文章が変わった）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.th.html",
+   "id": "min:headspa",
+   "seg": "from ฿2,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.en.html",
+   "id": "fs13",
+   "seg": "from ฿1,200",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.html",
+   "id": "fs31",
+   "seg": "from ฿3,990",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:cut",
+   "seg": "from ฿1,000",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:colour",
+   "seg": "from ฿2,500",
+   "why": "セグメントの目印が見つからない（後）"
+  },
+  {
+   "f": "service.html",
+   "id": "min:headspa",
+   "seg": "from ฿2,000",
+   "why": "セグメントの目印が見つからない（後）"
+  }
+ ],
+ "changed": [
+  "menu.en.html",
+  "menu.html",
+  "menu.th.html"
+ ],
+ "unregistered": [
+  {
+   "f": "service.en.html",
+   "price": "฿1,000",
+   "context": "img/ext/service-cut.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.en.html",
+   "price": "฿2,500",
+   "context": "/ext/service-colour.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.en.html",
+   "price": "฿3,990",
+   "context": "ext/service-keratin.jpg\",imgMax:1600,price:\"from ฿"
+  },
+  {
+   "f": "service.en.html",
+   "price": "฿1,200",
+   "context": "mg/ext/headspa-hero.jpg\",imgMax:1600,price:\"from ฿"
+  },
+  {
+   "f": "service.html",
+   "price": "฿1,000",
+   "context": "img/ext/service-cut.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.html",
+   "price": "฿2,500",
+   "context": "/ext/service-colour.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.html",
+   "price": "฿3,990",
+   "context": "ext/service-keratin.jpg\",imgMax:1600,price:\"from ฿"
+  },
+  {
+   "f": "service.html",
+   "price": "฿2,000",
+   "context": "mg/ext/headspa-hero.jpg\",imgMax:1600,price:\"from ฿"
+  },
+  {
+   "f": "service.th.html",
+   "price": "฿1,000",
+   "context": "img/ext/service-cut.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.th.html",
+   "price": "฿2,500",
+   "context": "/ext/service-colour.jpg\",imgMax:1200,price:\"from ฿"
+  },
+  {
+   "f": "service.th.html",
+   "price": "฿3,990",
+   "context": "ext/service-keratin.jpg\",imgMax:1600,price:\"from ฿"
+  },
+  {
+   "f": "service.th.html",
+   "price": "฿2,000",
+   "context": "mg/ext/headspa-hero.jpg\",imgMax:1600,price:\"from ฿"
+  }
+ ],
  "autoRegistered": []
 }

@@ -105,12 +105,12 @@
   addEventListener('error',function(e){if(errs++<5&&e.message)__trk('js_error',{msg:String(e.message).slice(0,100),src:String(e.filename||'').split('/').pop().slice(0,60),line:e.lineno,page:location.pathname});});
 
   /* AI コンシェルジュ（assets/ciel-ai.js）: 右下のボタン・[data-ai-q] のボタン・contact ページの埋め込み。初めて使う時だけ読む */
-  var AIV='2026112101';
+  var AIV='2026112102';
   function loadAi(cb){
     if(W.CielAI){cb&&cb();return;}
     if(!D.getElementById('cai-css')){var l=D.createElement('link');l.id='cai-css';l.rel='stylesheet';l.href='/assets/ciel-ai.css?v='+AIV;D.head.appendChild(l);}
-    if(!W.__cielAiLoading){W.__cielAiLoading=1;var s=D.createElement('script');s.src='/assets/ciel-ai.js?v='+AIV;s.async=true;s.onload=function(){cb&&cb();};D.head.appendChild(s);}
-    else if(cb){var iv=setInterval(function(){if(W.CielAI){clearInterval(iv);cb();}},80);}
+    if(!W.__cielAiLoading){W.__cielAiLoading=1;var s=D.createElement('script');s.src='/assets/ciel-ai.js?v='+AIV;s.async=true;s.onload=function(){cb&&cb();};s.onerror=function(){W.__cielAiLoading=0;W.__cielAiPending=null;};D.head.appendChild(s);}
+    else if(cb){var n=0,iv=setInterval(function(){if(W.CielAI){clearInterval(iv);cb();}else if(++n>120){clearInterval(iv);W.__cielAiLoading=0;W.__cielAiPending=null;}},80);} // 10 秒で諦める（次のクリックで読み直す）
   }
   var AIL={ja:'AI に相談',en:'Ask AI',th:'ถาม AI'}[L];
   if(!D.querySelector('[data-cai-embed]')&&!D.body.hasAttribute('data-no-ai')){

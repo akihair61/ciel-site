@@ -113,3 +113,6 @@ main,.wrap{container-type:inline-size}
   html{scroll-behavior:auto}
   .fab-book,#ciel-ck{transition:none}
 }
+
+/* --- メニュー表: 静的 HTML が無い時も場所を確保（JS で描くまでのレイアウトずれ防止） --- */
+#menu:empty{min-height:60vh}

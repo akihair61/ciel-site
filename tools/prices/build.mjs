@@ -116,7 +116,8 @@ for (const f of htmlFiles) {
   const lang = LANG_OF(f);
   // 2. メニュー表（menu*.html）: <div id="menu"> … </div><!--/menu-->
   if (/^menu(\.(en|th))?\.html$/.test(f)) {
-    s = s.replace(/<div id="menu"[^>]*>[\s\S]*?<\/div><!--\/menu-->/, () => '<div id="menu">' + R.html(cats, lang) + '</div><!--/menu-->');
+    // id="menu" の前に class などが付いていても見つける（class="wrap" が付いてから一度も書けていなかった 2026-11-21）
+    s = s.replace(/<div([^>]*)\bid="menu"([^>]*)>[\s\S]*?<\/div><!--\/menu-->/, (_, a, b) => '<div' + a + 'id="menu"' + b + '>' + R.html(cats, lang) + '</div><!--/menu-->');
   }
   // 3. メニュー全体の Offer 一覧
   s = eachLd(s, (j) => {

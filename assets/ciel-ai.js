@@ -9,20 +9,21 @@
   var URL_=W.CIEL_AI_URL||'https://asia-southeast1-ciel-hair-studio.cloudfunctions.net/siteAi';
   var BOOK='https://ciel-hair-studio.web.app/booking/menu.html?lang='+L;
   var T={
-    ja:{title:'Ciel AI',sub:'髪のこと、メニュー、ご予約の決まり。何でもどうぞ',ph:'例: ブリーチなしでアッシュにできる？',send:'送信',photo:'写真を添付',hello:'こんにちは。Ciel の AI コンシェルジュです。髪質やカラーのご相談、メニューと料金の目安、ご予約の決まり、行き方など何でもお答えします。髪の写真を添えていただくと、より具体的にご提案できます。',chips:['今の髪で明るいアッシュにできる？','縮毛矯正とトリートメント、どっちがいい？','初めての予約の流れと料金は？','バンコクの硬水で髪がきしむ対策は？'],book:'オンライン予約へ',note:'AI の回答は参考情報です。最終的な提案と料金はカウンセリングで確定します。',err:'うまく繋がりませんでした。少し待ってからもう一度お試しください。',limit:'少し混み合っています。しばらくしてからお試しください。',off:'ただいま AI はお休み中です。',big:'写真が大きすぎます（10MB まで）。',close:'閉じる',clear:'会話を消す'},
-    en:{title:'Ciel AI',sub:'Hair, menu, booking rules — ask anything',ph:'e.g. Can I go ash without bleach?',send:'Send',photo:'Attach a photo',hello:'Hi, I’m Ciel’s AI concierge. Ask me about your hair, colour feasibility, our menu and price guide, booking rules or how to find us. Attach a photo of your hair for more specific advice.',chips:['Can my hair go light ash?','Straightening or treatment — which first?','First visit: how does booking and payment work?','My hair feels rough from Bangkok water — what helps?'],book:'Book online',note:'AI answers are for guidance. Final advice and prices are confirmed at your consultation.',err:'Connection problem. Please try again in a moment.',limit:'A bit busy right now — please try again shortly.',off:'The AI concierge is resting right now.',big:'Photo too large (max 10MB).',close:'Close',clear:'Clear chat'},
-    th:{title:'Ciel AI',sub:'เรื่องผม เมนู กติกาการจอง ถามได้ทุกอย่าง',ph:'เช่น ทำสีแอชได้ไหมถ้าไม่ฟอก',send:'ส่ง',photo:'แนบรูป',hello:'สวัสดีค่ะ นี่คือ AI คอนเซียร์จของ Ciel ถามเรื่องสภาพผม สีที่ทำได้ เมนูและราคาโดยประมาณ กติกาการจอง หรือการเดินทางได้เลย แนบรูปผมมาด้วยจะแนะนำได้ตรงขึ้นค่ะ',chips:['ผมตอนนี้ทำสีแอชสว่างได้ไหม','ยืดผมกับทรีตเมนต์ ควรทำอะไรก่อน','มาครั้งแรก จองและจ่ายเงินยังไง','ผมแห้งหยาบเพราะน้ำกรุงเทพ ทำยังไงดี'],book:'จองออนไลน์',note:'คำตอบจาก AI เป็นข้อมูลเบื้องต้น ข้อเสนอและราคาจริงยืนยันตอนปรึกษาที่ร้าน',err:'เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้งนะคะ',limit:'ตอนนี้มีผู้ใช้เยอะ กรุณาลองใหม่สักครู่',off:'AI พักอยู่ชั่วคราวค่ะ',big:'รูปใหญ่เกินไป (ไม่เกิน 10MB)',close:'ปิด',clear:'ล้างแชท'}
+    ja:{title:'Ciel AI',sub:'髪のこと、メニュー、ご予約の決まり。何でもどうぞ',ph:'例: ブリーチなしでアッシュにできる？',send:'送信',photo:'写真を添付',hello:'こんにちは。Ciel の AI コンシェルジュです。髪質やカラーのご相談、メニューと料金の目安、ご予約の決まり、行き方など何でもお答えします。髪の写真を添えていただくと、より具体的にご提案できます。',chips:['今の髪で明るいアッシュにできる？','縮毛矯正とトリートメント、どっちがいい？','初めての予約の流れと料金は？','バンコクの硬水で髪がきしむ対策は？'],book:'オンライン予約へ',note:'AI の回答は参考情報です。最終的な提案と料金はカウンセリングで確定します。',err:'うまく繋がりませんでした。少し待ってからもう一度お試しください。',limit:'少し混み合っています。しばらくしてからお試しください。',off:'ただいま AI はお休み中です。',big:'写真が大きすぎます（10MB まで）。',close:'閉じる',clear:'会話を消す',cut:'（通信が途中で切れました。続きは、もう一度送ってください）'},
+    en:{title:'Ciel AI',sub:'Hair, menu, booking rules — ask anything',ph:'e.g. Can I go ash without bleach?',send:'Send',photo:'Attach a photo',hello:'Hi, I’m Ciel’s AI concierge. Ask me about your hair, colour feasibility, our menu and price guide, booking rules or how to find us. Attach a photo of your hair for more specific advice.',chips:['Can my hair go light ash?','Straightening or treatment — which first?','First visit: how does booking and payment work?','My hair feels rough from Bangkok water — what helps?'],book:'Book online',note:'AI answers are for guidance. Final advice and prices are confirmed at your consultation.',err:'Connection problem. Please try again in a moment.',limit:'A bit busy right now — please try again shortly.',off:'The AI concierge is resting right now.',big:'Photo too large (max 10MB).',close:'Close',clear:'Clear chat',cut:'(The connection dropped mid-reply. Please send again for the rest.)'},
+    th:{title:'Ciel AI',sub:'เรื่องผม เมนู กติกาการจอง ถามได้ทุกอย่าง',ph:'เช่น ทำสีแอชได้ไหมถ้าไม่ฟอก',send:'ส่ง',photo:'แนบรูป',hello:'สวัสดีค่ะ นี่คือ AI คอนเซียร์จของ Ciel ถามเรื่องสภาพผม สีที่ทำได้ เมนูและราคาโดยประมาณ กติกาการจอง หรือการเดินทางได้เลย แนบรูปผมมาด้วยจะแนะนำได้ตรงขึ้นค่ะ',chips:['ผมตอนนี้ทำสีแอชสว่างได้ไหม','ยืดผมกับทรีตเมนต์ ควรทำอะไรก่อน','มาครั้งแรก จองและจ่ายเงินยังไง','ผมแห้งหยาบเพราะน้ำกรุงเทพ ทำยังไงดี'],book:'จองออนไลน์',note:'คำตอบจาก AI เป็นข้อมูลเบื้องต้น ข้อเสนอและราคาจริงยืนยันตอนปรึกษาที่ร้าน',err:'เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้งนะคะ',limit:'ตอนนี้มีผู้ใช้เยอะ กรุณาลองใหม่สักครู่',off:'AI พักอยู่ชั่วคราวค่ะ',big:'รูปใหญ่เกินไป (ไม่เกิน 10MB)',close:'ปิด',clear:'ล้างแชท',cut:'(การเชื่อมต่อหลุดระหว่างตอบ กรุณาส่งอีกครั้ง)'}
   }[L];
   var KEY='ciel_ai_conv_'+L;
   function ls(k,v){try{if(v===undefined)return sessionStorage.getItem(k);sessionStorage.setItem(k,v);}catch(e){return null;}}
   var conv=[];try{conv=JSON.parse(ls(KEY)||'[]')||[];}catch(e){conv=[];}
   if(!Array.isArray(conv))conv=[];
-  function save(){try{ls(KEY,JSON.stringify(conv.slice(-24)));}catch(e){}}
+  function save(){try{ls(KEY,JSON.stringify(conv.slice(-24).map(function(m){return {role:m.role,text:m.text,img:m.img?1:null};})));}catch(e){}} // 写真は保存しない（印だけ）
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
   // 軽い Markdown: **太字**・箇条書き・URL をリンクに・段落
   function md(s){
     var lines=String(s).split('\n'),out='',ul=false;
-    function inl(t){t=esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(https?:\/\/[^\s<）)]+)/g,function(u){return '<a href="'+u+'" target="_blank" rel="noopener">'+(u.indexOf('booking')>-1?T.book:u.replace(/^https?:\/\//,''))+'</a>';});return t;}
+    var OK_HOST=/^https:\/\/(ciel-hair-studio\.web\.app|www\.ciel-japanesehairstudio-bkk\.com|apps\.apple\.com|play\.google\.com|maps\.google\.com|www\.google\.com)\//; // リンクにするのは自社の宛先だけ（それ以外は文字のまま）
+    function inl(t){t=esc(t).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(https?:\/\/[^\s<）)]+)/g,function(u){if(!OK_HOST.test(u))return u;var book=/ciel-hair-studio\.web\.app\/booking/.test(u);return '<a href="'+(book?BOOK:u)+'" target="_blank" rel="noopener">'+(book?T.book:u.replace(/^https?:\/\//,''))+'</a>';});return t;}
     lines.forEach(function(ln){
       var m=ln.match(/^\s*(?:[-・•*]|\d+[.)])\s+(.*)$/);
       if(m){if(!ul){out+='<ul>';ul=true;}out+='<li>'+inl(m[1])+'</li>';return;}
@@ -32,11 +33,11 @@
     if(ul)out+='</ul>';
     return out;
   }
-  var ui=null;
+  var ui=null,reqId=0;
   function build(host,embed){
     host.innerHTML='<div class="cai-box" role="region" aria-label="'+T.title+'">'+
       '<div class="cai-head"><div><div class="t">'+T.title+'</div><div class="s">'+T.sub+'</div></div>'+(embed?'<button class="x" type="button" title="'+T.clear+'" aria-label="'+T.clear+'" data-clear>↺</button>':'<button class="x" type="button" aria-label="'+T.close+'" data-close>✕</button>')+'</div>'+
-      '<div class="cai-log" aria-live="polite"></div>'+
+      '<div class="cai-log"></div><div class="cai-status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>'+
       '<div class="cai-chips"></div>'+
       '<div class="cai-pv" hidden><img alt=""><span></span><button type="button" data-rm>✕</button></div>'+
       '<div class="cai-in"><button class="b" type="button" title="'+T.photo+'" aria-label="'+T.photo+'" data-photo>📷</button><input type="file" accept="image/*" capture="environment" hidden><textarea rows="1" placeholder="'+T.ph+'" aria-label="'+T.title+'"></textarea><button class="b send" type="button" aria-label="'+T.send+'" data-send>➤</button></div>'+
@@ -48,7 +49,7 @@
     host.querySelector('[data-photo]').addEventListener('click',function(){o.file.click();});
     o.file.addEventListener('change',function(){var f=o.file.files&&o.file.files[0];o.file.value='';if(f)pick(o,f);});
     host.querySelector('[data-rm]').addEventListener('click',function(){o.img=null;o.pv.hidden=true;});
-    var cl=host.querySelector('[data-clear]');if(cl)cl.addEventListener('click',function(){conv=[];save();render(o);});
+    var cl=host.querySelector('[data-clear]');if(cl)cl.addEventListener('click',function(){reqId++;o.busy=false;o.send.disabled=false;conv=[];save();render(o);});
     var x=host.querySelector('[data-close]');if(x)x.addEventListener('click',function(){close();});
     render(o);
     return o;
@@ -56,7 +57,7 @@
   function render(o){
     o.log.innerHTML='';
     add(o,'a',T.hello,true);
-    conv.forEach(function(m){add(o,m.role==='user'?'u':'a',m.text,true,m.img);});
+    conv.forEach(function(m){add(o,m.role==='user'?'u':'a',m.text,true,typeof m.img==='string'?m.img:null);});
     chips(o);
     o.log.scrollTop=o.log.scrollHeight;
   }
@@ -72,9 +73,11 @@
     o.log.appendChild(d);if(!silent)o.log.scrollTop=o.log.scrollHeight;return d;
   }
   function sys(o,text){var d=D.createElement('div');d.className='cai-m sys';d.textContent=text;o.log.appendChild(d);o.log.scrollTop=o.log.scrollHeight;}
+  var pickId=0;
   function pick(o,f){
     if(f.size>10*1024*1024){sys(o,T.big);return;}
-    var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
+    var pid=++pickId;
+    var r=new FileReader();r.onload=function(){var im=new Image();im.onerror=function(){if(pid===pickId)sys(o,T.err);};im.onload=function(){if(pid!==pickId)return;
       var mx=1024,s=Math.min(1,mx/Math.max(im.width,im.height)),c=D.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
       c.getContext('2d').drawImage(im,0,0,c.width,c.height);var url=c.toDataURL('image/jpeg',.82);
       o.img=url;o.pv.hidden=false;o.pv.querySelector('img').src=url;o.pv.querySelector('span').textContent=T.photo;
@@ -89,7 +92,7 @@
     ask(o,text,img);
   }
   function ask(o,text,img){
-    o.busy=true;o.send.disabled=true;
+    o.busy=true;o.send.disabled=true;var my=++reqId;
     var d=add(o,'a','',false);d.innerHTML='<span class="cai-typing"><i></i><i></i><i></i></span>';
     var msgs=conv.slice(-12).map(function(m,i,arr){
       if(m.role==='assistant')return {role:'assistant',content:m.text};
@@ -104,9 +107,11 @@
     while(fixed.length&&fixed[0].role!=='user')fixed.shift();
     var acc='',done=false;
     function finish(ok){
+      if(my!==reqId)return; // 消去や新しい送信の後に届いた古い返事は捨てる
       o.busy=false;o.send.disabled=false;
-      if(ok&&acc){conv.push({role:'assistant',text:acc});save();}
+      if(acc){conv.push({role:'assistant',text:acc});save();if(!ok)sys(o,T.cut);}
       else{d.remove();}
+      var st=o.host.querySelector('.cai-status');if(st&&acc)st.textContent=acc;
       try{W.__trk&&W.__trk('ai_chat',{ok:ok?1:0,len:acc.length,has_photo:img?1:0});}catch(e){}
     }
     fetch(URL_,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({lang:L,messages:fixed})}).then(function(r){
@@ -124,11 +129,14 @@
         return pump();
       });}
       return pump();
-    }).then(function(){finish(true);}).catch(function(e){finish(false);sys(o,T[e.message]||T.err);});
+    }).then(function(){finish(done);}).catch(function(e){if(my!==reqId)return;var had=!!acc;finish(false);if(!had)sys(o,T[e.message]||T.err);});
   }
   var dlg=null;
   function open(q){
-    if(!dlg){dlg=D.createElement('dialog');dlg.className='cai';D.documentElement.appendChild(dlg);ui=build(dlg,false);dlg.addEventListener('click',function(e){if(e.target===dlg)close();});}
+    if(!dlg){dlg=D.createElement('dialog');dlg.className='cai';dlg.setAttribute('aria-label',T.title);D.documentElement.appendChild(dlg);
+      /* 携帯のキーボードで入力欄が隠れないように */
+      try{if(W.visualViewport){W.visualViewport.addEventListener('resize',function(){if(innerWidth<=600&&dlg.open){dlg.style.height=Math.round(W.visualViewport.height)+'px';}});}}catch(e){}
+      ui=build(dlg,false);dlg.addEventListener('click',function(e){if(e.target===dlg)close();});}
     if(!dlg.open){try{dlg.showModal();}catch(e){dlg.setAttribute('open','');}}
     if(q){ui.ta.value=q;submit(ui);}else setTimeout(function(){ui.ta.focus();},300);
     try{W.__trk&&W.__trk('ai_open',{q:q?1:0});}catch(e){}
