@@ -1,0 +1,293 @@
+{
+ "https://static.wixstatic.com/media/25eaf5_70b4748342a74c34b5967d012f98241c~mv2.jpg": {
+  "jpg": "/img/ext/stylist-aki.jpg",
+  "avif": [
+   "/img/ext/stylist-aki-640.avif",
+   "/img/ext/stylist-aki-1200.avif",
+   "/img/ext/stylist-aki-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/stylist-aki-640.webp",
+   "/img/ext/stylist-aki-1200.webp",
+   "/img/ext/stylist-aki-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2000
+ },
+ "https://static.wixstatic.com/media/25eaf5_ac31ac5b82a34eaf8638b4421d26e548~mv2.jpg": {
+  "jpg": "/img/ext/stylist-tar.jpg",
+  "avif": [
+   "/img/ext/stylist-tar-640.avif",
+   "/img/ext/stylist-tar-1200.avif",
+   "/img/ext/stylist-tar-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/stylist-tar-640.webp",
+   "/img/ext/stylist-tar-1200.webp",
+   "/img/ext/stylist-tar-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1600
+ },
+ "https://static.wixstatic.com/media/25eaf5_33f880b9278b401094ad29804504069f~mv2.jpg": {
+  "jpg": "/img/ext/service-cut.jpg",
+  "avif": [
+   "/img/ext/service-cut-640.avif",
+   "/img/ext/service-cut-1200.avif"
+  ],
+  "webp": [
+   "/img/ext/service-cut-640.webp",
+   "/img/ext/service-cut-1200.webp"
+  ],
+  "w": 1440,
+  "h": 1800
+ },
+ "https://static.wixstatic.com/media/25eaf5_f38fe17bf8484af68d09adc1893bfc1f~mv2.jpg": {
+  "jpg": "/img/ext/service-colour.jpg",
+  "avif": [
+   "/img/ext/service-colour-640.avif",
+   "/img/ext/service-colour-1200.avif"
+  ],
+  "webp": [
+   "/img/ext/service-colour-640.webp",
+   "/img/ext/service-colour-1200.webp"
+  ],
+  "w": 1440,
+  "h": 1796
+ },
+ "https://static.wixstatic.com/media/25eaf5_b210d49477e24921b061f818493d257f~mv2.jpg": {
+  "jpg": "/img/ext/service-keratin.jpg",
+  "avif": [
+   "/img/ext/service-keratin-640.avif",
+   "/img/ext/service-keratin-1200.avif",
+   "/img/ext/service-keratin-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/service-keratin-640.webp",
+   "/img/ext/service-keratin-1200.webp",
+   "/img/ext/service-keratin-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2000
+ },
+ "https://static.wixstatic.com/media/25eaf5_c77bc29a69d04a1e9cdd9f1c6c17a3eb~mv2.jpeg": {
+  "jpg": "/img/ext/service-headspa.jpg",
+  "avif": [
+   "/img/ext/service-headspa-640.avif",
+   "/img/ext/service-headspa-1200.avif"
+  ],
+  "webp": [
+   "/img/ext/service-headspa-640.webp",
+   "/img/ext/service-headspa-1200.webp"
+  ],
+  "w": 1206,
+  "h": 674
+ },
+ "https://static.wixstatic.com/media/25eaf5_7f07faef6f32439b8999c757dc0c8def~mv2.jpeg": {
+  "jpg": "/img/ext/headspa-finish.jpg",
+  "avif": [
+   "/img/ext/headspa-finish-640.avif",
+   "/img/ext/headspa-finish-1200.avif",
+   "/img/ext/headspa-finish-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/headspa-finish-640.webp",
+   "/img/ext/headspa-finish-1200.webp",
+   "/img/ext/headspa-finish-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1600
+ },
+ "https://static.wixstatic.com/media/25eaf5_747802895b3d455997c33b23ffb4ee67~mv2.jpg": {
+  "jpg": "/img/ext/salon-1.jpg",
+  "avif": [
+   "/img/ext/salon-1-640.avif",
+   "/img/ext/salon-1-1200.avif",
+   "/img/ext/salon-1-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/salon-1-640.webp",
+   "/img/ext/salon-1-1200.webp",
+   "/img/ext/salon-1-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1600
+ },
+ "https://static.wixstatic.com/media/25eaf5_3ffb91e24aee4898b5c96db500a5cec1~mv2.jpg": {
+  "jpg": "/img/ext/salon-2.jpg",
+  "avif": [
+   "/img/ext/salon-2-640.avif",
+   "/img/ext/salon-2-1200.avif",
+   "/img/ext/salon-2-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/salon-2-640.webp",
+   "/img/ext/salon-2-1200.webp",
+   "/img/ext/salon-2-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1920
+ },
+ "https://static.wixstatic.com/media/25eaf5_5b56874ba4924ceba8c95d53de538797~mv2.jpg": {
+  "jpg": "/img/ext/salon-3.jpg",
+  "avif": [
+   "/img/ext/salon-3-640.avif",
+   "/img/ext/salon-3-1200.avif",
+   "/img/ext/salon-3-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/salon-3-640.webp",
+   "/img/ext/salon-3-1200.webp",
+   "/img/ext/salon-3-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2000
+ },
+ "https://static.wixstatic.com/media/25eaf5_11ae4851f8504738b5af45ffb67581c7~mv2.png": {
+  "jpg": "/img/ext/gallery-01.png",
+  "avif": [
+   "/img/ext/gallery-01-640.avif",
+   "/img/ext/gallery-01-1200.avif",
+   "/img/ext/gallery-01-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/gallery-01-640.webp",
+   "/img/ext/gallery-01-1200.webp",
+   "/img/ext/gallery-01-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2133
+ },
+ "https://static.wixstatic.com/media/25eaf5_00ae9cc323a04eb299b1f2cf8736a1e7~mv2.png": {
+  "jpg": "/img/ext/gallery-03.png",
+  "avif": [
+   "/img/ext/gallery-03-640.avif",
+   "/img/ext/gallery-03-1200.avif",
+   "/img/ext/gallery-03-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/gallery-03-640.webp",
+   "/img/ext/gallery-03-1200.webp",
+   "/img/ext/gallery-03-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2133
+ },
+ "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/hero-privacy.jpg",
+  "avif": [
+   "/img/ext/hero-privacy-640.avif",
+   "/img/ext/hero-privacy-1200.avif",
+   "/img/ext/hero-privacy-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/hero-privacy-640.webp",
+   "/img/ext/hero-privacy-1200.webp",
+   "/img/ext/hero-privacy-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1067
+ },
+ "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/hero-gallery.jpg",
+  "avif": [
+   "/img/ext/hero-gallery-640.avif",
+   "/img/ext/hero-gallery-1200.avif",
+   "/img/ext/hero-gallery-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/hero-gallery-640.webp",
+   "/img/ext/hero-gallery-1200.webp",
+   "/img/ext/hero-gallery-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1067
+ },
+ "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/hero-policy.jpg",
+  "avif": [
+   "/img/ext/hero-policy-640.avif",
+   "/img/ext/hero-policy-1200.avif",
+   "/img/ext/hero-policy-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/hero-policy-640.webp",
+   "/img/ext/hero-policy-1200.webp",
+   "/img/ext/hero-policy-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1067
+ },
+ "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/hero-booking.jpg",
+  "avif": [
+   "/img/ext/hero-booking-640.avif",
+   "/img/ext/hero-booking-1200.avif",
+   "/img/ext/hero-booking-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/hero-booking-640.webp",
+   "/img/ext/hero-booking-1200.webp",
+   "/img/ext/hero-booking-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1200
+ },
+ "https://images.unsplash.com/photo-1522337094846-8a818192de1f?auto=format&fit=crop&w=800&q=80": {
+  "jpg": "/img/ext/unsplash-15223370.jpg",
+  "avif": [
+   "/img/ext/unsplash-15223370-640.avif"
+  ],
+  "webp": [
+   "/img/ext/unsplash-15223370-640.webp"
+  ],
+  "w": 800,
+  "h": 1180
+ },
+ "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/headspa-hero.jpg",
+  "avif": [
+   "/img/ext/headspa-hero-640.avif",
+   "/img/ext/headspa-hero-1200.avif",
+   "/img/ext/headspa-hero-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/headspa-hero-640.webp",
+   "/img/ext/headspa-hero-1200.webp",
+   "/img/ext/headspa-hero-1600.webp"
+  ],
+  "w": 1600,
+  "h": 1067
+ },
+ "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=1600&q=80": {
+  "jpg": "/img/ext/tokio-treatment.jpg",
+  "avif": [
+   "/img/ext/tokio-treatment-640.avif",
+   "/img/ext/tokio-treatment-1200.avif",
+   "/img/ext/tokio-treatment-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/tokio-treatment-640.webp",
+   "/img/ext/tokio-treatment-1200.webp",
+   "/img/ext/tokio-treatment-1600.webp"
+  ],
+  "w": 1600,
+  "h": 2397
+ },
+ "https://video.wixstatic.com/video/25eaf5_af82a52823224af4b17ac4bb82e810d0/1080p/mp4/file.mp4": {
+  "mp4": "/img/ext/phero.mp4",
+  "poster": "/img/ext/phero-poster.jpg",
+  "avif": [
+   "/img/ext/phero-poster-640.avif",
+   "/img/ext/phero-poster-1200.avif",
+   "/img/ext/phero-poster-1600.avif"
+  ],
+  "webp": [
+   "/img/ext/phero-poster-640.webp",
+   "/img/ext/phero-poster-1200.webp",
+   "/img/ext/phero-poster-1600.webp"
+  ],
+  "w": 1600,
+  "h": 900
+ }
+}

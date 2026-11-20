@@ -13,8 +13,9 @@
   var nav=document.querySelector('.nav'), rail=document.getElementById('railFill');
   function onScroll(){
     if(nav) nav.classList.toggle('solid', scrollY>40);
-    if(rail){ var max=document.body.scrollHeight-innerHeight; rail.style.height=(max>0?scrollY/max*100:0)+'%'; }
+    if(rail&&!SDA){ var max=document.body.scrollHeight-innerHeight; rail.style.height=(max>0?scrollY/max*100:0)+'%'; }
   }
+  var SDA=!!(window.CSS&&CSS.supports&&CSS.supports('animation-timeline','view()')); /* 対応ブラウザは演出とレールを CSS（assets/ciel-modern.css）が受け持つ＝毎フレームの計算をしない */
   addEventListener('scroll',onScroll,{passive:true});
 
   var fx=[].slice.call(document.querySelectorAll('[data-fx]'));
@@ -51,7 +52,8 @@
       } else setFx(el,el.dataset.fx,ss(base));
     }
   }
-  onScroll(); frame();
+  fx.forEach(function(el){ if(el.dataset.i) el.style.setProperty('--i',el.dataset.i); if(el.__w) el.__w.forEach(function(s,j){ s.style.setProperty('--j',j); }); });
+  onScroll(); if(!SDA) frame();
 
   var lang=document.documentElement.lang||'ja';
   var FRESHA='https://ciel-hair-studio.web.app/booking/menu.html?lang='+(lang==='th'?'th':lang==='en'?'en':'ja');

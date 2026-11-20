@@ -1,0 +1,115 @@
+/* Ciel site — modern layer (2026-11-21)
+   全ページ共通。ciel.css / index の inline style の後に読む。
+   ① スクロール連動アニメーションを CSS（Scroll-driven Animations）で。対応ブラウザでは JS の毎フレーム計算を止める
+   ② ページ間の遷移を View Transitions（cross-document）で
+   ③ 最新 CSS: text-wrap / content-visibility / container query / @starting-style / @property / :focus-visible / light-dark
+   ④ 動きを減らす設定（prefers-reduced-motion）を全演出で尊重 */
+
+:root{color-scheme:light;interpolate-size:allow-keywords}
+html{hanging-punctuation:first allow-end;text-spacing-trim:space-first}
+h1,h2,h3,.h2,.pf-name,.svc-name,#poem .line{text-wrap:balance}
+p,.lead,.svc-desc,li,dd{text-wrap:pretty}
+@media(min-width:761px){.wrap{text-wrap:pretty}}
+
+/* --- ① scroll-driven animations（対応ブラウザだけ。JS 側は CSS.supports で同じ条件を見て毎フレーム処理を止める）--- */
+@supports (animation-timeline: view()){
+  [data-fx]{
+    opacity:1;will-change:auto;
+    animation-name:fx-fade;animation-duration:1ms;animation-fill-mode:both;animation-timing-function:ease-out;
+    animation-timeline:view();
+    animation-range:entry calc(var(--i,0)*6%) cover calc(38% + var(--i,0)*6%);
+  }
+  [data-fx="standup"]{animation-name:fx-standup}
+  [data-fx="hingeL"]{animation-name:fx-hingeL}
+  [data-fx="hingeR"]{animation-name:fx-hingeR}
+  [data-fx="flip"]{animation-name:fx-flip}
+  [data-fx="unfold"]{animation-name:fx-unfold}
+  [data-fx="rise"]{animation-name:fx-rise}
+  [data-fx="fade"]{animation-name:fx-fade}
+  /* 見出しの単語ごと（JS が span.w に分け --j を付ける） */
+  [data-fx="words"]{animation:none;opacity:1;transform:none}
+  [data-fx="words"] .w{
+    animation:fx-word 1ms ease-out both;animation-timeline:view();
+    animation-range:entry calc(var(--j,0)*4%) cover calc(36% + var(--j,0)*4%);
+  }
+  /* 右の進み具合バー（ページ全体のスクロール量） */
+  #railFill{animation:rail-fill 1ms linear both;animation-timeline:scroll(root)}
+  @keyframes rail-fill{from{height:0}to{height:100%}}
+}
+@keyframes fx-standup{from{opacity:0;transform:perspective(1600px) rotateX(68deg)}to{opacity:1;transform:none}}
+@keyframes fx-hingeL{from{opacity:0;transform:perspective(1800px) rotateY(-58deg)}to{opacity:1;transform:none}}
+@keyframes fx-hingeR{from{opacity:0;transform:perspective(1800px) rotateY(58deg)}to{opacity:1;transform:none}}
+@keyframes fx-flip{from{opacity:0;transform:perspective(1300px) rotateY(72deg)}to{opacity:1;transform:none}}
+@keyframes fx-unfold{from{opacity:0;transform:scaleY(.05)}to{opacity:1;transform:none}}
+@keyframes fx-rise{from{opacity:0;transform:translateY(52px)}to{opacity:1;transform:none}}
+@keyframes fx-fade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fx-word{from{opacity:0;transform:perspective(900px) rotateX(78deg)}to{opacity:1;transform:none}}
+
+/* --- ② cross-document View Transitions（同じサイト内のページ移動をフェード＋少し持ち上げ。ナビは固定して動かさない）--- */
+@view-transition{navigation:auto}
+@media(prefers-reduced-motion:no-preference){
+  ::view-transition-old(root){animation:vt-out .22s ease-in both}
+  ::view-transition-new(root){animation:vt-in .36s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes vt-out{to{opacity:0;transform:translateY(-6px)}}
+  @keyframes vt-in{from{opacity:0;transform:translateY(10px)}}
+}
+.nav{view-transition-name:ciel-nav}
+.fab-book{view-transition-name:ciel-fab}
+::view-transition-group(ciel-nav),::view-transition-group(ciel-fab){animation-duration:.01s}
+
+/* --- ③ レンダリング: 画面外の長い段落は描画を後回し（content-visibility） --- */
+.panel:not(#cta):not(:first-of-type){content-visibility:auto;contain-intrinsic-size:auto 100vh}
+.masonry,.readlist{content-visibility:auto;contain-intrinsic-size:auto 600px}
+img{height:auto}
+img[loading="lazy"]{decoding:async}
+
+/* --- ③ container query: 2 列の組み物はビューポートでなく置かれた幅で畳む --- */
+main,.wrap{container-type:inline-size}
+@container (max-width:760px){
+  .profile,.profile.rev,.svc,.svc.rev,.access-grid{grid-template-columns:1fr;gap:30px}
+  .svc.rev .svc-img{order:0}
+  .svc-meta,.svc-points,.opt-grid{grid-template-columns:1fr}
+}
+
+/* --- ③ 入場の演出（@starting-style）: 予約ボタン・クッキー同意バー・言語選択 --- */
+.fab-book{transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1),background .3s;@starting-style{opacity:0;transform:translateY(18px)}}
+#ciel-ck{transition:opacity .4s ease,transform .4s ease;@starting-style{opacity:0;transform:translateY(12px)}}
+
+/* --- ③ @property で角度を補間する静かなグラデーション（#cta / #poem の背景に呼吸） --- */
+@property --ciel-ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+@media(prefers-reduced-motion:no-preference){
+  #cta,#poem{background-image:conic-gradient(from var(--ciel-ang) at 50% 120%,#111113 0 60%,#1a1a1f 70%,#111113 80% 100%);animation:ciel-breathe 18s linear infinite}
+  @keyframes ciel-breathe{to{--ciel-ang:360deg}}
+}
+
+/* --- ③ フォーカスとスキップリンク（キーボード・支援技術） --- */
+:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:2px}
+.nav-overlay a:focus-visible,.toc a:focus-visible{outline-offset:2px}
+.skip-link{position:fixed;top:8px;left:8px;z-index:99999;background:#1d1e20;color:#f2f2f3;padding:10px 16px;border-radius:999px;font-size:13px;letter-spacing:.08em;transform:translateY(-200%);transition:transform .2s}
+.skip-link:focus{transform:none}
+
+/* --- ③ ホバーできる端末だけ hover 演出（タッチでは貼り付かない） --- */
+@media(hover:none){.masonry .cell{filter:grayscale(0)}.sig-banner:hover img{transform:none}}
+
+/* --- ① トップの視差（動画の寄り・幕・見出しの退場・SCROLL の合図）もスクロール連動の CSS で --- */
+@supports (animation-timeline: scroll()){
+  #stage .media{animation:stage-zoom 1ms linear both;animation-timeline:scroll(root);animation-range:0 100vh}
+  #stage .veil{animation:stage-veil 1ms linear both;animation-timeline:scroll(root);animation-range:0 100vh}
+  #heroIn{animation:hero-out 1ms linear both;animation-timeline:scroll(root);animation-range:0 77vh}
+  .cue{animation:cue-out 1ms linear both;animation-timeline:scroll(root);animation-range:0 15vh}
+}
+@keyframes stage-zoom{to{transform:scale(1.14)}}
+@keyframes stage-veil{from{opacity:.45}to{opacity:.85}}
+@keyframes hero-out{to{transform:translateY(-60px);opacity:0}}
+@keyframes cue-out{from{opacity:.9}to{opacity:0}}
+
+/* --- 動画の下にポスターが出るまでの背景（LCP） --- */
+#stage .media{background:#111113 url('/hero-poster.jpg') center/cover}
+
+/* --- ④ 動きを減らす --- */
+@media(prefers-reduced-motion:reduce){
+  [data-fx],[data-fx] .w{animation:none!important;opacity:1!important;transform:none!important}
+  #stage .media,#stage .veil,#hero .in,#heroIn{animation:none!important;transform:none!important}
+  html{scroll-behavior:auto}
+  .fab-book,#ciel-ck{transition:none}
+}

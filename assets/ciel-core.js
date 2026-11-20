@@ -1,7 +1,11 @@
-/* Ciel site core (2026-11-05): クッキー同意(PDPA)・来訪元の引き継ぎ・計測イベント・Web Vitals・PWA。
+/* Ciel site core (2026-11-05 / 2026-11-21 先読み・prerender 対応): クッキー同意(PDPA)・来訪元の引き継ぎ・計測イベント・Web Vitals・PWA。
    gtag の既定(consent default)と読み込みは各ページ head のインライン。ここは defer で後から動く。 */
 (function(){
   var W=window,D=document;
+  /* 先読み（Speculation Rules）: 同じサイト内のページを、リンクに触れた時点で裏で描画しておく＝次のページが一瞬で出る。予約サイト・別タブ・アプリ配下は除外 */
+  try{if(W.HTMLScriptElement&&HTMLScriptElement.supports&&HTMLScriptElement.supports('speculationrules')){var sr=D.createElement('script');sr.type='speculationrules';sr.textContent=JSON.stringify({prerender:[{where:{and:[{href_matches:'/*'},{not:{selector_matches:'[target=_blank], [rel~=external], [data-no-prerender]'}},{not:{href_matches:'/(apps|tools|gallery|seq_full|data)/*'}}]},eagerness:'moderate'}],prefetch:[{where:{and:[{href_matches:'/*'},{not:{selector_matches:'[target=_blank]'}}]},eagerness:'moderate'}]});D.head.appendChild(sr);}}catch(e){}
+  /* prerender 中（まだ見えていない）は計測や同意バーを動かさず、表示された時に始める */
+  function whenActive(f){if(D.prerendering){D.addEventListener('prerenderingchange',function(){f();},{once:true});}else f();}
   var L=(D.documentElement.lang||'ja').slice(0,2);if(L!=='en'&&L!=='th')L='ja';
   function gtag(){(W.dataLayer=W.dataLayer||[]).push(arguments);}
   function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
@@ -16,7 +20,7 @@
     fbq('init',m.content);fbq('track','PageView');
   }
   function idle(f){if('requestIdleCallback' in W)requestIdleCallback(f,{timeout:4000});else setTimeout(f,2500);}
-  idle(loadPixel);
+  whenActive(function(){idle(loadPixel);});
 
   /* クッキー同意バー（3 言語）。既定は拒否＝head で denied。「同意する」で許可に更新 */
   var T={
@@ -44,7 +48,7 @@
     }
     bar.style.display='flex';
   }
-  if(!CK)setTimeout(showBar,1800);
+  whenActive(function(){if(!CK)setTimeout(showBar,1800);});
   var ft=D.querySelector('footer');
   if(ft){var sl=D.createElement('a');sl.href='#';sl.textContent=T.set;sl.style.cssText='display:inline-block;margin-top:12px;font-size:11px;letter-spacing:.08em;opacity:.75;text-decoration:underline;color:inherit';sl.addEventListener('click',function(e){e.preventDefault();showBar();});ft.appendChild(D.createElement('br'));ft.appendChild(sl);}
 
@@ -99,6 +103,30 @@
   /* JS エラー（1 ページ 5 件まで） */
   var errs=0;
   addEventListener('error',function(e){if(errs++<5&&e.message)__trk('js_error',{msg:String(e.message).slice(0,100),src:String(e.filename||'').split('/').pop().slice(0,60),line:e.lineno,page:location.pathname});});
+
+  /* AI コンシェルジュ（assets/ciel-ai.js）: 右下のボタン・[data-ai-q] のボタン・contact ページの埋め込み。初めて使う時だけ読む */
+  var AIV='2026112101';
+  function loadAi(cb){
+    if(W.CielAI){cb&&cb();return;}
+    if(!D.getElementById('cai-css')){var l=D.createElement('link');l.id='cai-css';l.rel='stylesheet';l.href='/assets/ciel-ai.css?v='+AIV;D.head.appendChild(l);}
+    if(!W.__cielAiLoading){W.__cielAiLoading=1;var s=D.createElement('script');s.src='/assets/ciel-ai.js?v='+AIV;s.async=true;s.onload=function(){cb&&cb();};D.head.appendChild(s);}
+    else if(cb){var iv=setInterval(function(){if(W.CielAI){clearInterval(iv);cb();}},80);}
+  }
+  var AIL={ja:'AI に相談',en:'Ask AI',th:'ถาม AI'}[L];
+  if(!D.querySelector('[data-cai-embed]')&&!D.body.hasAttribute('data-no-ai')){
+    var fab=D.createElement('button');fab.type='button';fab.className='fab-ai';fab.innerHTML='<span class="dot"></span>'+AIL;fab.setAttribute('aria-label',AIL);
+    var fs=D.createElement('style');fs.textContent='.fab-ai{position:fixed;right:18px;bottom:76px;z-index:90;display:inline-flex;align-items:center;gap:8px;background:#f2f2f3;color:#1d1e20;border:1px solid rgba(29,30,32,.18);font-family:"Cormorant Garamond",serif;letter-spacing:.14em;font-size:13px;padding:12px 20px;border-radius:999px;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.18)}.fab-ai .dot{width:7px;height:7px;border-radius:50%;background:#1d1e20}@media(max-width:600px){.fab-ai{right:14px;bottom:70px;padding:11px 16px;font-size:12px}}body.menu-open .fab-ai{display:none}';D.head.appendChild(fs);
+    fab.addEventListener('click',function(){W.__cielAiPending=true;loadAi(function(){if(W.__cielAiPending){W.__cielAiPending=null;W.CielAI.open('');}});});
+    D.body.appendChild(fab);
+  }
+  D.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('[data-ai-q]');if(!b)return;e.preventDefault();
+    var q=b.getAttribute('data-ai-q')||b.textContent.trim();W.__cielAiPending=q;
+    loadAi(function(){if(W.__cielAiPending){var p=W.__cielAiPending;W.__cielAiPending=null;W.CielAI.open(p);}});
+  });
+  if(D.querySelector('[data-cai-embed]'))loadAi();
+  /* リンク先に触れた時点で AI も温める（先読み） */
+  var warmed=0;['pointerdown','touchstart','keydown'].forEach(function(ev){addEventListener(ev,function w(){if(warmed)return;warmed=1;var l=D.createElement('link');l.rel='prefetch';l.href='/assets/ciel-ai.js?v='+AIV;D.head.appendChild(l);},{once:true,passive:true});});
 
   /* PWA: 2 回目以降を速く・電波が切れても開く */
   if('serviceWorker' in navigator&&location.protocol==='https:')addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});
