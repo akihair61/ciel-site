@@ -1,5 +1,5 @@
 {
- "at": "2026-11-20T23:25:19.723Z",
+ "at": "2026-11-21T01:20:29.257Z",
  "menus": 43,
  "orphans": [],
  "broken": [
@@ -277,21 +277,7 @@
    "why": "セグメントの目印が見つからない（後）"
   }
  ],
- "changed": [
-  "faq.en.html",
-  "faq.html",
-  "faq.th.html",
-  "hair-salon-phrom-phong.html",
-  "hair-salon-phrom-phong.th.html",
-  "japanese-hair-salon-bangkok.html",
-  "price-guide.en.html",
-  "price-guide.html",
-  "service.en.html",
-  "straight-perm-bangkok.en.html",
-  "straight-perm-bangkok.html",
-  "llms.txt",
-  "llms-full.txt"
- ],
+ "changed": [],
  "unregistered": [
   {
    "f": "hair-treatment-bangkok.en.html",
